@@ -1,4 +1,4 @@
-name: 🚀 Android Release
+name: 🚀 SQL Dupm Release
 
 on:
   push:
@@ -51,3 +51,6 @@ jobs:
           ls -la
           chmod +x script/*.sh
           ./script/csv2sql.sh
+          ls -la
+          cd dataset
+          ls -la
