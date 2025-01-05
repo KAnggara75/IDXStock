@@ -1,0 +1,31 @@
+model History {
+  id                    Int      @id @default(autoincrement())
+  code                  String   @db.VarChar(200)
+  date                  DateTime
+  previous              Int?
+  open_price            Int?
+  first_trade           Int?
+  high                  Int?
+  low                   Int?
+  close                 Int?
+  change                Int?
+  volume                BigInt?
+  value                 BigInt?
+  frequency             BigInt?
+  index_individual      Decimal?
+  offer                 BigInt?
+  offer_volume          BigInt?
+  bid                   BigInt?
+  bid_volume            BigInt?
+  listed_shares         BigInt?
+  tradeble_shares       BigInt?
+  weight_for_index      BigInt?
+  foreign_sell          BigInt?
+  foreign_buy           BigInt?
+  delisting_date        String?  @db.VarChar(200)
+  non_regular_volume    BigInt?
+  non_regular_value     BigInt?
+  non_regular_frequency BigInt?
+
+  @@map("history")
+}
