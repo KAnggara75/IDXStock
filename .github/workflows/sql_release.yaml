@@ -47,12 +47,13 @@ jobs:
           path: version.txt
       - name: Compose CSV to SQL
         run: |
-          pwd
           git submodule update --init --recursive
-          ls -la
           chmod +x script/*.sh
           ./script/csv2sql.sh
-          ls -la
-          cd dataset
-          ls -la
-          pwd
+      - name: Create a Release in GitHub
+        uses: ncipollo/release-action@v1.14.0
+        with:
+          artifacts: "sql_dump/*.sql"
+          token: ${{ secrets.GITHUB_TOKEN }}
+          tag: ${{ steps.version.outputs.content }}
+          commit: ${{ github.sha }}
