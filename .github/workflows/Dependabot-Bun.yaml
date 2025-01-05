@@ -12,7 +12,7 @@ jobs:
   update-bun-lockb:
     name: "Update bun.lockb"
     if: github.actor == 'dependabot[bot]'
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: oven-sh/setup-bun@v2
       - uses: actions/checkout@v4

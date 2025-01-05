@@ -11,7 +11,7 @@ on:
 
 jobs:
   Format_and_Check:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     strategy:
       matrix:
         bun-version: [canary, 1.0.0, 1.0.36, 1.1.0, 1.1.16, 1.1.42]
@@ -27,7 +27,7 @@ jobs:
       - name: Format and Check code
         run: bun run fc
   Jest_Test:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     needs: Format_and_Check
     strategy:
       matrix:
@@ -52,7 +52,7 @@ jobs:
       - name: Test
         run: bun test
   Create_Test_Coverage_Badges:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     needs: Format_and_Check
     name: Test with Jest Bun Latest
     steps:
