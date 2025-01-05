@@ -1,0 +1,29 @@
+{
+	"name": "bunapi",
+	"description": "Restful API by IDScript",
+	"version": "0.1.0",
+	"type": "module",
+	"main": "src/index.ts",
+	"module": "src/index.ts",
+	"scripts": {
+		"dev": "bun run --hot src/index.ts",
+		"fc": "bunx prettier --write . && bunx eslint --fix . && bunx prettier --check . && bunx eslint .",
+		"mig": "rm -rf prisma/migrations && bunx prisma generate && bunx prisma migrate dev --name init"
+	},
+	"dependencies": {
+		"@hono/node-server": "^1.13.7",
+		"@prisma/client": "^6.1.0",
+		"hono": "^4.6.15",
+		"winston": "^3.17.0",
+		"zod": "^3.24.1"
+	},
+	"devDependencies": {
+		"@eslint/js": "^9.17.0",
+		"@types/bun": "latest",
+		"eslint": "^9.17.0",
+		"globals": "^15.14.0",
+		"prettier": "^3.4.2",
+		"prisma": "^6.1.0",
+		"typescript-eslint": "^8.19.0"
+	}
+}
