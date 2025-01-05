@@ -1,4 +1,4 @@
-name: 🚀 SQL Dupm Release
+name: 🚀 SQL Dump Release
 
 on:
   push:
@@ -48,9 +48,11 @@ jobs:
       - name: Compose CSV to SQL
         run: |
           pwd
+          git submodule update --init --recursive
           ls -la
           chmod +x script/*.sh
           ./script/csv2sql.sh
           ls -la
           cd dataset
           ls -la
+          pwd
