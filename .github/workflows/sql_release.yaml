@@ -51,10 +51,3 @@ jobs:
           ls -la
           chmod +x script/*.sh
           ./script/csv2sql.sh
-      - name: Create a Release in GitHub
-        uses: ncipollo/release-action@v1.14.0
-        with:
-          artifacts: "sql_dump/*.sql"
-          token: ${{ secrets.GITHUB_TOKEN }}
-          tag: ${{ steps.version.outputs.content }}
-          commit: ${{ github.sha }}
