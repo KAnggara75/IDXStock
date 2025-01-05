@@ -54,6 +54,6 @@ jobs:
         uses: ncipollo/release-action@v1.14.0
         with:
           artifacts: "sql_dump/*.sql"
-          token: ${{ secrets.GITHUB_TOKEN }}
+          token: ${{ secrets.GH_TOKEN }}
           tag: ${{ steps.version.outputs.content }}
           commit: ${{ github.sha }}
