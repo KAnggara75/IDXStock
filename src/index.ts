@@ -8,6 +8,7 @@ import { serve, type ServerType } from "@hono/node-server";
 import { userController } from "./controller/user-controller";
 import { contactController } from "./controller/contact-controller";
 import { addressController } from "./controller/address-controller";
+import { stockController } from "./controller/stock-controller";
 
 const port: number = Number(Bun.env.API_PORT ?? 3030);
 
@@ -24,6 +25,7 @@ app.get("/", (c) => {
 	);
 });
 
+app.route("/", stockController);
 app.route("/", userController);
 app.route("/", contactController);
 app.route("/", addressController);
