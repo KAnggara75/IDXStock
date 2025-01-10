@@ -12,9 +12,11 @@
 	},
 	"dependencies": {
 		"@hono/node-server": "^1.13.7",
-		"@prisma/client": "^6.1.0",
+		"@prisma/client": "^6.2.1",
+		"csv-parser": "^3.1.0",
 		"hono": "^4.6.15",
 		"winston": "^3.17.0",
+		"xlsx": "^0.18.5",
 		"zod": "^3.24.1"
 	},
 	"devDependencies": {
@@ -23,7 +25,7 @@
 		"eslint": "^9.17.0",
 		"globals": "^15.14.0",
 		"prettier": "^3.4.2",
-		"prisma": "^6.1.0",
+		"prisma": "^6.2.1",
 		"typescript-eslint": "^8.19.0"
 	}
 }

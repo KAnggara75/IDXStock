@@ -98,3 +98,6 @@ ALTER TABLE `addresses` ADD CONSTRAINT `addresses_contact_id_fkey` FOREIGN KEY (
 
 -- AddForeignKey
 ALTER TABLE `contacts` ADD CONSTRAINT `contacts_username_fkey` FOREIGN KEY (`username`) REFERENCES `users`(`username`) ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `history` ADD CONSTRAINT `history_code_fkey` FOREIGN KEY (`code`) REFERENCES `stock`(`code`) ON DELETE RESTRICT ON UPDATE CASCADE;
