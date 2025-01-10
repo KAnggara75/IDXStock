@@ -25,7 +25,7 @@ export interface StockModel {
 	low: number | null; // "5900",
 	volume: number | null; // "267400",
 	marketcap: number | null; // "11403770475000",
-	tradetime: Date | null; // "2025-01-10 16:09:51",
+	tradetime: Date; // "2025-01-10 16:09:51",
 	volumeavg: number | null; // "383427",
 	pe: number | null; // "10,79",
 	eps: number | null; // "548,90",
@@ -56,11 +56,11 @@ export function toGoogleFinance(data: GoogleFinance): StockModel[] {
 				}
 			}
 
-			for (let i = 1; 10 > i; i++) {
+			for (let i = 1; value.length > i; i++) {
 				const stock = value[i].map((v) => v.replaceAll("#N/A", ""));
 				const stockData: StockModel = {
 					code: stock[0],
-					name: stock[1],
+					name: stock[1] === "" ? stock[0] : stock[1],
 					price: NumberUtil.toInt(stock[2]),
 					priceopen: NumberUtil.toInt(stock[3]),
 					high: NumberUtil.toInt(stock[4]),

@@ -1,0 +1,22 @@
+model Daily {
+  code      String    @id @db.VarChar(200)
+  name      String    @unique
+  price     Int?
+  priceopen Int?
+  high      Int?
+  low       Int?
+  volume    BigInt?
+  marketcap BigInt?
+  tradetime DateTime?
+  volumeavg Int?
+  pe        Int?
+  eps       Int?
+  high52    Int?
+  low52     Int?
+  change    Int?
+  changepct Int?
+  closeyest Int?
+  shares    BigInt?
+
+  @@map("daily")
+}

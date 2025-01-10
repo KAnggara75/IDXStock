@@ -1,12 +1,8 @@
+import { HTTPException } from "hono/http-exception";
 import { log } from "../config/logger";
-import {
-	toGoogleFinance,
-	type GoogleFinance,
-	type StockModel,
-} from "../model/googleFinance-model";
 
 export class GoogleFinanceService {
-	static async getStocks(): Promise<StockModel[]> {
+	static async getStocks(): Promise<Response> {
 		const apiKey: string = Bun.env.SPREADSHEETS_API_KEY ?? "";
 		const spreadsheetId: string = Bun.env.SPREADSHEETS_ID ?? "";
 		const sheetName: string = Bun.env.SPREADSHEETS_NAME ?? "Sheet1";
@@ -14,21 +10,15 @@ export class GoogleFinanceService {
 		const url: string | URL =
 			`https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}/values/${sheetName}?key=${apiKey}`;
 
-		let json: GoogleFinance = {
-			values: [],
-		};
-
-		let result: StockModel[] = [];
-
 		try {
-			const response = await fetch(url);
-			json = await response.json();
-			result = toGoogleFinance(json);
+			const response: Response = await fetch(url);
+			return response;
 			// eslint-disable-next-line @typescript-eslint/no-explicit-any
 		} catch (error: any) {
 			log.error(error.message);
+			throw new HTTPException(500, {
+				message: error.message,
+			});
 		}
-
-		return result;
 	}
 }

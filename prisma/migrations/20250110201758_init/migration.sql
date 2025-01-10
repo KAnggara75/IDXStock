@@ -24,6 +24,31 @@ CREATE TABLE `contacts` (
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- CreateTable
+CREATE TABLE `daily` (
+    `code` VARCHAR(200) NOT NULL,
+    `name` VARCHAR(191) NOT NULL,
+    `price` INTEGER NULL,
+    `priceopen` INTEGER NULL,
+    `high` INTEGER NULL,
+    `low` INTEGER NULL,
+    `volume` BIGINT NULL,
+    `marketcap` BIGINT NULL,
+    `tradetime` DATETIME(3) NULL,
+    `volumeavg` INTEGER NULL,
+    `pe` INTEGER NULL,
+    `eps` INTEGER NULL,
+    `high52` INTEGER NULL,
+    `low52` INTEGER NULL,
+    `change` INTEGER NULL,
+    `changepct` INTEGER NULL,
+    `closeyest` INTEGER NULL,
+    `shares` BIGINT NULL,
+
+    UNIQUE INDEX `daily_name_key`(`name`),
+    PRIMARY KEY (`code`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
 CREATE TABLE `history` (
     `id` INTEGER NOT NULL AUTO_INCREMENT,
     `code` VARCHAR(200) NOT NULL,
