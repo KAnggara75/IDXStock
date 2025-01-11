@@ -41,7 +41,7 @@ export class UserService {
 	static async login(request: LoginUserRequest): Promise<UserResponse> {
 		request = UserValidation.LOGIN.parse(request);
 
-		let user = await prismaClient.user.findUnique({
+		const user = await prismaClient.user.findUnique({
 			where: {
 				username: request.username,
 			},
@@ -63,18 +63,7 @@ export class UserService {
 				message: "Username or password is wrong",
 			});
 		}
-
-		user = await prismaClient.user.update({
-			where: {
-				username: request.username,
-			},
-			data: {
-				token: crypto.randomUUID(),
-			},
-		});
-
 		const response = toUserResponse(user);
-		response.token = user.token!;
 		return response;
 	}
 

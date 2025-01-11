@@ -1,49 +1,48 @@
 import { Hono } from "hono";
-import {
-	type LoginUserRequest,
-	type RegisterUserRequest,
-	toUserResponse,
-	type UpdateUserRequest,
-} from "../model/user-model";
-import { UserService } from "../service/user-service";
-import type { ApplicationVariables } from "../model/app-model";
-import type { User } from "@prisma/client";
-import { authMiddleware } from "../middleware/auth-middleware";
 import { log } from "../config/logger";
-import { HTTPException } from "hono/http-exception";
+import type { User } from "@prisma/client";
+import { validator } from "hono/validator";
+import { UserService } from "../service/user-service";
+import { authMiddleware } from "../middleware/auth-middleware";
+import type { ApplicationVariables } from "../model/app-model";
+import { toUserResponse, type UpdateUserRequest } from "../model/user-model";
 
 export const userController = new Hono<{ Variables: ApplicationVariables }>();
 
-userController.post("/users", async (c) => {
-	const text = await c.req.text();
-	let request: RegisterUserRequest;
+userController.post(
+	"/users",
+	validator("json", (value) => {
+		return value;
+	}),
 
-	try {
-		request = JSON.parse(text) as RegisterUserRequest;
-	} catch {
-		log.error("Invalid json request " + text);
-		throw new HTTPException(400, {
-			message: "invalid json",
+	async (c) => {
+		const request = await c.req.json();
+
+		const response = await UserService.register(request);
+		log.info(`Registering ${response.username}`);
+
+		return c.json({
+			data: response,
 		});
 	}
+);
 
-	const response = await UserService.register(request);
-	log.info(`Registering ${response.username}`);
+userController.post(
+	"/users/login",
 
-	return c.json({
-		data: response,
-	});
-});
+	validator("json", (value) => {
+		return value;
+	}),
 
-userController.post("/users/login", async (c) => {
-	const request = (await c.req.json()) as LoginUserRequest;
+	async (c) => {
+		const request = await c.req.json();
+		const response = await UserService.login(request);
 
-	const response = await UserService.login(request);
-
-	return c.json({
-		data: response,
-	});
-});
+		return c.json({
+			data: response,
+		});
+	}
+);
 
 userController.use(authMiddleware);
 
