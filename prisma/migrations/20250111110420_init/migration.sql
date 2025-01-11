@@ -82,27 +82,14 @@ CREATE TABLE `history` (
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- CreateTable
-CREATE TABLE `stock` (
-    `code` VARCHAR(200) NOT NULL,
+CREATE TABLE `stocks` (
+    `code` VARCHAR(10) NOT NULL,
     `name` VARCHAR(200) NOT NULL,
-    `price` INTEGER NULL,
-    `priceopen` INTEGER NULL,
-    `high` INTEGER NULL,
-    `low` INTEGER NULL,
-    `volume` BIGINT NULL,
-    `marketcap` BIGINT NULL,
-    `tradetime` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
-    `volumeavg` BIGINT NULL,
-    `pe` DECIMAL(65, 30) NULL,
-    `eps` DECIMAL(65, 30) NULL,
-    `high52` INTEGER NULL,
-    `low52` INTEGER NULL,
-    `change` INTEGER NULL,
-    `changepct` DECIMAL(65, 30) NULL,
-    `closeyest` INTEGER NULL,
-    `shares` BIGINT NULL,
+    `listing_date` DATE NULL,
+    `shares` BIGINT NOT NULL,
+    `board` ENUM('Watchlist', 'Main', 'Development', 'Acceleration', 'EkonomiBaru') NOT NULL DEFAULT 'Main',
 
-    UNIQUE INDEX `stock_name_key`(`name`),
+    UNIQUE INDEX `stocks_name_key`(`name`),
     PRIMARY KEY (`code`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
@@ -123,6 +110,3 @@ ALTER TABLE `addresses` ADD CONSTRAINT `addresses_contact_id_fkey` FOREIGN KEY (
 
 -- AddForeignKey
 ALTER TABLE `contacts` ADD CONSTRAINT `contacts_username_fkey` FOREIGN KEY (`username`) REFERENCES `users`(`username`) ON DELETE RESTRICT ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE `history` ADD CONSTRAINT `history_code_fkey` FOREIGN KEY (`code`) REFERENCES `stock`(`code`) ON DELETE RESTRICT ON UPDATE CASCADE;

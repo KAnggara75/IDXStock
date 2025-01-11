@@ -10,6 +10,9 @@
 		"fc": "bunx prettier --write . && bunx eslint --fix . && bunx prettier --check . && bunx eslint .",
 		"mig": "rm -rf prisma/migrations && bunx prisma generate && bunx prisma migrate dev --name init"
 	},
+	"prisma": {
+		"seed": "bun prisma/seed.ts"
+	},
 	"dependencies": {
 		"@hono/node-server": "^1.13.7",
 		"@prisma/client": "^6.2.1",

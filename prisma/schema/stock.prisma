@@ -1,22 +1,18 @@
+// https://www.idx.co.id/en/market-data/stocks-data/stock-list/
 model Stock {
-  code      String   @id @db.VarChar(200)
-  name      String   @unique @db.VarChar(200)
-  price     Int?
-  priceopen Int?
-  high      Int?
-  low       Int?
-  volume    BigInt?
-  marketcap BigInt?
-  tradetime DateTime @default(now())
-  volumeavg BigInt?
-  pe        Decimal?
-  eps       Decimal?
-  high52    Int?
-  low52     Int?
-  change    Int?
-  changepct Decimal?
-  closeyest Int?
-  shares    BigInt?
+  code         String    @id @db.VarChar(10)
+  name         String    @unique @db.VarChar(200)
+  listing_date DateTime? @db.Date()
+  shares       BigInt
+  board        Board     @default(Main)
 
-  @@map("stock")
+  @@map("stocks")
+}
+
+enum Board {
+  Watchlist
+  Main
+  Development
+  Acceleration
+  EkonomiBaru
 }
