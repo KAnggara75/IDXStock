@@ -52,7 +52,7 @@ CREATE TABLE `daily` (
 CREATE TABLE `history` (
     `id` INTEGER NOT NULL AUTO_INCREMENT,
     `code` VARCHAR(200) NOT NULL,
-    `date` DATETIME(3) NOT NULL,
+    `date` DATE NOT NULL,
     `previous` INTEGER NULL,
     `open_price` INTEGER NULL,
     `first_trade` INTEGER NULL,
@@ -73,7 +73,7 @@ CREATE TABLE `history` (
     `weight_for_index` BIGINT NULL,
     `foreign_sell` BIGINT NULL,
     `foreign_buy` BIGINT NULL,
-    `delisting_date` VARCHAR(200) NULL,
+    `delisting_date` DATE NULL,
     `non_regular_volume` BIGINT NULL,
     `non_regular_value` BIGINT NULL,
     `non_regular_frequency` BIGINT NULL,
@@ -110,3 +110,6 @@ ALTER TABLE `addresses` ADD CONSTRAINT `addresses_contact_id_fkey` FOREIGN KEY (
 
 -- AddForeignKey
 ALTER TABLE `contacts` ADD CONSTRAINT `contacts_username_fkey` FOREIGN KEY (`username`) REFERENCES `users`(`username`) ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `history` ADD CONSTRAINT `history_code_fkey` FOREIGN KEY (`code`) REFERENCES `stocks`(`code`) ON DELETE RESTRICT ON UPDATE CASCADE;
