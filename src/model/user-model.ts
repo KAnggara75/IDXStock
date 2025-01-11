@@ -1,4 +1,5 @@
 import type { User } from "@prisma/client";
+import { JwtHelper } from "../helpers/jwt-helper";
 
 export type RegisterUserRequest = {
 	email: string;
@@ -24,10 +25,12 @@ export type UserResponse = {
 	token?: string;
 };
 
-export function toUserResponse(user: User): UserResponse {
+export async function toUserResponse(user: User): Promise<UserResponse> {
+	const token = await JwtHelper.jwtSign(user);
 	return {
 		email: user.email,
 		name: user.name,
 		username: user.username,
+		token: token,
 	};
 }

@@ -28,7 +28,7 @@ userController.post("/users", async (c) => {
 	}
 
 	const response = await UserService.register(request);
-	log.info("Registering user", response);
+	log.info(`Registering ${response.username}`);
 
 	return c.json({
 		data: response,

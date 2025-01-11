@@ -9,12 +9,9 @@ import { UserValidation } from "../validation/user-validation";
 import { prismaClient } from "../config/database";
 import { HTTPException } from "hono/http-exception";
 import type { User } from "@prisma/client";
-import { log } from "../config/logger";
 
 export class UserService {
 	static async register(request: RegisterUserRequest): Promise<UserResponse> {
-		log.info("Registering user " + JSON.stringify(request));
-
 		request = UserValidation.REGISTER.parse(request);
 
 		const totalUserWithSameUsername = await prismaClient.user.count({
