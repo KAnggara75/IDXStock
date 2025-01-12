@@ -12,4 +12,6 @@ export class AuthValidation {
 		username: z.string().min(1).max(100),
 		password: z.string().min(1).max(100),
 	});
+
+	static readonly TOKEN: ZodType = z.string().min(1);
 }
