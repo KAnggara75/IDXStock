@@ -1,4 +1,4 @@
-import { log } from "../config/logger.ts";
+import { log } from "../config/logger";
 
 export class DateUtils {
 	/**

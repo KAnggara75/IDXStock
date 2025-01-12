@@ -13,14 +13,17 @@ import { prismaClient } from "./config/database";
 import { HTTPException } from "hono/http-exception";
 import { serve, type ServerType } from "@hono/node-server";
 import { userController } from "./controller/user-controller";
+import { authController } from "./controller/auth-controller";
+import { jsonMiddleware } from "./middleware/json-middleware";
 import { stockController } from "./controller/stock-controller";
-import { authController } from "./controller/auth-controller.ts";
 import { contactController } from "./controller/contact-controller";
 import { addressController } from "./controller/address-controller";
 
 const port: number = Number(Bun.env.API_PORT ?? 3030);
 
 export const app = new Hono().basePath("/api");
+
+authController.use(jsonMiddleware);
 
 app.get("/", (c) => {
 	return c.json(
@@ -33,8 +36,8 @@ app.get("/", (c) => {
 	);
 });
 
-app.route("/", stockController);
 app.route("/", authController);
+app.route("/", stockController);
 app.route("/", userController);
 app.route("/", contactController);
 app.route("/", addressController);
