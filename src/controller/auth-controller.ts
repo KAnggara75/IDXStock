@@ -3,8 +3,11 @@ import { validator } from "hono/validator";
 import { log } from "../config/logger.ts";
 import { AuthService } from "../service/auth-service.ts";
 import type { ApplicationVariables } from "../model/app-model.ts";
+import { jsonMiddleware } from "../middleware/json-middleware.ts";
 
 export const authController = new Hono<{ Variables: ApplicationVariables }>();
+
+authController.use(jsonMiddleware);
 
 authController.post(
 	"/register",
