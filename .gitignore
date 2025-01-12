@@ -178,3 +178,6 @@ dist
 sql_dump
 csv2sql
 IHSG.sql
+test.log
+insert.log
+stock*.json
