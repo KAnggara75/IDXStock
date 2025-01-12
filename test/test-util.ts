@@ -1,9 +1,9 @@
 import { prismaClient } from "../src/config/database";
-import type { Address, Contact } from "@prisma/client";
+import type { Address, Contact, User } from "@prisma/client";
 
 export class UserTest {
-	static async create() {
-		await prismaClient.user.create({
+	static async create(): Promise<User> {
+		return await prismaClient.user.create({
 			data: {
 				username: "test",
 				name: "test",

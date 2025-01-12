@@ -16,7 +16,8 @@ describe("GET /api/users/current", () => {
 	beforeAll(() => {});
 
 	beforeEach(async () => {
-		await UserTest.create();
+		const user: User = await UserTest.create();
+		token = await JwtHelper.jwtSign(user);
 	});
 
 	afterEach(async () => {
@@ -27,7 +28,7 @@ describe("GET /api/users/current", () => {
 		const response = await app.request("/api/users/current", {
 			method: "get",
 			headers: {
-				Authorization: "test",
+				Authorization: `Bearer ${token}`,
 				"Content-Type": "application/json",
 			},
 		});
