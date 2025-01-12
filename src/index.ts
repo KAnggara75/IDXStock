@@ -2,13 +2,6 @@ import { Hono } from "hono";
 import { ZodError } from "zod";
 import pkg from "../package.json";
 import { log } from "./config/logger";
-import { prismaClient } from "./config/database";
-import { HTTPException } from "hono/http-exception";
-import { serve, type ServerType } from "@hono/node-server";
-import { userController } from "./controller/user-controller";
-import { contactController } from "./controller/contact-controller";
-import { addressController } from "./controller/address-controller";
-import { stockController } from "./controller/stock-controller";
 import {
 	PrismaClientInitializationError,
 	PrismaClientKnownRequestError,
@@ -16,6 +9,14 @@ import {
 	PrismaClientUnknownRequestError,
 	PrismaClientValidationError,
 } from "@prisma/client/runtime/library";
+import { prismaClient } from "./config/database";
+import { HTTPException } from "hono/http-exception";
+import { serve, type ServerType } from "@hono/node-server";
+import { userController } from "./controller/user-controller";
+import { stockController } from "./controller/stock-controller";
+import { authController } from "./controller/auth-controller.ts";
+import { contactController } from "./controller/contact-controller";
+import { addressController } from "./controller/address-controller";
 
 const port: number = Number(Bun.env.API_PORT ?? 3030);
 
@@ -33,6 +34,7 @@ app.get("/", (c) => {
 });
 
 app.route("/", stockController);
+app.route("/", authController);
 app.route("/", userController);
 app.route("/", contactController);
 app.route("/", addressController);
