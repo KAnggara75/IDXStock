@@ -15,7 +15,7 @@ import {
 
 export class JwtHelper {
 	static async jwtSign(user: User): Promise<string> {
-		const secret = Bun.env.JWT_SECERET_KEY ?? "";
+		const secret = Bun.env.JWT_SECRET_KEY ?? "";
 		const exp = Bun.env.JWT_TOKEN_EXP ?? "1";
 
 		log.info(exp);
@@ -31,7 +31,7 @@ export class JwtHelper {
 
 	static async jwtVerivy(token: string) {
 		try {
-			const secretKey = Bun.env.JWT_SECERET_KEY ?? "";
+			const secretKey = Bun.env.JWT_SECRET_KEY ?? "";
 
 			const decodedPayload: UserJwt = (await verify(
 				token,

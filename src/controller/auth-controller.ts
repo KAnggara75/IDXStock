@@ -1,7 +1,7 @@
 import { Hono } from "hono";
 import { validator } from "hono/validator";
 import { log } from "../config/logger.ts";
-import { UserService } from "../service/user-service.ts";
+import { AuthService } from "../service/auth-service.ts";
 import type { ApplicationVariables } from "../model/app-model.ts";
 
 export const authController = new Hono<{ Variables: ApplicationVariables }>();
@@ -15,7 +15,7 @@ authController.post(
 	async (c) => {
 		const request = await c.req.json();
 
-		const response = await UserService.register(request);
+		const response = await AuthService.register(request);
 		log.info(`Registering ${response.username}`);
 
 		return c.json({
@@ -33,7 +33,7 @@ authController.post(
 
 	async (c) => {
 		const request = await c.req.json();
-		const response = await UserService.login(request);
+		const response = await AuthService.login(request);
 
 		return c.json({
 			data: response,
