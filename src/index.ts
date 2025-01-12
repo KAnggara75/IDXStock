@@ -9,6 +9,13 @@ import { userController } from "./controller/user-controller";
 import { contactController } from "./controller/contact-controller";
 import { addressController } from "./controller/address-controller";
 import { stockController } from "./controller/stock-controller";
+import {
+	PrismaClientInitializationError,
+	PrismaClientKnownRequestError,
+	PrismaClientRustPanicError,
+	PrismaClientUnknownRequestError,
+	PrismaClientValidationError,
+} from "@prisma/client/runtime/library";
 
 const port: number = Number(Bun.env.API_PORT ?? 3030);
 
@@ -39,6 +46,27 @@ app.onError(async (err, c) => {
 	if (err instanceof HTTPException) {
 		return c.json({ errors: err.message }, err.status);
 	} else if (err instanceof ZodError) {
+		return c.json({ errors: JSON.parse(err.message) }, 400);
+	} else if (err instanceof PrismaClientKnownRequestError) {
+		log.error("PrismaClientKnownRequestError");
+		return c.json({ errors: JSON.parse(err.message) }, 400);
+	} else if (err instanceof PrismaClientUnknownRequestError) {
+		log.error("PrismaClientUnknownRequestError");
+		return c.json({ errors: JSON.parse(err.message) }, 400);
+	} else if (err instanceof PrismaClientRustPanicError) {
+		log.error("PrismaClientRustPanicError");
+		return c.json({ errors: JSON.parse(err.message) }, 400);
+	} else if (err instanceof PrismaClientInitializationError) {
+		log.error("PrismaClientInitializationError");
+		return c.json(
+			{
+				errors: "Can't reach database server",
+				code: err.errorCode,
+			},
+			503
+		);
+	} else if (err instanceof PrismaClientValidationError) {
+		log.error("PrismaClientValidationError");
 		return c.json({ errors: JSON.parse(err.message) }, 400);
 	} else {
 		return c.json({ errors: err.message }, 500);
