@@ -84,19 +84,21 @@ const events = ["uncaughtException", "SIGINT", "SIGTERM"];
 
 events.forEach((eventName) => {
 	process.on(eventName, (...args) => {
-		gracefulShutdown();
-		log.info(`${eventName} was called with args : ${args.join(",")}`);
-		log.info(`${eventName} signal received: closing HTTP server`);
+		gracefulShutdown().then((r) => log.info(`gracefulShutdown with ${r}`));
+		log.info(
+			`${eventName} was called with args: ${args.join(",")} closing HTTP server`
+		);
 	});
 });
 
-async function gracefulShutdown(): Promise<void> {
+async function gracefulShutdown(): Promise<number> {
+	let status: number = 0;
 	log.info("Shutting down gracefully...");
 	await prismaClient.$disconnect();
 
+	// Close any other connections or resources here
 	server.close(() => {
 		log.info("HTTP server closed");
-		// Close any other connections or resources here
 		process.exit(0);
 	});
 
@@ -105,8 +107,11 @@ async function gracefulShutdown(): Promise<void> {
 		console.error(
 			"Could not close connections in time, forcefully shutting down"
 		);
+		status = 0;
 		process.exit(1);
 	}, 5000);
+
+	return status;
 }
 
 export default server;
