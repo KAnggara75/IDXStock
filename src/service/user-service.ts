@@ -5,10 +5,10 @@ import {
 	type UpdateUserRequest,
 	type UserResponse,
 } from "../model/user-model";
-import { UserValidation } from "../validation/user-validation";
+import type { User } from "@prisma/client";
 import { prismaClient } from "../config/database";
 import { HTTPException } from "hono/http-exception";
-import type { User } from "@prisma/client";
+import { UserValidation } from "../validation/user-validation";
 
 export class UserService {
 	static async register(request: RegisterUserRequest): Promise<UserResponse> {
@@ -63,8 +63,7 @@ export class UserService {
 				message: "Username or password is wrong",
 			});
 		}
-		const response = toUserResponse(user);
-		return response;
+		return toUserResponse(user);
 	}
 
 	static async get(token: string | undefined | null): Promise<User> {

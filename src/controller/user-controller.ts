@@ -3,9 +3,9 @@ import { log } from "../config/logger";
 import type { User } from "@prisma/client";
 import { validator } from "hono/validator";
 import { UserService } from "../service/user-service";
+import { type UpdateUserRequest } from "../model/user-model";
 import { authMiddleware } from "../middleware/auth-middleware";
 import type { ApplicationVariables } from "../model/app-model";
-import { toUserResponse, type UpdateUserRequest } from "../model/user-model";
 
 export const userController = new Hono<{ Variables: ApplicationVariables }>();
 
@@ -47,15 +47,15 @@ userController.post(
 userController.use(authMiddleware);
 
 userController.get("/users/current", async (c) => {
-	const user = c.get("user") as User;
+	const user: User = c.get("user");
 
 	return c.json({
-		data: toUserResponse(user),
+		data: user,
 	});
 });
 
 userController.patch("/users/current", async (c) => {
-	const user = c.get("user") as User;
+	const user: User = c.get("user") as User;
 	const request = (await c.req.json()) as UpdateUserRequest;
 
 	const response = await UserService.update(user, request);

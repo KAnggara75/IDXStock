@@ -1,5 +1,6 @@
 import type { User } from "@prisma/client";
 import { JwtHelper } from "../helpers/jwt-helper";
+import type { JWTPayload } from "hono/utils/jwt/types";
 
 export type RegisterUserRequest = {
 	email: string;
@@ -24,6 +25,12 @@ export type UserResponse = {
 	name: string;
 	token?: string;
 };
+
+export interface UserJwt extends JWTPayload {
+	email: string;
+	username: string;
+	name: string;
+}
 
 export async function toUserResponse(user: User): Promise<UserResponse> {
 	const token = await JwtHelper.jwtSign(user);

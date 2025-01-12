@@ -1,11 +1,23 @@
 import type { MiddlewareHandler } from "hono";
-import { UserService } from "../service/user-service";
+import { JwtHelper } from "../helpers/jwt-helper";
+import type { JWTPayload } from "hono/utils/jwt/types";
 
 export const authMiddleware: MiddlewareHandler = async (c, next) => {
-	const token = c.req.header("Authorization");
-	const user = await UserService.get(token);
+	const authHeader = c.req.header("Authorization");
 
-	c.set("user", user);
+	if (!authHeader) {
+		return c.text("Authorization header is missing", 401);
+	}
+
+	if (!authHeader.startsWith("Bearer ")) {
+		return c.text("Authorization header is malformed", 401);
+	}
+
+	const token = authHeader.split(" ")[1];
+
+	const jwtPayload: JWTPayload = await JwtHelper.jwtVerivy(token);
+
+	c.set("user", jwtPayload);
 
 	await next();
 };
