@@ -42,7 +42,9 @@ describe("expInDays", () => {
 describe("toDate", () => {
 	it("correct days", () => {
 		const date = DateUtils.toDate("2025-01-10 16:09:51");
-		const expectedDate: Date = new Date("2025-01-10T16:09:51.000Z");
+		const expectedDate: Date = new Date(
+			new Date("2025-01-10T16:09:51.000Z").getTime() + 7 * 60 * 60 * 1000
+		);
 
 		expect(date).toBeDefined();
 		expect(date).toEqual(expectedDate);

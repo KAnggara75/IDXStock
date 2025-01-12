@@ -11,7 +11,9 @@ export class DateUtils {
 				return new Date();
 			}
 
-			return new Date(dateString.replace(" ", "T"));
+			return new Date(
+				new Date(dateString.replace(" ", "T")).getTime() + 7 * 60 * 60 * 1000
+			);
 		} catch {
 			return new Date();
 		}
