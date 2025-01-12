@@ -43,6 +43,7 @@ CREATE TABLE `daily` (
     `changepct` INTEGER NULL,
     `closeyest` INTEGER NULL,
     `shares` BIGINT NULL,
+    `insertBy` VARCHAR(100) NOT NULL,
 
     UNIQUE INDEX `daily_name_key`(`name`),
     PRIMARY KEY (`code`)
@@ -110,6 +111,9 @@ ALTER TABLE `addresses` ADD CONSTRAINT `addresses_contact_id_fkey` FOREIGN KEY (
 
 -- AddForeignKey
 ALTER TABLE `contacts` ADD CONSTRAINT `contacts_username_fkey` FOREIGN KEY (`username`) REFERENCES `users`(`username`) ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `daily` ADD CONSTRAINT `daily_insertBy_fkey` FOREIGN KEY (`insertBy`) REFERENCES `users`(`username`) ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE `history` ADD CONSTRAINT `history_code_fkey` FOREIGN KEY (`code`) REFERENCES `stocks`(`code`) ON DELETE RESTRICT ON UPDATE CASCADE;

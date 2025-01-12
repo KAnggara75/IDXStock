@@ -17,6 +17,8 @@ model Daily {
   changepct Int?
   closeyest Int?
   shares    BigInt?
+  insertBy  String    @db.VarChar(100)
+  user      User      @relation(fields: [insertBy], references: [username])
 
   @@map("daily")
 }

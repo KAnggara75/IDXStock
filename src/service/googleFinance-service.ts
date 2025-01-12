@@ -2,7 +2,7 @@ import { HTTPException } from "hono/http-exception";
 import { log } from "../config/logger";
 
 export class GoogleFinanceService {
-	static async getStocks(): Promise<Response> {
+	static async getStocksSummary(): Promise<Response> {
 		const apiKey: string = Bun.env.SPREADSHEETS_API_KEY ?? "";
 		const spreadsheetId: string = Bun.env.SPREADSHEETS_ID ?? "";
 		const sheetName: string = Bun.env.SPREADSHEETS_NAME ?? "Sheet1";

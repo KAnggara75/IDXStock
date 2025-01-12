@@ -1,18 +1,22 @@
 import { HTTPException } from "hono/http-exception";
-import { toGoogleFinance, type StockModel } from "../model/googleFinance-model";
+import { type StockModel, toGoogleFinance } from "../model/googleFinance-model";
 import { GoogleFinanceService } from "../service/googleFinance-service";
 import { DailyRepository } from "../repository/daily-repo";
+import type { User } from "@prisma/client";
+import { log } from "../config/logger.ts";
 
 export class StockUpdateUsecase {
-	static async updateStockData(): Promise<StockModel[]> {
-		
+	static async updateStockData(user: User): Promise<StockModel[]> {
 		try {
-			const stockResponse: Response = await GoogleFinanceService.getStocks();
+			log.info(JSON.stringify(user));
+
+			const stockResponse: Response =
+				await GoogleFinanceService.getStocksSummary();
 			let stockData: StockModel[] = [];
 
 			if (stockResponse.ok) {
 				stockData = toGoogleFinance(await stockResponse.json());
-				await DailyRepository.upsert(stockData);
+				await DailyRepository.upsert(stockData, user);
 				return stockData;
 			} else {
 				throw new HTTPException(400, {

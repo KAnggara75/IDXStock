@@ -1,10 +1,11 @@
-import { PrismaClient } from "@prisma/client";
+import { PrismaClient, type User } from "@prisma/client";
 import type { StockModel } from "../model/googleFinance-model";
 import { log } from "../config/logger";
+
 const prisma = new PrismaClient();
 
 export class DailyRepository {
-	static async upsert(data: StockModel[]) {
+	static async upsert(data: StockModel[], user: User) {
 		try {
 			const upserts = data.map((stock) =>
 				prisma.daily.upsert({
@@ -26,6 +27,7 @@ export class DailyRepository {
 						changepct: stock.changepct,
 						closeyest: stock.closeyest,
 						tradetime: stock.tradetime,
+						insertBy: user.username,
 					},
 					create: {
 						pe: stock.pe,
@@ -46,6 +48,7 @@ export class DailyRepository {
 						changepct: stock.changepct,
 						closeyest: stock.closeyest,
 						tradetime: stock.tradetime,
+						insertBy: user.username,
 					},
 				})
 			);

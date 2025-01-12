@@ -43,44 +43,45 @@ export function toGoogleFinance(data: GoogleFinance): StockModel[] {
 
 	if (value) {
 		const header = value[0].map((v) => v.toLowerCase());
+
 		if (header.length != AppConstant.GOOGLE_FINANCE_FORMAT.length) {
 			throw new HTTPException(422, {
 				message: "Bad data GOOGLE_FINANCE_FORMAT",
 			});
-		} else {
-			for (let i = 0; header.length > i; i++) {
-				if (header[i] !== AppConstant.GOOGLE_FINANCE_FORMAT[i]) {
-					throw new HTTPException(422, {
-						message: "Bad data GOOGLE_FINANCE_FORMAT",
-					});
-				}
-			}
+		}
 
-			for (let i = 1; value.length > i; i++) {
-				const stock = value[i].map((v) => v.replaceAll("#N/A", ""));
-				const stockData: StockModel = {
-					code: stock[0],
-					name: stock[1] === "" ? stock[0] : stock[1],
-					price: NumberUtil.toInt(stock[2]),
-					priceopen: NumberUtil.toInt(stock[3]),
-					high: NumberUtil.toInt(stock[4]),
-					low: NumberUtil.toInt(stock[5]),
-					volume: NumberUtil.toInt(stock[6]),
-					marketcap: NumberUtil.toInt(stock[7]),
-					tradetime: DateUtils.toDate(stock[8]),
-					volumeavg: NumberUtil.toInt(stock[9]),
-					pe: NumberUtil.toFloat(stock[10]),
-					eps: NumberUtil.toFloat(stock[11]),
-					high52: NumberUtil.toInt(stock[12]),
-					low52: NumberUtil.toInt(stock[13]),
-					change: NumberUtil.toInt(stock[14]),
-					changepct: NumberUtil.toFloat(stock[15]),
-					closeyest: NumberUtil.toInt(stock[16]),
-					shares: NumberUtil.toInt(stock[17]),
-				};
-
-				result.push(stockData);
+		for (let i = 0; header.length > i; i++) {
+			if (header[i] !== AppConstant.GOOGLE_FINANCE_FORMAT[i]) {
+				throw new HTTPException(422, {
+					message: "Bad data GOOGLE_FINANCE_FORMAT",
+				});
 			}
+		}
+
+		for (let i = 1; value.length > i; i++) {
+			const stock = value[i].map((v) => v.replaceAll("#N/A", ""));
+			const stockData: StockModel = {
+				code: stock[0],
+				name: stock[1] === "" ? stock[0] : stock[1],
+				price: NumberUtil.toInt(stock[2]),
+				priceopen: NumberUtil.toInt(stock[3]),
+				high: NumberUtil.toInt(stock[4]),
+				low: NumberUtil.toInt(stock[5]),
+				volume: NumberUtil.toInt(stock[6]),
+				marketcap: NumberUtil.toInt(stock[7]),
+				tradetime: DateUtils.toDate(stock[8]),
+				volumeavg: NumberUtil.toInt(stock[9]),
+				pe: NumberUtil.toFloat(stock[10]),
+				eps: NumberUtil.toFloat(stock[11]),
+				high52: NumberUtil.toInt(stock[12]),
+				low52: NumberUtil.toInt(stock[13]),
+				change: NumberUtil.toInt(stock[14]),
+				changepct: NumberUtil.toFloat(stock[15]),
+				closeyest: NumberUtil.toInt(stock[16]),
+				shares: NumberUtil.toInt(stock[17]),
+			};
+
+			result.push(stockData);
 		}
 	} else {
 		throw new HTTPException(422, {
