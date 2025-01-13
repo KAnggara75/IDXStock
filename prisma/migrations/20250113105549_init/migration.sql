@@ -100,7 +100,7 @@ CREATE TABLE `users` (
     `username` VARCHAR(100) NOT NULL,
     `password` VARCHAR(100) NOT NULL,
     `name` VARCHAR(100) NOT NULL,
-    `token` VARCHAR(100) NULL,
+    `isActive` BOOLEAN NOT NULL DEFAULT true,
 
     UNIQUE INDEX `users_email_key`(`email`),
     PRIMARY KEY (`username`)
