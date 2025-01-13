@@ -1,6 +1,7 @@
 import type { MiddlewareHandler } from "hono";
 import { JwtHelper } from "../helpers/jwt-helper";
 import type { JWTPayload } from "hono/utils/jwt/types";
+import { prismaClient } from "../config/database";
 import type { UserJwt } from "../model/user-model";
 
 export const authMiddleware: MiddlewareHandler = async (c, next) => {
@@ -17,6 +18,16 @@ export const authMiddleware: MiddlewareHandler = async (c, next) => {
 	const token = authHeader.split(" ")[1];
 
 	const jwtPayload: UserJwt = await JwtHelper.jwtVerivy(token);
+
+	const user: number = await prismaClient.user.count({
+		where: {
+			username: jwtPayload.username,
+		},
+	});
+
+	if (user != 1) {
+		return c.json({ errors: "Token has been revoked" }, 401);
+	}
 
 	c.set("user", jwtPayload);
 
