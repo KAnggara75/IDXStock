@@ -70,8 +70,11 @@ describe("GET /api/users/current", () => {
 });
 
 describe("PATCH /api/users/current", () => {
+	let token: string = "";
+
 	beforeEach(async () => {
-		await UserTest.create();
+		const user: User = await UserTest.create();
+		token = await JwtHelper.jwtSign(user);
 	});
 
 	afterEach(async () => {
@@ -82,7 +85,7 @@ describe("PATCH /api/users/current", () => {
 		const response = await app.request("/api/users/current", {
 			method: "patch",
 			headers: {
-				Authorization: "test",
+				Authorization: `Bearer ${token}`,
 				"Content-Type": "application/json",
 			},
 			body: JSON.stringify({
@@ -101,7 +104,7 @@ describe("PATCH /api/users/current", () => {
 		const response = await app.request("/api/users/current", {
 			method: "patch",
 			headers: {
-				Authorization: "test",
+				Authorization: `Bearer ${token}`,
 				"Content-Type": "application/json",
 			},
 			body: JSON.stringify({
@@ -121,7 +124,7 @@ describe("PATCH /api/users/current", () => {
 		let response = await app.request("/api/users/current", {
 			method: "patch",
 			headers: {
-				Authorization: "test",
+				Authorization: `Bearer ${token}`,
 				"Content-Type": "application/json",
 			},
 			body: JSON.stringify({
@@ -136,7 +139,7 @@ describe("PATCH /api/users/current", () => {
 		expect(body.data).toBeDefined();
 		expect(body.data.name).toBe("test");
 
-		response = await app.request("/api/users/login", {
+		response = await app.request("/api/login", {
 			headers: { "Content-Type": "application/json" },
 			method: "post",
 			body: JSON.stringify({
