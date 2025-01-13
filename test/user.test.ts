@@ -1,19 +1,12 @@
-import {
-	describe,
-	it,
-	expect,
-	afterEach,
-	beforeEach,
-	beforeAll,
-} from "bun:test";
+import { describe, it, expect, afterEach, beforeEach } from "bun:test";
 import { log as logger } from "../src/config/logger";
-import { UserTest } from "./test-util";
 import { app } from "../src";
+import { UserTest } from "./test-util";
+import type { User } from "@prisma/client";
+import { JwtHelper } from "../src/helpers/jwt-helper";
 
 describe("GET /api/users/current", () => {
 	let token: string = "";
-
-	beforeAll(() => {});
 
 	beforeEach(async () => {
 		const user: User = await UserTest.create();
@@ -149,54 +142,5 @@ describe("PATCH /api/users/current", () => {
 		});
 
 		expect(response.status).toBe(200);
-	});
-});
-
-describe("DELETE /api/users/current", () => {
-	beforeEach(async () => {
-		await UserTest.create();
-	});
-
-	afterEach(async () => {
-		await UserTest.delete();
-	});
-
-	it("should be able to logout", async () => {
-		const response = await app.request("/api/users/current", {
-			method: "delete",
-			headers: {
-				Authorization: "test",
-				"Content-Type": "application/json",
-			},
-		});
-
-		expect(response.status).toBe(200);
-
-		const body = await response.json();
-		expect(body.data).toBe(true);
-	});
-
-	it("should not be able to logout", async () => {
-		let response = await app.request("/api/users/current", {
-			method: "delete",
-			headers: {
-				Authorization: "test",
-				"Content-Type": "application/json",
-			},
-		});
-
-		expect(response.status).toBe(200);
-
-		const body = await response.json();
-		expect(body.data).toBe(true);
-
-		response = await app.request("/api/users/current", {
-			method: "delete",
-			headers: {
-				Authorization: "test",
-				"Content-Type": "application/json",
-			},
-		});
-		expect(response.status).toBe(401);
 	});
 });

@@ -1,6 +1,5 @@
 import type { MiddlewareHandler } from "hono";
 import { JwtHelper } from "../helpers/jwt-helper";
-import type { JWTPayload } from "hono/utils/jwt/types";
 import { prismaClient } from "../config/database";
 import type { UserJwt } from "../model/user-model";
 

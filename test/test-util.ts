@@ -12,7 +12,6 @@ export class UserTest {
 					algorithm: "bcrypt",
 					cost: 10,
 				}),
-				token: "test",
 			},
 		});
 	}
