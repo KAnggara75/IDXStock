@@ -27,6 +27,7 @@ export class JwtHelper {
 			exp: DateUtils.expInDays(exp),
 			iat: Math.floor(Date.now() / 1000),
 		};
+		log.info(`create token for ${user.username} exp in ${exp} days`);
 		return await sign(payload, secret);
 	}
 

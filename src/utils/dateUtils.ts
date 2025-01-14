@@ -1,5 +1,3 @@
-import { log } from "../config/logger";
-
 export class DateUtils {
 	/**
 	 * Returns ISO-8691 Date Format from
@@ -29,7 +27,6 @@ export class DateUtils {
 
 		if (!isNaN(Number(days))) {
 			day = Number(days);
-			log.info(`create token exp in ${day} days`);
 		}
 
 		const future: number = 3600 * 24 * day;
