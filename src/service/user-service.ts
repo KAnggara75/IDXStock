@@ -44,6 +44,6 @@ export class UserService {
 			data: request,
 		});
 
-		return toUserResponse(user);
+		return toUserResponse(user, true);
 	}
 }
