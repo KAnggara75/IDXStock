@@ -1,29 +1,18 @@
 import {
 	toUserResponse,
-	type UpdateUserRequest,
 	type UserResponse,
+	type UpdateUserRequest,
 } from "../model/user-model";
 import type { User } from "@prisma/client";
 import { prismaClient } from "../config/database";
 import { HTTPException } from "hono/http-exception";
 import { UserValidation } from "../validation/user-validation";
-import { AuthValidation } from "../validation/auth-validation";
 
 export class UserService {
-	static async get(token: string | undefined | null): Promise<User> {
-		const result = AuthValidation.TOKEN.safeParse(token);
-
-		if (result.error) {
-			throw new HTTPException(401, {
-				message: "Unauthorized",
-			});
-		}
-
-		token = result.data;
-
+	static async get(token: User): Promise<UserResponse> {
 		const user = await prismaClient.user.findFirst({
 			where: {
-				token: token,
+				username: token.username,
 			},
 		});
 
@@ -32,8 +21,7 @@ export class UserService {
 				message: "Unauthorized",
 			});
 		}
-
-		return user;
+		return toUserResponse(user);
 	}
 
 	static async update(
