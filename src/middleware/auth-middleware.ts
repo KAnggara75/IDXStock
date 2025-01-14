@@ -3,7 +3,6 @@ import type { MiddlewareHandler } from "hono";
 import { JwtHelper } from "../helpers/jwt-helper";
 import { prismaClient } from "../config/database";
 import type { UserJwt } from "../model/user-model";
-import { HTTPException } from "hono/http-exception";
 import { AuthValidation } from "../validation/auth-validation";
 
 export const authMiddleware: MiddlewareHandler = async (c, next) => {
@@ -22,9 +21,7 @@ export const authMiddleware: MiddlewareHandler = async (c, next) => {
 	const result = AuthValidation.TOKEN.safeParse(token);
 
 	if (result.error) {
-		throw new HTTPException(401, {
-			message: "Unauthorized",
-		});
+		return c.json({ errors: JSON.parse(result.error.message) }, 400);
 	}
 
 	const jwtPayload: UserJwt = await JwtHelper.jwtVerivy(token);

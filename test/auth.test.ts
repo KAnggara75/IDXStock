@@ -175,13 +175,38 @@ describe("DELETE /api/logout", () => {
 	});
 
 	it("should be success logout", async () => {
-		const response = await app.request("/api/logout", {
+		const logout = await app.request("/api/logout", {
 			method: "DELETE",
 			headers: {
 				Authorization: `Bearer ${token}`,
 			},
 		});
+		expect(logout.status).toBe(204);
 
-		expect(response.status).toBe(204);
+		const getUser = await app.request("/api/users/current", {
+			method: "get",
+			headers: {
+				Authorization: `Bearer ${token}`,
+			},
+		});
+		expect(getUser.status).toBe(401);
+		const body = await getUser.json();
+		expect(body.errors).toBeDefined();
+	});
+
+	it("test with invalid jwt zod validation", async () => {
+		const logout = await app.request("/api/logout", {
+			method: "DELETE",
+			headers: {
+				Authorization: "Bearer test",
+			},
+		});
+
+		const body = await logout.json();
+		expect(logout.status).toBe(400);
+		expect(body.errors).toBeDefined();
+		expect(body.errors[0].validation).toBe("jwt");
+		expect(body.errors[0].code).toBe("invalid_string");
+		expect(body.errors[0].message).toBe("Invalid jwt");
 	});
 });
