@@ -54,7 +54,7 @@ app.onError(async (err, c) => {
 		return c.json({ errors: JSON.parse(err.message) }, 400);
 	} else if (err instanceof PrismaClientKnownRequestError) {
 		log.error("PrismaClientKnownRequestError");
-		return c.json({ errors: JSON.parse(err.message) }, 400);
+		return c.json({ errors: err.message }, 400);
 	} else if (err instanceof PrismaClientUnknownRequestError) {
 		log.error("PrismaClientUnknownRequestError");
 		return c.json({ errors: JSON.parse(err.message) }, 400);

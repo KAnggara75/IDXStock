@@ -2,6 +2,8 @@ import { afterEach, beforeEach, describe, expect, it } from "bun:test";
 import { log as logger } from "../src/config/logger";
 import { UserTest } from "./test-util";
 import { app } from "../src";
+import type { User } from "@prisma/client";
+import { JwtHelper } from "../src/helpers/jwt-helper";
 
 describe("POST /api/register", () => {
 	afterEach(async () => {
@@ -138,5 +140,48 @@ describe("POST /api/login", () => {
 
 		const body = await response.json();
 		expect(body.errors).toBeDefined();
+	});
+});
+
+describe("DELETE /api/logout", () => {
+	let token: string = "";
+
+	beforeEach(async () => {
+		const user: User = await UserTest.create();
+		token = await JwtHelper.jwtSign(user);
+	});
+
+	afterEach(async () => {
+		await UserTest.delete();
+	});
+
+	it("should failed logout cause invalid request", async () => {
+		const response = await app.request("/api/logout", {
+			method: "delete",
+		});
+
+		expect(response.status).toBe(401);
+	});
+
+	it("should failed logout cause invalid token", async () => {
+		const response = await app.request("/api/logout", {
+			method: "delete",
+			headers: {
+				Authorization: `Bearer ${token}a`,
+			},
+		});
+
+		expect(response.status).toBe(401);
+	});
+
+	it("should be success logout", async () => {
+		const response = await app.request("/api/logout", {
+			method: "DELETE",
+			headers: {
+				Authorization: `Bearer ${token}`,
+			},
+		});
+
+		expect(response.status).toBe(204);
 	});
 });
