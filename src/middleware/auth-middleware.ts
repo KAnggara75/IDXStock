@@ -1,3 +1,4 @@
+import { log } from "../config/logger";
 import type { MiddlewareHandler } from "hono";
 import { JwtHelper } from "../helpers/jwt-helper";
 import { prismaClient } from "../config/database";
@@ -27,6 +28,8 @@ export const authMiddleware: MiddlewareHandler = async (c, next) => {
 	}
 
 	const jwtPayload: UserJwt = await JwtHelper.jwtVerivy(token);
+
+	log.info(`jwtPayload ${JSON.stringify(jwtPayload)}`);
 
 	const user: number = await prismaClient.user.count({
 		where: {
