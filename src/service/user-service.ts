@@ -5,7 +5,6 @@ import {
 } from "../model/user-model";
 import type { User } from "@prisma/client";
 import { prismaClient } from "../config/database";
-import { HTTPException } from "hono/http-exception";
 import { UserValidation } from "../validation/user-validation";
 
 export class UserService {
@@ -16,12 +15,7 @@ export class UserService {
 			},
 		});
 
-		if (!user) {
-			throw new HTTPException(401, {
-				message: "Unauthorized",
-			});
-		}
-		return toUserResponse(user);
+		return toUserResponse(user!);
 	}
 
 	static async update(
