@@ -17,6 +17,7 @@ export type LoginUserRequest = {
 export type UpdateUserRequest = {
 	password?: string;
 	name?: string;
+	logoutAt?: number;
 };
 
 export type UserResponse = {

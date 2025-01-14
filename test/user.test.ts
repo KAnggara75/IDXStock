@@ -121,7 +121,7 @@ describe("PATCH /api/users/current", () => {
 				"Content-Type": "application/json",
 			},
 			body: JSON.stringify({
-				password: "baru",
+				password: "passwordBaru",
 			}),
 		});
 
@@ -137,7 +137,7 @@ describe("PATCH /api/users/current", () => {
 			method: "post",
 			body: JSON.stringify({
 				username: "test",
-				password: "baru",
+				password: "passwordBaru",
 			}),
 		});
 

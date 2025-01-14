@@ -30,6 +30,7 @@ describe("POST /api/register", () => {
 	it("should reject register new user if request is invalid 2", async () => {
 		const response = await app.request("/api/register", {
 			method: "post",
+			headers: { "Content-Type": "application/json" },
 		});
 
 		const body = await response.json();

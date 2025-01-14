@@ -21,7 +21,7 @@ export const authMiddleware: MiddlewareHandler = async (c, next) => {
 		where: {
 			username: jwtPayload.username,
 			logoutAt: {
-				gte: jwtPayload.iat,
+				lte: jwtPayload.iat,
 			},
 		},
 	});

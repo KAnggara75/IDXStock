@@ -101,7 +101,7 @@ CREATE TABLE `users` (
     `password` VARCHAR(100) NOT NULL,
     `name` VARCHAR(100) NOT NULL,
     `isActive` BOOLEAN NOT NULL DEFAULT true,
-    `logoutAt` INTEGER NOT NULL DEFAULT 1799999999,
+    `logoutAt` INTEGER NOT NULL DEFAULT 0,
 
     UNIQUE INDEX `users_email_key`(`email`),
     PRIMARY KEY (`username`)

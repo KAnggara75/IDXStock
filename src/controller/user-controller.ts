@@ -16,6 +16,7 @@ userController.get("/users/current", async (c) => {
 
 userController.patch("/users/current", async (c) => {
 	const user: User = c.get("user") as User;
+
 	const request = (await c.req.json()) as UpdateUserRequest;
 
 	const response = await UserService.update(user, request);

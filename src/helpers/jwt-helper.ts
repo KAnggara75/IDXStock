@@ -1,9 +1,9 @@
+import { log } from "../config/logger";
 import { sign, verify } from "hono/jwt";
 import type { User } from "@prisma/client";
-import { HTTPException } from "hono/http-exception";
-import type { UserJwt, UserResponse } from "../model/user-model";
-import { log } from "../config/logger";
 import { DateUtils } from "../utils/dateUtils";
+import { HTTPException } from "hono/http-exception";
+import type { UserJwt } from "../model/user-model";
 import {
 	JwtAlgorithmNotImplemented,
 	JwtTokenExpired,
@@ -20,9 +20,9 @@ export class JwtHelper {
 
 		log.info(exp);
 
-		const payload = {
-			email: user.email,
+		const payload: UserJwt = {
 			name: user.name,
+			email: user.email,
 			username: user.username,
 			exp: DateUtils.expInDays(exp),
 			iat: Math.floor(Date.now() / 1000),
