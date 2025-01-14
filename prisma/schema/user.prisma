@@ -4,6 +4,7 @@ model User {
   password String    @db.VarChar(100)
   name     String    @db.VarChar(100)
   isActive Boolean   @default(true)
+  logoutAt Int       @default(4070912461)
   daily    Daily[]
   Contact  Contact[]
 

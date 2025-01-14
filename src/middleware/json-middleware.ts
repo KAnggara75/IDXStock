@@ -5,9 +5,22 @@ export const jsonMiddleware: MiddlewareHandler = async (c, next) => {
 		return next();
 	}
 
+	if (c.req.method === "DELETE") {
+		return next();
+	}
+
 	const contentType = c.req.header("content-type");
 
-	if (!contentType || !contentType.includes("application/json")) {
+	if (!contentType) {
+		return c.json(
+			{
+				errors: `Invalid Content-Type, expected JSON, received ${contentType}`,
+			},
+			400
+		);
+	}
+
+	if (!contentType.includes("application/json")) {
 		return c.json(
 			{
 				errors: `Invalid Content-Type, expected JSON, received ${contentType}`,

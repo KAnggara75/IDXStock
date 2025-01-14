@@ -1,6 +1,5 @@
 import { Hono } from "hono";
 import type { ApplicationVariables } from "../model/app-model";
-import { authMiddleware } from "../middleware/auth-middleware";
 import type { User } from "@prisma/client";
 import { ContactService } from "../service/contact-service";
 import type {
@@ -12,7 +11,6 @@ import type {
 export const contactController = new Hono<{
 	Variables: ApplicationVariables;
 }>();
-contactController.use(authMiddleware);
 
 contactController.post("/contacts", async (c) => {
 	const user = c.get("user") as User;

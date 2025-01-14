@@ -25,6 +25,7 @@ export class JwtHelper {
 			name: user.name,
 			username: user.username,
 			exp: DateUtils.expInDays(exp),
+			iat: Math.floor(Date.now() / 1000),
 		};
 		return await sign(payload, secret);
 	}
@@ -38,10 +39,12 @@ export class JwtHelper {
 				secretKey
 			)) as UserJwt;
 
-			const payload: UserResponse = {
+			const payload: UserJwt = {
 				name: decodedPayload.name,
 				email: decodedPayload.email,
 				username: decodedPayload.username,
+				iat: decodedPayload.iat,
+				exp: decodedPayload.exp,
 			};
 
 			return payload;

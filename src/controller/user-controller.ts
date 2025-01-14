@@ -2,12 +2,9 @@ import { Hono } from "hono";
 import type { User } from "@prisma/client";
 import { UserService } from "../service/user-service";
 import { type UpdateUserRequest } from "../model/user-model";
-import { authMiddleware } from "../middleware/auth-middleware";
 import type { ApplicationVariables } from "../model/app-model";
 
 export const userController = new Hono<{ Variables: ApplicationVariables }>();
-
-userController.use(authMiddleware);
 
 userController.get("/users/current", async (c) => {
 	const user: User = c.get("user");

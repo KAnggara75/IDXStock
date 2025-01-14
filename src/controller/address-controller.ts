@@ -1,6 +1,5 @@
 import { Hono } from "hono";
 import type { ApplicationVariables } from "../model/app-model";
-import { authMiddleware } from "../middleware/auth-middleware";
 import type { User } from "@prisma/client";
 import type {
 	CreateAddressRequest,
@@ -14,7 +13,6 @@ import { AddressService } from "../service/address-service";
 export const addressController = new Hono<{
 	Variables: ApplicationVariables;
 }>();
-addressController.use(authMiddleware);
 
 addressController.post("/contacts/:id/addresses", async (c) => {
 	const user = c.get("user") as User;

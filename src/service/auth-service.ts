@@ -64,4 +64,21 @@ export class AuthService {
 		}
 		return toUserResponse(user);
 	}
+
+	static async logout(user: User): Promise<void> {
+		try {
+			await prismaClient.user.update({
+				where: {
+					username: user.username,
+				},
+				data: {
+					logoutAt: Math.floor(Date.now() / 1000),
+				},
+			});
+		} catch {
+			throw new HTTPException(404, {
+				message: "user not register",
+			});
+		}
+	}
 }
