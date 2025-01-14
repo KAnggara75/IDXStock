@@ -33,12 +33,19 @@ export interface UserJwt extends JWTPayload {
 	name: string;
 }
 
-export async function toUserResponse(user: User): Promise<UserResponse> {
-	const token = await JwtHelper.jwtSign(user);
-	return {
+export async function toUserResponse(
+	user: User,
+	generateToken?: boolean
+): Promise<UserResponse> {
+	const response: UserResponse = {
 		email: user.email,
 		name: user.name,
 		username: user.username,
-		token: token,
 	};
+
+	if (generateToken) {
+		const token = await JwtHelper.jwtSign(user);
+		response.token = token;
+	}
+	return response;
 }

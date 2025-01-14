@@ -1,8 +1,8 @@
 import {
-	type LoginUserRequest,
-	type RegisterUserRequest,
 	toUserResponse,
 	type UserResponse,
+	type LoginUserRequest,
+	type RegisterUserRequest,
 } from "../model/user-model.ts";
 import type { User } from "@prisma/client";
 import { HTTPException } from "hono/http-exception";
@@ -34,7 +34,7 @@ export class AuthService {
 			data: request,
 		});
 
-		return toUserResponse(user);
+		return toUserResponse(user, true);
 	}
 
 	static async login(request: LoginUserRequest): Promise<UserResponse> {
@@ -62,7 +62,7 @@ export class AuthService {
 				message: "Username or password is wrong",
 			});
 		}
-		return toUserResponse(user);
+		return toUserResponse(user, true);
 	}
 
 	static async logout(user: User): Promise<void> {
