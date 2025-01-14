@@ -42,12 +42,8 @@ export class UserService {
 	): Promise<UserResponse> {
 		request = UserValidation.UPDATE.parse(request);
 
-		if (request.name) {
-			user.name = request.name;
-		}
-
 		if (request.password) {
-			user.password = await Bun.password.hash(request.password, {
+			request.password = await Bun.password.hash(request.password, {
 				algorithm: "bcrypt",
 				cost: 10,
 			});
@@ -57,7 +53,7 @@ export class UserService {
 			where: {
 				username: user.username,
 			},
-			data: user,
+			data: request,
 		});
 
 		return toUserResponse(user);
