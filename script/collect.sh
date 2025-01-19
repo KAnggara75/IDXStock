@@ -28,7 +28,7 @@ read_all_file() {
 main() {
 	clear
 	read_all_file
-	git restore sql_dump
+	git restore .
 }
 
 main || abort "Compose Error!"
