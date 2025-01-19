@@ -1,7 +1,7 @@
 import { Hono } from "hono";
 import type { ApplicationVariables } from "../model/app-model";
 import { ConvertUsecase } from "../usecase/converter-usecase.ts";
-import type { User } from "@prisma/client";
+import type { SummaryData } from "../model/summary-model.ts";
 
 export const converterController = new Hono<{
 	Variables: ApplicationVariables;
@@ -11,17 +11,11 @@ converterController.post("/convert", async (c) => {
 	const body = await c.req.parseBody();
 
 	const xlxsFile: string | File = body["file"];
-	const user: User = c.get("user");
 
-	const [response, filename] = await ConvertUsecase.processExcelSummary(
-		xlxsFile,
-		user
-	);
+	const response: SummaryData[] =
+		await ConvertUsecase.processExcelSummary(xlxsFile);
 
 	return c.json({
-		data: {
-			csv: `https://${new URL(c.req.url).host}/${filename}`,
-			data: response,
-		},
+		data: response,
 	});
 });
