@@ -1,3 +1,4 @@
+// data det from google finance
 model Daily {
   code      String    @id @db.VarChar(200)
   name      String    @unique

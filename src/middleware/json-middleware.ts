@@ -5,6 +5,10 @@ export const jsonMiddleware: MiddlewareHandler = async (c, next) => {
 		return next();
 	}
 
+	if (c.req.path === "/api/convert") {
+		return next();
+	}
+
 	const contentType = c.req.header("content-type");
 
 	if (!contentType) {
