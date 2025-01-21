@@ -16,6 +16,7 @@ import { userController } from "./controller/user-controller";
 import { authController } from "./controller/auth-controller";
 import { jsonMiddleware } from "./middleware/json-middleware";
 import { stockController } from "./controller/stock-controller";
+import { converterController } from "./controller/convert-controller.ts";
 
 const port: number = Number(Bun.env.API_PORT ?? 3030);
 
@@ -35,8 +36,9 @@ app.get("/", (c) => {
 });
 
 app.route("/", authController);
-app.route("/", stockController);
 app.route("/", userController);
+app.route("/", converterController);
+app.route("/", stockController);
 
 app.notFound((c) => {
 	log.info(`Not Found: ${c.req.url}`);

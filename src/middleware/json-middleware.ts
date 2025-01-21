@@ -1,11 +1,11 @@
 import type { MiddlewareHandler } from "hono";
 
 export const jsonMiddleware: MiddlewareHandler = async (c, next) => {
-	if (c.req.method === "GET") {
+	if (c.req.method === "GET" || c.req.method === "DELETE") {
 		return next();
 	}
 
-	if (c.req.method === "DELETE") {
+	if (c.req.path === "/api/convert") {
 		return next();
 	}
 
@@ -14,7 +14,7 @@ export const jsonMiddleware: MiddlewareHandler = async (c, next) => {
 	if (!contentType) {
 		return c.json(
 			{
-				errors: `Invalid Content-Type, expected JSON, received ${contentType}`,
+				errors: "Invalid Header, Content-Type Not Found",
 			},
 			400
 		);
