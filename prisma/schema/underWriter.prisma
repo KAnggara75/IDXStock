@@ -1,0 +1,7 @@
+model UnderWriter {
+  code String @id @db.VarChar(10)
+  name String @db.VarChar(100)
+
+  @@index([code])
+  @@map("under_writer")
+}

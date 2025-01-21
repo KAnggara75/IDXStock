@@ -66,6 +66,16 @@ CREATE TABLE `stocks` (
     `board` ENUM('Watchlist', 'Main', 'Development', 'Acceleration', 'EkonomiBaru') NOT NULL DEFAULT 'Main',
 
     UNIQUE INDEX `stocks_name_key`(`name`),
+    INDEX `stocks_code_idx`(`code`),
+    PRIMARY KEY (`code`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
+CREATE TABLE `under_writer` (
+    `code` VARCHAR(10) NOT NULL,
+    `name` VARCHAR(100) NOT NULL,
+
+    INDEX `under_writer_code_idx`(`code`),
     PRIMARY KEY (`code`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
