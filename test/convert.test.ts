@@ -33,7 +33,6 @@ describe("POST /api/convert", () => {
 		});
 
 		const body = await response.json();
-		console.log(body);
 
 		expect(body.errors).toBeDefined();
 		expect(body.errors[0].code).toBeDefined();
