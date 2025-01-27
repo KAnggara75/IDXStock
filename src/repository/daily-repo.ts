@@ -55,7 +55,7 @@ export class DailyRepository {
 			);
 
 			await Promise.all(upserts);
-			log.info("Batch upsert completed successfully.");
+			log.info(`Daily upsert executed by ${user.username}`);
 		} catch (error) {
 			log.error(`Error in batch upsert: ${error}`);
 		} finally {

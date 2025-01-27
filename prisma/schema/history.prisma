@@ -1,4 +1,4 @@
-// Data get from IDX https://www.idx.co.id/en/market-data/trading-summary/stock-summary/
+// Data get from IDX https://www.idx.co.id/en/market-data/trading-summary/stock-summary
 model History {
   id                    Int       @id @default(autoincrement())
   code                  String    @db.VarChar(200)
@@ -31,5 +31,6 @@ model History {
   user                  User      @relation(fields: [insertBy], references: [username])
   stockCode             Stock     @relation(fields: [code], references: [code])
 
+  @@index([code, date])
   @@map("history")
 }
