@@ -9,7 +9,9 @@ export class DailyRepository {
 		try {
 			const upserts = data.map((stock) =>
 				prisma.daily.upsert({
-					where: { code: stock.code },
+					where: {
+						code: stock.code,
+					},
 					update: {
 						pe: stock.pe,
 						eps: stock.eps,

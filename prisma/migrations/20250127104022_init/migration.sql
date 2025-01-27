@@ -21,6 +21,7 @@ CREATE TABLE `daily` (
     `shares` BIGINT NULL,
     `insertBy` VARCHAR(100) NOT NULL,
 
+    UNIQUE INDEX `daily_code_key`(`code`),
     UNIQUE INDEX `daily_name_key`(`name`),
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
@@ -101,7 +102,7 @@ ALTER TABLE `daily` ADD CONSTRAINT `daily_insertBy_fkey` FOREIGN KEY (`insertBy`
 ALTER TABLE `daily` ADD CONSTRAINT `daily_code_fkey` FOREIGN KEY (`code`) REFERENCES `stocks`(`code`) ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE `history` ADD CONSTRAINT `history_code_fkey` FOREIGN KEY (`code`) REFERENCES `stocks`(`code`) ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE `history` ADD CONSTRAINT `history_insertBy_fkey` FOREIGN KEY (`insertBy`) REFERENCES `users`(`username`) ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE `history` ADD CONSTRAINT `history_insertBy_fkey` FOREIGN KEY (`insertBy`) REFERENCES `users`(`username`) ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE `history` ADD CONSTRAINT `history_code_fkey` FOREIGN KEY (`code`) REFERENCES `stocks`(`code`) ON DELETE RESTRICT ON UPDATE CASCADE;

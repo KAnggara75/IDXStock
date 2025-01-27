@@ -6,7 +6,7 @@ import { StockUpdateUsecase } from "../usecase/stockUpdate-usecase";
 
 export const stockController = new Hono<{ Variables: ApplicationVariables }>();
 
-stockController.patch("/stocks", async (c) => {
+stockController.patch("/stocks/google", async (c) => {
 	const user: User = c.get("user");
 	log.info(JSON.stringify(user));
 	const response = await StockUpdateUsecase.updateStockData(user);

@@ -1,7 +1,7 @@
 // data det from google finance
 model Daily {
   id        Int       @id @default(autoincrement())
-  code      String    @db.VarChar(200)
+  code      String    @unique @db.VarChar(200)
   name      String    @unique
   price     Int?
   priceopen Int?
