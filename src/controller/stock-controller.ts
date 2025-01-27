@@ -15,3 +15,12 @@ stockController.patch("/stocks/google", async (c) => {
 		data: response,
 	});
 });
+
+stockController.post("/stocks/idx", async (c) => {
+	const user: User = c.get("user");
+	log.info(JSON.stringify(user));
+
+	return c.json({
+		data: "response",
+	});
+});
