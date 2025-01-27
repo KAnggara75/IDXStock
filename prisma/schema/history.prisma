@@ -27,6 +27,8 @@ model History {
   non_regular_volume    BigInt?
   non_regular_value     BigInt?
   non_regular_frequency BigInt?
+  insertBy              String    @db.VarChar(100)
+  user                  User      @relation(fields: [insertBy], references: [username])
   stockCode             Stock     @relation(fields: [code], references: [code])
 
   @@map("history")

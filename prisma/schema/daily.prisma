@@ -1,6 +1,7 @@
 // data det from google finance
 model Daily {
-  code      String    @id @db.VarChar(200)
+  id        Int       @id @default(autoincrement())
+  code      String    @db.VarChar(200)
   name      String    @unique
   price     Int?
   priceopen Int?
@@ -20,6 +21,7 @@ model Daily {
   shares    BigInt?
   insertBy  String    @db.VarChar(100)
   user      User      @relation(fields: [insertBy], references: [username])
+  stocks    Stock     @relation(fields: [code], references: [code])
 
   @@map("daily")
 }

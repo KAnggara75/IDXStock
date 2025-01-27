@@ -1,5 +1,6 @@
 -- CreateTable
 CREATE TABLE `daily` (
+    `id` INTEGER NOT NULL AUTO_INCREMENT,
     `code` VARCHAR(200) NOT NULL,
     `name` VARCHAR(191) NOT NULL,
     `price` INTEGER NULL,
@@ -21,7 +22,7 @@ CREATE TABLE `daily` (
     `insertBy` VARCHAR(100) NOT NULL,
 
     UNIQUE INDEX `daily_name_key`(`name`),
-    PRIMARY KEY (`code`)
+    PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- CreateTable
@@ -53,6 +54,7 @@ CREATE TABLE `history` (
     `non_regular_volume` BIGINT NULL,
     `non_regular_value` BIGINT NULL,
     `non_regular_frequency` BIGINT NULL,
+    `insertBy` VARCHAR(100) NOT NULL,
 
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
@@ -96,4 +98,10 @@ CREATE TABLE `users` (
 ALTER TABLE `daily` ADD CONSTRAINT `daily_insertBy_fkey` FOREIGN KEY (`insertBy`) REFERENCES `users`(`username`) ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
+ALTER TABLE `daily` ADD CONSTRAINT `daily_code_fkey` FOREIGN KEY (`code`) REFERENCES `stocks`(`code`) ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
 ALTER TABLE `history` ADD CONSTRAINT `history_code_fkey` FOREIGN KEY (`code`) REFERENCES `stocks`(`code`) ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `history` ADD CONSTRAINT `history_insertBy_fkey` FOREIGN KEY (`insertBy`) REFERENCES `users`(`username`) ON DELETE RESTRICT ON UPDATE CASCADE;

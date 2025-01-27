@@ -5,6 +5,7 @@ model Stock {
   listing_date DateTime? @db.Date()
   shares       BigInt
   board        Board     @default(Main)
+  daily        Daily[]
   history      History[]
 
   @@index([code])
