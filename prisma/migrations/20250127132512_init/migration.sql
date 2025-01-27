@@ -23,6 +23,7 @@ CREATE TABLE `daily` (
 
     UNIQUE INDEX `daily_code_key`(`code`),
     UNIQUE INDEX `daily_name_key`(`name`),
+    INDEX `daily_code_idx`(`code`),
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
@@ -57,6 +58,7 @@ CREATE TABLE `history` (
     `non_regular_frequency` BIGINT NULL,
     `insertBy` VARCHAR(100) NOT NULL,
 
+    INDEX `history_code_date_idx`(`code`, `date`),
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 

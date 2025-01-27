@@ -5,7 +5,7 @@ import { DailyRepository } from "../repository/daily-repo";
 import { GoogleFinanceService } from "../service/googleFinance-service";
 import { type StockModel, toGoogleFinance } from "../model/googleFinance-model";
 
-export class StockUpdateUsecase {
+export class StockUsecase {
 	static async updateDailyStock(user: User): Promise<StockModel[]> {
 		try {
 			log.info(JSON.stringify(user));

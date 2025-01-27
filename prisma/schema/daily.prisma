@@ -23,5 +23,6 @@ model Daily {
   user      User      @relation(fields: [insertBy], references: [username])
   stocks    Stock     @relation(fields: [code], references: [code])
 
+  @@index([code])
   @@map("daily")
 }
