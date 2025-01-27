@@ -41,7 +41,7 @@ app.route("/", converterController);
 app.route("/", stockController);
 
 app.notFound((c) => {
-	log.info(`Not Found: ${c.req.url}`);
+	log.info(`Not Found: ${c.req.path}`);
 	return c.json({ errors: "Not Found" }, 404);
 });
 

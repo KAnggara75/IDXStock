@@ -11,8 +11,7 @@ export class GoogleFinanceService {
 			`https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}/values/${sheetName}?key=${apiKey}`;
 
 		try {
-			const response: Response = await fetch(url);
-			return response;
+			return await fetch(url);
 			// eslint-disable-next-line @typescript-eslint/no-explicit-any
 		} catch (error: any) {
 			log.error(error.message);

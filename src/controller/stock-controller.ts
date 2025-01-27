@@ -9,7 +9,7 @@ export const stockController = new Hono<{ Variables: ApplicationVariables }>();
 stockController.patch("/stocks/google", async (c) => {
 	const user: User = c.get("user");
 	log.info(JSON.stringify(user));
-	const response = await StockUpdateUsecase.updateStockData(user);
+	const response = await StockUpdateUsecase.updateDailyStock(user);
 
 	return c.json({
 		data: response,

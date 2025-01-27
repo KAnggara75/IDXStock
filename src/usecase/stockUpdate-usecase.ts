@@ -6,7 +6,7 @@ import { GoogleFinanceService } from "../service/googleFinance-service";
 import { type StockModel, toGoogleFinance } from "../model/googleFinance-model";
 
 export class StockUpdateUsecase {
-	static async updateStockData(user: User): Promise<StockModel[]> {
+	static async updateDailyStock(user: User): Promise<StockModel[]> {
 		try {
 			log.info(JSON.stringify(user));
 
