@@ -1,4 +1,4 @@
-// https://www.idx.co.id/en/market-data/stocks-data/stock-list/
+// https://www.idx.co.id/en/market-data/stocks-data/stock-list
 model Stock {
   code         String    @id @db.VarChar(10)
   name         String    @unique @db.VarChar(200)
@@ -18,4 +18,8 @@ enum Board {
   Development
   Acceleration
   EkonomiBaru
+  A_SERIES
+  B_SERIES
+  C_SERIES
+  PREFEREN
 }

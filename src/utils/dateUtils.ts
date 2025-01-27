@@ -18,6 +18,22 @@ export class DateUtils {
 	}
 
 	/**
+	 * Returns ISO-8691 Date Format from
+	 * @param dateString dateTime with format DD MMMM YYYY
+	 */
+	static toDate2(dateString: string): Date {
+		try {
+			if (dateString.length != 11) {
+				return new Date();
+			}
+
+			return new Date(new Date(dateString).getTime() + 7 * 60 * 60 * 1000);
+		} catch {
+			return new Date();
+		}
+	}
+
+	/**
 	 * Returns Token Expired in second
 	 * @param days from now to token Expired.
 	 */

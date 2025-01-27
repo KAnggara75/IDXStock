@@ -24,6 +24,7 @@ stockController.post("/stocks/idx", async (c) => {
 
 	const xlxsFile: string | File = body.file;
 
+	// Convert xlsx to JSON
 	const response = await StockUsecase.addStockSummary(user, xlxsFile);
 
 	return c.json({

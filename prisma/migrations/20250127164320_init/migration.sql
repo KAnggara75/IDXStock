@@ -30,7 +30,7 @@ CREATE TABLE `daily` (
 -- CreateTable
 CREATE TABLE `history` (
     `id` INTEGER NOT NULL AUTO_INCREMENT,
-    `code` VARCHAR(200) NOT NULL,
+    `code` VARCHAR(10) NOT NULL,
     `date` DATE NOT NULL,
     `previous` INTEGER NULL,
     `open_price` INTEGER NULL,
@@ -42,7 +42,7 @@ CREATE TABLE `history` (
     `volume` BIGINT NULL,
     `value` BIGINT NULL,
     `frequency` BIGINT NULL,
-    `index_individual` DECIMAL(65, 30) NULL,
+    `index_individual` DECIMAL(15, 2) NULL,
     `offer` BIGINT NULL,
     `offer_volume` BIGINT NULL,
     `bid` BIGINT NULL,
@@ -56,7 +56,6 @@ CREATE TABLE `history` (
     `non_regular_volume` BIGINT NULL,
     `non_regular_value` BIGINT NULL,
     `non_regular_frequency` BIGINT NULL,
-    `insertBy` VARCHAR(100) NOT NULL,
 
     INDEX `history_code_date_idx`(`code`, `date`),
     PRIMARY KEY (`id`)
@@ -68,7 +67,7 @@ CREATE TABLE `stocks` (
     `name` VARCHAR(200) NOT NULL,
     `listing_date` DATE NULL,
     `shares` BIGINT NOT NULL,
-    `board` ENUM('Watchlist', 'Main', 'Development', 'Acceleration', 'EkonomiBaru') NOT NULL DEFAULT 'Main',
+    `board` ENUM('Watchlist', 'Main', 'Development', 'Acceleration', 'EkonomiBaru', 'A_SERIES', 'B_SERIES', 'C_SERIES', 'PREFEREN') NOT NULL DEFAULT 'Main',
 
     UNIQUE INDEX `stocks_name_key`(`name`),
     INDEX `stocks_code_idx`(`code`),
@@ -102,9 +101,6 @@ ALTER TABLE `daily` ADD CONSTRAINT `daily_insertBy_fkey` FOREIGN KEY (`insertBy`
 
 -- AddForeignKey
 ALTER TABLE `daily` ADD CONSTRAINT `daily_code_fkey` FOREIGN KEY (`code`) REFERENCES `stocks`(`code`) ON DELETE RESTRICT ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE `history` ADD CONSTRAINT `history_insertBy_fkey` FOREIGN KEY (`insertBy`) REFERENCES `users`(`username`) ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE `history` ADD CONSTRAINT `history_code_fkey` FOREIGN KEY (`code`) REFERENCES `stocks`(`code`) ON DELETE RESTRICT ON UPDATE CASCADE;

@@ -1,0 +1,29 @@
+export interface SummaryData {
+	stock_code: string;
+	company_name: string;
+	remarks: string;
+	previous: number;
+	open_price: number;
+	last_trading_date: string;
+	first_trade: number;
+	high: number;
+	low: number;
+	close: number;
+	change: number;
+	volume: number;
+	value: number;
+	frequency: number;
+	index_individual: string;
+	offer: number;
+	offer_volume: number;
+	bid: number;
+	bid_volume: number;
+	listed_shares: number;
+	tradeble_shares: number;
+	weight_for_index: number;
+	foreign_sell: number;
+	foreign_buy: number;
+	non_regular_volume: number;
+	non_regular_value: number;
+	non_regular_frequency: number;
+}

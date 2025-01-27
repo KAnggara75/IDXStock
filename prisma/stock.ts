@@ -45,7 +45,7 @@ export class StockSeeder {
 					const stockData: StockListModel = {
 						code: stock[1],
 						name: stock[2] === "" ? stock[1] : stock[2],
-						listing_date: StockSeeder.formateDate(stock[3]),
+						listing_date: StockSeeder.formatDate(stock[3]),
 						shares: parseInt(stock[4].replaceAll(",", "")),
 						board: StockSeeder.toBoardEnum(stock[5]),
 					};
@@ -61,10 +61,9 @@ export class StockSeeder {
 		return result;
 	}
 
-	static formateDate(inputDate: string) {
+	static formatDate(inputDate: string) {
 		const date = new Date(inputDate.replaceAll("Agt", "Aug"));
-		const isoDate = date.toISOString();
-		return isoDate;
+		return date.toISOString();
 	}
 
 	static toBoardEnum(board: string): Board {
