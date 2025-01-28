@@ -58,6 +58,7 @@ CREATE TABLE `history` (
     `non_regular_frequency` BIGINT NULL,
 
     INDEX `history_code_date_idx`(`code`, `date`),
+    UNIQUE INDEX `history_code_date_key`(`code`, `date`),
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
@@ -66,11 +67,13 @@ CREATE TABLE `stocks` (
     `code` VARCHAR(10) NOT NULL,
     `name` VARCHAR(200) NOT NULL,
     `listing_date` DATE NULL,
+    `delisting_date` DATE NULL,
     `shares` BIGINT NOT NULL,
     `board` ENUM('Watchlist', 'Main', 'Development', 'Acceleration', 'EkonomiBaru', 'A_SERIES', 'B_SERIES', 'C_SERIES', 'PREFEREN') NOT NULL DEFAULT 'Main',
 
     UNIQUE INDEX `stocks_name_key`(`name`),
     INDEX `stocks_code_idx`(`code`),
+    UNIQUE INDEX `stocks_code_key`(`code`),
     PRIMARY KEY (`code`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 

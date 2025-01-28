@@ -29,6 +29,7 @@ model History {
   non_regular_frequency BigInt?
   stockCode             Stock     @relation(fields: [code], references: [code])
 
+  @@unique([code, date])
   @@index([code, date])
   @@map("history")
 }

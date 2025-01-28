@@ -1,12 +1,12 @@
 /* eslint-disable no-console */
-import { PrismaClient } from "@prisma/client";
-import { type StockListModel, StockSeeder } from "./stock";
+import { PrismaClient, type Stock } from "@prisma/client";
+import { StockSeeder } from "./stock";
 import uw from "./underwriter.json";
 
 const prisma = new PrismaClient();
 
 async function main() {
-	const stockList: StockListModel[] = await StockSeeder.getStockList();
+	const stockList: Stock[] = await StockSeeder.getStockList();
 
 	try {
 		const upserts = stockList.map((stock) =>
@@ -17,13 +17,15 @@ async function main() {
 					shares: stock.shares,
 					board: stock.board,
 					listing_date: stock.listing_date,
+					delisting_date: stock.delisting_date,
 				},
 				create: {
-					code: stock.code,
+					code: stock.code.toUpperCase(),
 					name: stock.name,
 					shares: stock.shares,
 					board: stock.board,
 					listing_date: stock.listing_date,
+					delisting_date: stock.delisting_date,
 				},
 			})
 		);
@@ -35,7 +37,7 @@ async function main() {
 					name: data.name,
 				},
 				create: {
-					code: data.code,
+					code: data.code.toUpperCase(),
 					name: data.name,
 				},
 			})
