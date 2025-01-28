@@ -14,7 +14,7 @@ jobs:
     runs-on: ubuntu-24.04
     strategy:
       matrix:
-        bun-version: [canary, 1.0.0, 1.0.36, 1.1.0, 1.1.16, 1.1.42]
+        bun-version: [canary, 1.0.36, 1.1.0, 1.1.42, 1.2.1]
     name: Bun ${{ matrix.bun-version }} sample
     steps:
       - uses: actions/checkout@v4.2.2
@@ -31,7 +31,7 @@ jobs:
     needs: Format_and_Check
     strategy:
       matrix:
-        bun-version: [canary, 1.0.0, 1.0.36, 1.1.0, 1.1.16, 1.1.42]
+        bun-version: [canary, 1.0.36, 1.1.0, 1.1.42, 1.2.1]
     name: Test with Jest Bun ${{ matrix.bun-version }}
     steps:
       - name: Start MySQL
