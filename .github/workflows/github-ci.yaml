@@ -15,7 +15,7 @@ jobs:
     strategy:
       matrix:
         bun-version: [canary, 1.0.36, 1.1.0, 1.1.42, 1.2.1]
-    name: Check code linr with Bun ${{ matrix.bun-version }}
+    name: Check code lint with Bun ${{ matrix.bun-version }}
     steps:
       - uses: actions/checkout@v4.2.2
       - name: Use Bun ${{ matrix.bun-version }}
@@ -52,9 +52,10 @@ jobs:
       - name: Test
         run: bun test
   Create_Test_Coverage_Badges:
+    permissions: write-all
     runs-on: ubuntu-24.04
     needs: Format_and_Check
-    name: Test with Jest Bun Latest
+    name: Test with Bun Latest
     steps:
       - name: Start MySQL
         run: |
@@ -72,7 +73,7 @@ jobs:
       - name: Test
         run: bun test
       - name: Generating coverage badges
-        uses: ImBIOS/lcov-coverage-badge@v1
+        uses: ImBIOS/lcov-coverage-badge@v1.0.1
         with:
           file: ./coverage/lcov.info
           access_token: ${{ secrets.GITHUB_TOKEN }}
