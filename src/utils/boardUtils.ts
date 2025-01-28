@@ -2,13 +2,14 @@ import { Board } from "@prisma/client";
 
 export class BoardUtils {
 	static getBoardName(name: string): Board {
-		if (name.includes("Seri B") || name.includes("MVS")) {
+		name = name.toLowerCase();
+		if (name.includes("seri b") || name.includes("mvs")) {
 			return Board.B_SERIES;
-		} else if (name.includes("Seri A")) {
+		} else if (name.includes("seri a")) {
 			return Board.A_SERIES;
-		} else if (name.includes("Seri C")) {
+		} else if (name.includes("seri c")) {
 			return Board.C_SERIES;
-		} else if (name.includes("Saham Preferen")) {
+		} else if (name.includes("saham preferen")) {
 			return Board.PREFEREN;
 		} else {
 			return Board.Main;
