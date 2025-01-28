@@ -15,7 +15,7 @@ jobs:
     strategy:
       matrix:
         bun-version: [canary, 1.0.36, 1.1.0, 1.1.42, 1.2.1]
-    name: Bun ${{ matrix.bun-version }} sample
+    name: Check code linr with Bun ${{ matrix.bun-version }}
     steps:
       - uses: actions/checkout@v4.2.2
       - name: Use Bun ${{ matrix.bun-version }}
@@ -32,7 +32,7 @@ jobs:
     strategy:
       matrix:
         bun-version: [canary, 1.0.36, 1.1.0, 1.1.42, 1.2.1]
-    name: Test with Jest Bun ${{ matrix.bun-version }}
+    name: Test with Bun ${{ matrix.bun-version }}
     steps:
       - name: Start MySQL
         run: |
