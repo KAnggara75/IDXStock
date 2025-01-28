@@ -7,6 +7,7 @@ import type { SummaryData } from "../model/summary-model.ts";
 import { FileValidation } from "../validation/file-validation.ts";
 import { SheetService } from "../service/spreadsheet-service.ts";
 import { HistoryRepository } from "../repository/history-repository.ts";
+import { log } from "../config/logger.ts";
 
 export class StockUsecase {
 	static async updateDailyStock(user: User): Promise<StockModel[]> {
@@ -18,12 +19,8 @@ export class StockUsecase {
 			if (stockResponse.ok) {
 				stockData = toGoogleFinance(await stockResponse.json());
 				await DailyRepository.upsert(stockData, user);
-				return stockData;
-			} else {
-				throw new HTTPException(400, {
-					message: "bad request file name",
-				});
 			}
+			return stockData;
 		} catch {
 			throw new HTTPException(400, {
 				message: "bad request file name",
@@ -38,17 +35,11 @@ export class StockUsecase {
 		// validate is user send correct file type
 		const xlxsFile: File = FileValidation.DOCUMENT_CHECK.parse(request);
 
-		try {
-			// Convert .xlxs to SummaryData[]
-			const data: SummaryData[] = await SheetService.toSummaryData(xlxsFile);
+		// Convert .xlxs to SummaryData[]
+		const data: SummaryData[] = await SheetService.toSummaryData(xlxsFile);
 
-			HistoryRepository.insertSummary(data);
+		HistoryRepository.insertSummary(data).catch((e) => log.error(e));
 
-			return data;
-		} catch {
-			throw new HTTPException(400, {
-				message: "bad request file name",
-			});
-		}
+		return data;
 	}
 }
