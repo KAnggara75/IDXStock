@@ -34,3 +34,13 @@ export class DailyTest {
 		});
 	}
 }
+
+export class HistoryTest {
+	static async delete() {
+		await prismaClient.history.deleteMany({
+			where: {
+				code: "TEST",
+			},
+		});
+	}
+}

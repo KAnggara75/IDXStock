@@ -19,7 +19,7 @@ export class DateUtils {
 
 	/**
 	 * Returns ISO-8691 Date Format from
-	 * @param dateString - dateTime with format DD MMMM YYYY
+	 * @param dateString - dateTime with format DD MMM YYYY
 	 */
 	static toDate2(dateString: string): Date {
 		try {
