@@ -1,7 +1,7 @@
-// Data get from IDX https://www.idx.co.id/en/market-data/trading-summary/stock-summary/
+// Data get from IDX https://www.idx.co.id/en/market-data/trading-summary/stock-summary
 model History {
   id                    Int       @id @default(autoincrement())
-  code                  String    @db.VarChar(200)
+  code                  String    @db.VarChar(10)
   date                  DateTime  @db.Date()
   previous              Int?
   open_price            Int?
@@ -13,7 +13,7 @@ model History {
   volume                BigInt?
   value                 BigInt?
   frequency             BigInt?
-  index_individual      Decimal?
+  index_individual      Decimal?  @db.Decimal(15, 2)
   offer                 BigInt?
   offer_volume          BigInt?
   bid                   BigInt?
@@ -27,9 +27,9 @@ model History {
   non_regular_volume    BigInt?
   non_regular_value     BigInt?
   non_regular_frequency BigInt?
-  insertBy              String    @db.VarChar(100)
-  user                  User      @relation(fields: [insertBy], references: [username])
   stockCode             Stock     @relation(fields: [code], references: [code])
 
+  @@unique([code, date])
+  @@index([code, date])
   @@map("history")
 }

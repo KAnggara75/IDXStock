@@ -1,14 +1,13 @@
-import { PrismaClient, type User } from "@prisma/client";
-import type { StockModel } from "../model/googleFinance-model";
 import { log } from "../config/logger";
-
-const prisma = new PrismaClient();
+import { type User } from "@prisma/client";
+import { prismaClient } from "../config/database.ts";
+import type { StockModel } from "../model/googleFinance-model";
 
 export class DailyRepository {
 	static async upsert(data: StockModel[], user: User) {
 		try {
 			const upserts = data.map((stock) =>
-				prisma.daily.upsert({
+				prismaClient.daily.upsert({
 					where: {
 						code: stock.code,
 					},
@@ -55,12 +54,12 @@ export class DailyRepository {
 				})
 			);
 
-			await Promise.all(upserts); // Jalankan semua upsert secara paralel
-			log.info("Batch upsert completed successfully.");
+			await Promise.all(upserts);
+			log.info(`Daily upsert executed by ${user.username}`);
 		} catch (error) {
 			log.error(`Error in batch upsert: ${error}`);
 		} finally {
-			await prisma.$disconnect();
+			await prismaClient.$disconnect();
 		}
 	}
 }

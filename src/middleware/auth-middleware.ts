@@ -1,9 +1,9 @@
 import { log } from "../config/logger";
 import type { MiddlewareHandler } from "hono";
 import { JwtHelper } from "../helpers/jwt-helper";
-import { prismaClient } from "../config/database";
 import type { UserJwt } from "../model/user-model";
 import { AuthValidation } from "../validation/auth-validation";
+import { AuthRepository } from "../repository/auth-repo.ts";
 
 export const authMiddleware: MiddlewareHandler = async (c, next) => {
 	const authHeader = c.req.header("Authorization");
@@ -24,21 +24,14 @@ export const authMiddleware: MiddlewareHandler = async (c, next) => {
 		return c.json({ errors: JSON.parse(result.error.message) }, 400);
 	}
 
-	const jwtPayload: UserJwt = await JwtHelper.jwtVerivy(token);
+	const jwtPayload: UserJwt = await JwtHelper.jwtVerify(token);
 
-	log.info(`jwtPayload ${JSON.stringify(jwtPayload)}`);
+	log.debug(`jwtPayload ${JSON.stringify(jwtPayload)}`);
 
-	const user: number = await prismaClient.user.count({
-		where: {
-			username: jwtPayload.username,
-			logoutAt: {
-				lt: jwtPayload.iat,
-			},
-		},
-	});
+	const user: number = await AuthRepository.checkUser(jwtPayload);
 
 	if (user != 1) {
-		return c.json({ errors: "Token has been revoked" }, 401);
+		return c.json({ errors: "Invalid Token" }, 401);
 	}
 
 	c.set("user", jwtPayload);

@@ -3,7 +3,7 @@ import { prismaClient } from "../src/config/database";
 
 export class UserTest {
 	static async create(): Promise<User> {
-		return await prismaClient.user.create({
+		return prismaClient.user.create({
 			data: {
 				username: "test",
 				name: "test",
@@ -20,6 +20,26 @@ export class UserTest {
 		await prismaClient.user.deleteMany({
 			where: {
 				username: "test",
+			},
+		});
+	}
+}
+
+export class DailyTest {
+	static async delete() {
+		await prismaClient.daily.deleteMany({
+			where: {
+				insertBy: "test",
+			},
+		});
+	}
+}
+
+export class HistoryTest {
+	static async delete() {
+		await prismaClient.history.deleteMany({
+			where: {
+				code: "TEST",
 			},
 		});
 	}

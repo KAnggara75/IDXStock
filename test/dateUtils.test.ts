@@ -57,3 +57,22 @@ describe("toDate", () => {
 		expect(date).toEqual(expectedDate);
 	});
 });
+
+describe("toDate2", () => {
+	it("correct days", () => {
+		const date = DateUtils.toDate2("17 Jan 2025");
+		const expectedDate: Date = new Date(
+			new Date("2025-01-17").getTime() + 7 * 60 * 60 * 1000
+		);
+
+		expect(date).toBeDefined();
+		expect(date).toEqual(expectedDate);
+	});
+
+	it("incorrect days", () => {
+		const date = DateUtils.toDate2("");
+		const expectedDate: Date = new Date();
+		expect(date).toBeDefined();
+		expect(date).toEqual(expectedDate);
+	});
+});

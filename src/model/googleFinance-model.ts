@@ -2,6 +2,7 @@ import { HTTPException } from "hono/http-exception";
 import { AppConstant } from "../config/appConstant";
 import { NumberUtil } from "../utils/numberUtils";
 import { DateUtils } from "../utils/dateUtils";
+import { log } from "../config/logger.ts";
 
 export interface GoogleFinance {
 	range?: string;
@@ -45,15 +46,17 @@ export function toGoogleFinance(data: GoogleFinance): StockModel[] {
 		const header = value[0].map((v) => v.toLowerCase());
 
 		if (header.length != AppConstant.GOOGLE_FINANCE_FORMAT.length) {
+			log.error("Bad data GOOGLE_FINANCE_FORMAT header length");
 			throw new HTTPException(422, {
-				message: "Bad data GOOGLE_FINANCE_FORMAT",
+				message: "Bad data GOOGLE_FINANCE_FORMAT length",
 			});
 		}
 
 		for (let i = 0; header.length > i; i++) {
 			if (header[i] !== AppConstant.GOOGLE_FINANCE_FORMAT[i]) {
+				log.error("Bad data GOOGLE_FINANCE_FORMAT header name");
 				throw new HTTPException(422, {
-					message: "Bad data GOOGLE_FINANCE_FORMAT",
+					message: "Bad data GOOGLE_FINANCE_FORMAT header name",
 				});
 			}
 		}

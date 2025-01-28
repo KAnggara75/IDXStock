@@ -1,13 +1,15 @@
-// https://www.idx.co.id/en/market-data/stocks-data/stock-list/
+// https://www.idx.co.id/en/market-data/stocks-data/stock-list
 model Stock {
-  code         String    @id @db.VarChar(10)
-  name         String    @unique @db.VarChar(200)
-  listing_date DateTime? @db.Date()
-  shares       BigInt
-  board        Board     @default(Main)
-  daily        Daily[]
-  history      History[]
+  code           String    @id @db.VarChar(10)
+  name           String    @unique @db.VarChar(200)
+  listing_date   DateTime? @db.Date()
+  delisting_date DateTime? @db.Date()
+  shares         BigInt
+  board          Board     @default(Main)
+  daily          Daily[]
+  history        History[]
 
+  @@unique([code])
   @@index([code])
   @@map("stocks")
 }
@@ -18,4 +20,8 @@ enum Board {
   Development
   Acceleration
   EkonomiBaru
+  A_SERIES
+  B_SERIES
+  C_SERIES
+  PREFEREN
 }

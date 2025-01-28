@@ -18,7 +18,7 @@ authController.post(
 		const request = await c.req.json();
 
 		const response = await AuthService.register(request);
-		log.info(`Registering ${response.username}`);
+		log.debug(`Registering ${response.username}`);
 
 		return c.json({
 			data: response,

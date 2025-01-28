@@ -18,8 +18,6 @@ export class JwtHelper {
 		const secret = Bun.env.JWT_SECRET_KEY ?? "";
 		const exp = Bun.env.JWT_TOKEN_EXP ?? "1";
 
-		log.info(exp);
-
 		const payload: UserJwt = {
 			name: user.name,
 			email: user.email,
@@ -27,11 +25,11 @@ export class JwtHelper {
 			exp: DateUtils.expInDays(exp),
 			iat: Math.floor(Date.now() / 1000),
 		};
-		log.info(`create token for ${user.username} exp in ${exp} days`);
+		log.debug(`create token for ${user.username} exp in ${exp} days`);
 		return await sign(payload, secret);
 	}
 
-	static async jwtVerivy(token: string) {
+	static async jwtVerify(token: string) {
 		try {
 			const secretKey = Bun.env.JWT_SECRET_KEY ?? "";
 
