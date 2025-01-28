@@ -26,7 +26,7 @@ export const authMiddleware: MiddlewareHandler = async (c, next) => {
 
 	const jwtPayload: UserJwt = await JwtHelper.jwtVerivy(token);
 
-	log.info(`jwtPayload ${JSON.stringify(jwtPayload)}`);
+	log.debug(`jwtPayload ${JSON.stringify(jwtPayload)}`);
 
 	const user: number = await AuthRepository.checkUser(jwtPayload);
 

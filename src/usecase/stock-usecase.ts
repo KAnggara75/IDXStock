@@ -1,4 +1,3 @@
-import { log } from "../config/logger";
 import type { User } from "@prisma/client";
 import { HTTPException } from "hono/http-exception";
 import { DailyRepository } from "../repository/daily-repo";
@@ -12,8 +11,6 @@ import { HistoryRepository } from "../repository/history-repository.ts";
 export class StockUsecase {
 	static async updateDailyStock(user: User): Promise<StockModel[]> {
 		try {
-			log.info(JSON.stringify(user));
-
 			const stockResponse: Response =
 				await GoogleFinanceService.getStocksSummary();
 			let stockData: StockModel[] = [];
@@ -38,8 +35,6 @@ export class StockUsecase {
 		user: User,
 		request: string | File
 	): Promise<SummaryData[]> {
-		log.info(JSON.stringify(user));
-
 		// validate is user send correct file type
 		const xlxsFile: File = FileValidation.DOCUMENT_CHECK.parse(request);
 

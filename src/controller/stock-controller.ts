@@ -1,5 +1,4 @@
 import { Hono } from "hono";
-import { log } from "../config/logger";
 import type { User } from "@prisma/client";
 import type { ApplicationVariables } from "../model/app-model";
 import { StockUsecase } from "../usecase/stock-usecase.ts";
@@ -8,7 +7,6 @@ export const stockController = new Hono<{ Variables: ApplicationVariables }>();
 
 stockController.patch("/stocks/google", async (c) => {
 	const user: User = c.get("user");
-	log.info(JSON.stringify(user));
 	const response = await StockUsecase.updateDailyStock(user);
 
 	return c.json({
@@ -18,7 +16,6 @@ stockController.patch("/stocks/google", async (c) => {
 
 stockController.post("/stocks/idx", async (c) => {
 	const user: User = c.get("user");
-	log.info(JSON.stringify(user));
 
 	const body = await c.req.parseBody();
 
