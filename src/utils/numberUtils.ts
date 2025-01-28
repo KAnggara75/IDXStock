@@ -4,6 +4,10 @@ export class NumberUtil {
 			return number;
 		}
 
+		if (number.includes("E+")) {
+			return Number(number);
+		}
+
 		return number === "" ? null : parseInt(number);
 	}
 

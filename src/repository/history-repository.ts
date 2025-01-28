@@ -20,8 +20,8 @@ export class HistoryRepository {
 						create: {
 							code: stock.stock_code,
 							name: stock.company_name,
-							shares: stock.listed_shares,
 							board: BoardUtils.getBoardName(stock.company_name),
+							shares: NumberUtil.toBigInt(stock.listed_shares) ?? 0,
 						},
 					})
 					.catch((error) => {
@@ -38,9 +38,8 @@ export class HistoryRepository {
 					.catch((error) => {
 						log.error("Error Find data:", error);
 					});
-
 				if (!stockData) {
-					log.debug(
+					log.info(
 						`Insert CODE ${stock.stock_code}-${stock.last_trading_date}`
 					);
 					await prismaClient.history
@@ -80,6 +79,10 @@ export class HistoryRepository {
 						.catch((error) => {
 							log.error("Error inserting data:", error);
 						});
+				} else {
+					log.info(
+						`Data already exists: ${stock.stock_code} - ${stock.last_trading_date}`
+					);
 				}
 			}
 		} catch (error) {
