@@ -76,7 +76,7 @@ describe("POST /api/register", () => {
 		});
 
 		const body = await response.json();
-		logger.info(JSON.stringify(body));
+		logger.debug(JSON.stringify(body));
 
 		expect(response.status).toBe(200);
 		expect(body.data).toBeDefined();
