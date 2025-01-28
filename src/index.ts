@@ -41,7 +41,7 @@ app.route("/", converterController);
 app.route("/", stockController);
 
 app.notFound((c) => {
-	log.info(`Not Found: ${c.req.path}`);
+	log.error(`Not Found: ${c.req.path}`);
 	return c.json({ errors: "Not Found" }, 404);
 });
 
@@ -85,8 +85,8 @@ const events = ["uncaughtException", "SIGINT", "SIGTERM"];
 
 events.forEach((eventName) => {
 	process.on(eventName, (...args) => {
-		gracefulShutdown().then((r) => log.info(`gracefulShutdown with ${r}`));
-		log.info(
+		gracefulShutdown().then((r) => log.warn(`gracefulShutdown with ${r}`));
+		log.warn(
 			`${eventName} was called with args: ${args.join(",")} closing HTTP server`
 		);
 	});
@@ -94,12 +94,12 @@ events.forEach((eventName) => {
 
 async function gracefulShutdown(): Promise<number> {
 	let status: number = 0;
-	log.info("Shutting down gracefully...");
+	log.warn("Shutting down gracefully...");
 	await prismaClient.$disconnect();
 
 	// Close any other connections or resources here
 	server.close(() => {
-		log.info("HTTP server closed");
+		log.warn("HTTP server closed");
 		process.exit(0);
 	});
 
