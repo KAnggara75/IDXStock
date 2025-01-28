@@ -29,7 +29,7 @@ export class JwtHelper {
 		return await sign(payload, secret);
 	}
 
-	static async jwtVerivy(token: string) {
+	static async jwtVerify(token: string) {
 		try {
 			const secretKey = Bun.env.JWT_SECRET_KEY ?? "";
 

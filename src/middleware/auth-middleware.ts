@@ -24,7 +24,7 @@ export const authMiddleware: MiddlewareHandler = async (c, next) => {
 		return c.json({ errors: JSON.parse(result.error.message) }, 400);
 	}
 
-	const jwtPayload: UserJwt = await JwtHelper.jwtVerivy(token);
+	const jwtPayload: UserJwt = await JwtHelper.jwtVerify(token);
 
 	log.debug(`jwtPayload ${JSON.stringify(jwtPayload)}`);
 
