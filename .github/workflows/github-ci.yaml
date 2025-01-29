@@ -31,7 +31,7 @@ jobs:
     needs: Format_and_Check
     strategy:
       matrix:
-        bun-version: [canary, 1.0.36, 1.1.42, 1.2.1]
+        bun-version: [canary, 1.1.42, 1.2.1]
     name: Test with Bun ${{ matrix.bun-version }}
     steps:
       - name: Start MySQL
