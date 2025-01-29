@@ -72,6 +72,8 @@ jobs:
         run: bun run mig
       - name: Test
         run: bun test
+      - name: Setup LCOV
+        uses: hrishikesh-kadam/setup-lcov@v1
       - name: Report code coverage
         uses: zgosalvez/github-actions-report-lcov@v4.1.22
         with:
