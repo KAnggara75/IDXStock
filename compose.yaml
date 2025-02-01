@@ -3,5 +3,7 @@ services:
     image: KAnggara75/idxstock:latest
     container_name: idxstock
     restart: always
+    volumes:
+      - ./logs:/usr/src/app/logs
     ports:
       - 3000:3000
