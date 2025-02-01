@@ -18,7 +18,7 @@ import { jsonMiddleware } from "./middleware/json-middleware";
 import { stockController } from "./controller/stock-controller";
 import { converterController } from "./controller/convert-controller.ts";
 
-const port: number = Number(Bun.env.API_PORT ?? 3030);
+const port: number = Number(Bun.env.API_PORT ?? 3000);
 
 export const app = new Hono().basePath("/api");
 

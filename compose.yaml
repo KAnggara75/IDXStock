@@ -1,0 +1,7 @@
+services:
+  idxstock:
+    image: KAnggara75/idxstock:latest
+    container_name: idxstock
+    restart: always
+    ports:
+      - 3000:3000
