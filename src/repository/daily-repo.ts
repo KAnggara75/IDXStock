@@ -4,6 +4,8 @@ import { prismaClient } from "../config/database.ts";
 import type { StockModel } from "../model/googleFinance-model";
 
 export class DailyRepository {
+	public constructor() {}
+
 	static async upsert(data: StockModel[], user: User) {
 		try {
 			const upserts = data.map((stock) =>

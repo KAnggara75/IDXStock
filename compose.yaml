@@ -4,6 +4,6 @@ services:
     container_name: idxstock
     restart: always
     volumes:
-      - ./logs:/usr/src/app/logs
+      - ./logs:/usr/app/logs
     ports:
       - 3000:3000

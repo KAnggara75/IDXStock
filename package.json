@@ -7,6 +7,7 @@
 	"module": "src/index.ts",
 	"scripts": {
 		"dev": "bun run --hot src/index.ts",
+		"devv": "bun run --hot src/main.ts",
 		"fc": "bunx prettier --write . && bunx eslint --fix . && bunx prettier --check . && bunx eslint .",
 		"mig": "rm -rf prisma/migrations && bunx prisma generate && bunx prisma migrate dev --name init"
 	},
@@ -14,22 +15,22 @@
 		"seed": "bun prisma/seed.ts"
 	},
 	"dependencies": {
-		"@hono/node-server": "^1.13.7",
-		"@prisma/client": "^6.2.1",
-		"hono": "^4.6.15",
+		"@hono/node-server": "^1.14.0",
+		"@prisma/client": "^6.5.0",
+		"hono": "^4.7.5",
 		"winston": "^3.17.0",
 		"xlsx": "https://cdn.sheetjs.com/xlsx-0.20.3/xlsx-0.20.3.tgz",
-		"zod": "^3.24.1"
+		"zod": "^3.24.2"
 	},
 	"devDependencies": {
-		"@eslint/js": "^9.17.0",
+		"@eslint/js": "^9.24.0",
 		"@types/bun": "latest",
-		"eslint": "^9.17.0",
+		"eslint": "^9.24.0",
 		"eslint-plugin-tsdoc": "^0.4.0",
-		"globals": "^15.14.0",
-		"prettier": "^3.4.2",
-		"prisma": "^6.2.1",
-		"typescript": "^5.7.3",
-		"typescript-eslint": "^8.19.0"
+		"globals": "^15.15.0",
+		"prettier": "^3.5.3",
+		"prisma": "^6.5.0",
+		"typescript": "^5.8.3",
+		"typescript-eslint": "^8.29.0"
 	}
 }
