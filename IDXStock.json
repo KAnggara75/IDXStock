@@ -1,0 +1,50 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "IDX Stock Restful API by IDScript",
+    "version": "0.1.0",
+    "description": "Stock Data from IDX."
+  },
+  "servers": [
+    {
+      "url": "http://localhost:3000"
+    },
+    {
+      "url": "https://idxstock.kanggara.my.id"
+    }
+  ],
+  "paths": {
+    "/api": {
+      "get": {
+        "summary": "Get api Version",
+        "description": "Return API Name, Version and Description",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "Restful API by IDScript"
+                    },
+                    "version": {
+                      "type": "string",
+                      "example": "0.1.0"
+                    },
+                    "stability": {
+                      "type": "string",
+                      "example": "Developer-Preview"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
