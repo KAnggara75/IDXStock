@@ -14,7 +14,7 @@ Even though you have made an _issue_, I do not guarantee that I will update the 
 
 This project aims to provide a dataset for researchers who want to learn more about time series analysis. This dataset is expected to be used for research purposes as well as to increase understanding of time series data.
 
-To know the function of each column, please read [Column Name Description](Description%20of%20Column%20Name.md). If you know or want to improve the function of a column, please open Pull Requests in this repository.
+To know the function of each column, please read [Column Name Description](Keterangan%20Nama%20Kolom.md). If you know or want to improve the function of a column, please open Pull Requests in this repository.
 
 ## Data Ownership
 
