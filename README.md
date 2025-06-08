@@ -4,46 +4,56 @@ Stock Data from IDX
 
 ![coverage](coverage.svg)
 
-## Catatan - LIHAT TANGGAL TERAKHIR DATASET DI-UPDATE
+## Note - SEE LAST DATE DATASET WAS UPDATED
 
-PT BEI telah melarang tiap-tiap pengguna untuk melakukan web crawling ataupun scraping. Oleh karena itu, dataset ini akan diupdate secara berkala apabila saya sedang ada waktu kosong. Untuk meminta update (apabila Anda butuh data terbaru), buka [_issue_](https://github.com/KAnggara75/IDXStock/issues/new/choose) pada repository ini agar saya bisa mengetahui dan mengusahakan untuk mengupdate dataset ini.
+PT BEI has prohibited each user from doing web crawling or scraping. Therefore, this dataset will be updated regularly when I am free. To request an update (if you need the latest data), go to [_issue_](https://github.com/KAnggara75/IDXStock/issues/new/choose) on this repository so that I can be aware and try to update this dataset.
 
-Walaupun Anda telah membuat _issue_, saya tidak menjamin bahwa saya akan segera mengupdate dataset ya. Saya akan melakukannya saat saya sedang ada waktu untuk mengupdate dataset ini (apalagi updatenya dilakukan secara manual, hehe).
+Even though you have made an _issue_, I do not guarantee that I will update the dataset immediately. I will do it when I have time to update this dataset (especially when the update is done manually, hehe).
 
 ## Overview
 
-Projek ini bertujuan untuk menyediakan sebuah dataset untuk para researcher yang ingin belajar/meneliti lebih lanjut terutama mengenai time series analysis. Dataset ini diharapkan agar dapat digunakan untuk tujuan penelitian sekaligus agar dapat meningkatkan pemahaman akan data yang bersifat time series.
+This project aims to provide a dataset for researchers who want to learn more about time series analysis. This dataset is expected to be used for research purposes as well as to increase understanding of time series data.
 
-Untuk mengetahui fungsi tiap-tiap kolom, silakan baca [Keterangan Nama Kolom](Keterangan%20Nama%20Kolom.md). Apabila Anda mengetahui atau ingin memperbaiki fungsi dari suatu kolom, silakan buka Pull Requests pada repositori ini.
+To know the function of each column, please read [Column Name Description](Description%20of%20Column%20Name.md). If you know or want to improve the function of a column, please open Pull Requests in this repository.
 
-## Kepemilikan Data
+## Data Ownership
 
-Dataset ini diambil dan diolah dari website [PT Bursa Efek Indonesia](https://idx.co.id). Semua data yang ada dalam dataset adalah milik PT Bursa Efek Indonesia. Silakan mengacu pada [Syarat Penggunaan](https://idx.co.id/id/syarat-penggunaan/) yang dimiliki oleh PT Bursa Efek Indonesia.
+This dataset is taken and processed from the [PT Bursa Efek Indonesia] website (https://idx.co.id). All data contained in the dataset is the property of PT Bursa Efek Indonesia. Please refer to the [Terms of Use](https://idx.co.id/id/syarat-penggunaan/) owned by PT Bursa Efek Indonesia.
 
-### Penggunaan Untuk Komersial maupun Non Komersial
+### Commercial and Non-Commercial Use
 
-Mengacu pada [Syarat Penggunaan](https://idx.co.id/id/syarat-penggunaan/) PT Bursa Efek Indonesia Nomor 6:
+Referring to [Terms of Use](https://idx.co.id/id/syarat-penggunaan/) PT Bursa Efek Indonesia Number 6:
 
-> Pengguna dilarang menggunakan atau menyebarluaskan Informasi dan atau data yang diperoleh dari Website kepada pihak lain untuk tujuan komersial tanpa izin tertulis terlebih dahulu dari Bursa Efek Indonesia dan atau pemilik asal dari Informasi dan atau data tersebut. Penggunaan Informasi dan atau data termasuk pengutipan Informasi dan atau data bukan untuk tujuan komersial diperbolehkan dengan menyebutkan sumbernya secara lengkap yang disertai tanggal akses Pengguna mengutip Informasi dan atau data tersebut pada Website dan tidak diperkenankan menggunakan metode web scrapping/crawling.
+> Users are prohibited from using or disseminating Information and or data obtained from the Website to other parties for commercial purposes without prior written permission from the Indonesia Stock Exchange and or the original owner of the Information and or data. The use of Information and or data including quotation of Information and or data not for commercial purposes is permitted by mentioning the source in full accompanied by the date of access of the User quoting the Information and or data on the Website and is not permitted to use the web scrapping / crawling method.
 
-#### Bagi Pengguna Untuk Tujuan Komersial
+#### For Users for Commercial Purposes
 
-Pengguna dataset ini DILARANG KERAS untuk menggunakan informasi untuk tujuan komersial apapun tanpa persetujuan tertulis dari PT Bursa Efek Indonesia dan/atau pemilik asal data. Pemilik projek ini tidak bertanggungjawab apapun apabila pengguna menyalahi aturan ini dan tidak dapat dituntut secara hukum.
+Users of this dataset are STRICTLY PROHIBITED from using the information for any commercial purpose without the written consent of PT Bursa Efek Indonesia and/or the original data owner. The owner of this project does not take any responsibility if the user violates this rule and cannot be prosecuted legally.
 
-#### Bagi Pengguna Untuk Tujuan Non Komersial
+#### For Users for Non-Commercial Purposes
 
-Harap menyebutkan sumber secara lengkap serta tanggal akses saat mengutip informasi tersebut.
+Please cite the source in full as well as the date of access when quoting the information.
 
-## Lisensi
+## License
 
-Projek ini dilisensikan dengan CC BY-NC 4.0. Lisensi ini membatasi Anda untuk tidak menggunakan data atau apapun yang berhubungan dengan projek ini untuk tujuan komersial.
+This project is licensed under CC BY-NC 4.0. This license restricts you from using the data or anything related to this project for commercial purposes.
 
-Anda dapat membaca lisensi di [sini](LICENSE.md). Rangkuman pendek dari lisensi ini dapat Anda baca di [sini](https://creativecommons.org/licenses/by-nc/4.0/)
+You can read the license at [here](LICENSE.md). A short summary of the license can be found here (https://creativecommons.org/licenses/by-nc/4.0/).
 
-## Jajan?
+## Snacks?
 
-Kalau dataset ini membantu Anda dalam pekerjaan, penelitian, atau apapun itu, mungkin boleh beliin saya jajan biar makin sering update? [https://trakteer.id/kanggara75](https://trakteer.id/kanggara75/tip) 😅✌️
+If this dataset helps you in your work, research, or whatever, maybe you can buy me some snacks to keep me updated? [https://trakteer.id/kanggara75](https://trakteer.id/kanggara75/tip) 😅✌️
 
 Credit to [@wildangunawan](https://github.com/wildangunawan) of [Dataset-Saham-IDX](https://github.com/wildangunawan/Dataset-Saham-IDX)
 
 [Stock List](https://www.idx.co.id/en/market-data/stocks-data/stock-list/)
+
+### Bun Add
+
+```shell
+bun add @hono/node-server @prisma/client hono winston zod
+```
+
+```shell
+bun add -d @eslint/js @types/bun eslint eslint-plugin-tsdoc globals prettier prisma typescript typescript-eslint
+```
