@@ -12,7 +12,8 @@
 		"mig": "rm -rf prisma/migrations && bunx prisma generate && bunx prisma migrate dev --name init"
 	},
 	"prisma": {
-		"seed": "bun prisma/seed.ts"
+		"seed": "bun prisma/seed.ts",
+		"schema": "./prisma"
 	},
 	"dependencies": {
 		"@hono/node-server": "^1.14.4",
