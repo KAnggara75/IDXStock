@@ -1,6 +1,8 @@
 import type { MiddlewareHandler } from "hono";
 
 export const jsonMiddleware: MiddlewareHandler = async (c, next) => {
+	console.warn("jsonMiddleware");
+
 	if (c.req.method === "GET" || c.req.method === "DELETE") {
 		return next();
 	}

@@ -17,12 +17,11 @@ import { authController } from "./controller/auth-controller";
 import { jsonMiddleware } from "./middleware/json-middleware";
 import { stockController } from "./controller/stock-controller";
 import { converterController } from "./controller/convert-controller.ts";
+import { authMiddleware } from "./middleware/auth-middleware.ts";
 
 const port: number = Number(Bun.env.API_PORT ?? 3000);
 
 export const app = new Hono().basePath("/api");
-
-authController.use(jsonMiddleware);
 
 app.get("/", (c) => {
 	return c.json(
@@ -36,9 +35,13 @@ app.get("/", (c) => {
 });
 
 app.route("/", authController);
+
+app.use(jsonMiddleware);
+app.use(authMiddleware);
+
 app.route("/", userController);
-app.route("/", converterController);
 app.route("/", stockController);
+app.route("/", converterController);
 
 app.notFound((c) => {
 	log.error(`Not Found: ${c.req.path}`);

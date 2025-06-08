@@ -6,6 +6,8 @@ import { AuthValidation } from "../validation/auth-validation";
 import { AuthRepository } from "../repository/auth-repo.ts";
 
 export const authMiddleware: MiddlewareHandler = async (c, next) => {
+	console.warn("authMiddleware");
+
 	const authHeader = c.req.header("Authorization");
 
 	if (!authHeader) {
