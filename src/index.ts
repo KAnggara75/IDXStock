@@ -50,7 +50,7 @@ app.notFound((c) => {
 
 app.onError(async (err, c) => {
 	if (err instanceof HTTPException) {
-		return c.json({ errors: err.message }, err.status);
+		return c.json({ errors: JSON.parse(err.message) }, err.status);
 	} else if (err instanceof ZodError) {
 		return c.json({ errors: JSON.parse(err.message) }, 400);
 	} else if (err instanceof PrismaClientKnownRequestError) {

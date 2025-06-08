@@ -45,6 +45,122 @@
           }
         }
       }
+    },
+    "/api/register": {
+      "post": {
+        "summary": "Register new User",
+        "description": "Return Token if success regis new user",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "example": "fake name"
+                  },
+                  "username": {
+                    "type": "string",
+                    "example": "testUsername"
+                  },
+                  "email": {
+                    "type": "string",
+                    "example": "test@gmail.com"
+                  },
+                  "password": {
+                    "type": "string",
+                    "example": "difficult_password"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "400": {
+            "description": "User Already Exist",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "code": {
+                            "type": "string",
+                            "example": "bad_request"
+                          },
+                          "expected": {
+                            "type": "string",
+                            "example": "string"
+                          },
+                          "received": {
+                            "type": "string",
+                            "example": "undefined"
+                          },
+                          "path": {
+                            "type": "array",
+                            "items": [
+                              {
+                                "example": "email"
+                              },
+                              {
+                                "example": "username"
+                              }
+                            ]
+                          },
+                          "message": {
+                            "type": "string",
+                            "example": "Username or email already exists"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "email": {
+                          "type": "string",
+                          "example": "kanggara75@gmail.com"
+                        },
+                        "name": {
+                          "type": "string",
+                          "example": "kanggara75"
+                        },
+                        "username": {
+                          "type": "string",
+                          "example": "kanggara75"
+                        },
+                        "token": {
+                          "type": "string",
+                          "example": "valid.token.data"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
     }
   }
 }

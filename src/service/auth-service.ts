@@ -1,13 +1,14 @@
 import {
-	toUserResponse,
-	type UserResponse,
 	type LoginUserRequest,
 	type RegisterUserRequest,
+	toUserResponse,
+	type UserResponse,
 } from "../model/user-model.ts";
 import type { User } from "@prisma/client";
 import { HTTPException } from "hono/http-exception";
 import { prismaClient } from "../config/database.ts";
 import { AuthValidation } from "../validation/auth-validation.ts";
+import { type CustomError, toErrorDetail } from "../model/errors-model.ts";
 
 export class AuthService {
 	static async register(request: RegisterUserRequest): Promise<UserResponse> {
@@ -15,13 +16,25 @@ export class AuthService {
 
 		const totalUserWithSameUsername: number = await prismaClient.user.count({
 			where: {
-				username: request.username,
+				OR: [
+					{
+						email: request.email,
+					},
+					{
+						username: request.username,
+					},
+				],
 			},
 		});
 
 		if (totalUserWithSameUsername != 0) {
+			const errorPayload: CustomError[] = await toErrorDetail(
+				"bad_request",
+				["username", "email"],
+				"Username or email already exists"
+			);
 			throw new HTTPException(400, {
-				message: "Username already exists",
+				message: JSON.stringify(errorPayload),
 			});
 		}
 
