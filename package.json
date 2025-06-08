@@ -15,22 +15,22 @@
 		"seed": "bun prisma/seed.ts"
 	},
 	"dependencies": {
-		"@hono/node-server": "^1.14.0",
-		"@prisma/client": "^6.5.0",
-		"hono": "^4.7.5",
+		"@hono/node-server": "^1.14.4",
+		"@prisma/client": "^6.9.0",
+		"hono": "^4.7.11",
 		"winston": "^3.17.0",
 		"xlsx": "https://cdn.sheetjs.com/xlsx-0.20.3/xlsx-0.20.3.tgz",
-		"zod": "^3.24.2"
+		"zod": "^3.25.56"
 	},
 	"devDependencies": {
-		"@eslint/js": "^9.24.0",
+		"@eslint/js": "^9.28.0",
 		"@types/bun": "latest",
-		"eslint": "^9.24.0",
+		"eslint": "^9.28.0",
 		"eslint-plugin-tsdoc": "^0.4.0",
 		"globals": "^15.15.0",
 		"prettier": "^3.5.3",
-		"prisma": "^6.5.0",
+		"prisma": "^6.9.0",
 		"typescript": "^5.8.3",
-		"typescript-eslint": "^8.29.0"
+		"typescript-eslint": "^8.33.1"
 	}
 }
