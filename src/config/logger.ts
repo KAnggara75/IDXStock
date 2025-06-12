@@ -24,13 +24,7 @@ const myTransports: (
 	}),
 ];
 
-if (logLevel == "warn") {
-	myTransports.push(
-		new transports.Console({
-			level: "warn",
-		})
-	);
-} else if (logLevel == "info") {
+if (logLevel == "info") {
 	myTransports.push(
 		new transports.Console({
 			level: "info",
@@ -39,7 +33,7 @@ if (logLevel == "warn") {
 } else {
 	myTransports.push(
 		new transports.Console({
-			level: "error",
+			level: "debug",
 		})
 	);
 }
