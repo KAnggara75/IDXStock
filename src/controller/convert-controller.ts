@@ -7,7 +7,7 @@ export const converterController = new Hono<{
 	Variables: ApplicationVariables;
 }>();
 
-converterController.post("/convert", async (c) => {
+converterController.post("/", async (c) => {
 	const body = await c.req.parseBody();
 
 	const xlxsFile: string | File = body.file;

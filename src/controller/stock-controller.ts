@@ -5,7 +5,7 @@ import { StockUsecase } from "../usecase/stock-usecase.ts";
 
 export const stockController = new Hono<{ Variables: ApplicationVariables }>();
 
-stockController.patch("/stocks/google", async (c) => {
+stockController.patch("/google", async (c) => {
 	const user: User = c.get("user");
 	const response = await StockUsecase.updateDailyStock(user);
 
@@ -14,7 +14,7 @@ stockController.patch("/stocks/google", async (c) => {
 	});
 });
 
-stockController.post("/stocks/idx", async (c) => {
+stockController.post("/idx", async (c) => {
 	const user: User = c.get("user");
 
 	const body = await c.req.parseBody();

@@ -23,7 +23,7 @@ userController.delete(
 	}
 );
 
-userController.get("/users/current", async (c) => {
+userController.get("/current", async (c) => {
 	const user: User = c.get("user");
 
 	const response: UserResponse = await UserService.get(user);
@@ -33,7 +33,7 @@ userController.get("/users/current", async (c) => {
 	});
 });
 
-userController.patch("/users/current", async (c) => {
+userController.patch("/current", async (c) => {
 	const user: User = c.get("user");
 
 	const request: UpdateUserRequest = await c.req.json();
