@@ -26,6 +26,7 @@ export const app = new Hono().basePath("/api");
 app.use(validateJsonBody);
 
 app.get("/version", (c) => {
+	log.debug("get /version");
 	return c.json(
 		{
 			message: pkg.description ?? "KAnggara Web APP",
@@ -51,7 +52,13 @@ app.notFound((c) => {
 
 app.onError(async (err, c) => {
 	if (err instanceof HTTPException) {
-		return c.json({ errors: JSON.parse(err.message) }, err.status);
+		let response;
+		try {
+			response = JSON.parse(err.message);
+		} catch {
+			response = err.message;
+		}
+		return c.json({ errors: response }, err.status);
 	} else if (err instanceof ZodError) {
 		return c.json({ errors: JSON.parse(err.message) }, 400);
 	} else if (err instanceof PrismaClientKnownRequestError) {
