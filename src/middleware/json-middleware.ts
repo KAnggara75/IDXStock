@@ -10,13 +10,9 @@ function isMethodsWithBody(method: string): boolean {
 }
 
 export const jsonMiddleware: MiddlewareHandler = async (c, next) => {
-	console.warn("jsonMiddleware");
+	log.debug("jsonMiddleware");
 
 	if (!isMethodsWithBody(c.req.method.toUpperCase())) {
-		return next();
-	}
-
-	if (c.req.method === "GET" || c.req.method === "DELETE") {
 		return next();
 	}
 

@@ -110,9 +110,7 @@ async function gracefulShutdown(): Promise<number> {
 
 	// Force close the server after 5 seconds
 	setTimeout(() => {
-		console.error(
-			"Could not close connections in time, forcefully shutting down"
-		);
+		log.error("Could not close connections in time, forcefully shutting down");
 		status = 0;
 		process.exit(1);
 	}, 5000);

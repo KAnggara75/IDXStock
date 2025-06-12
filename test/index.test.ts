@@ -1,5 +1,5 @@
 import { app } from "../src";
-import { expect, describe, it } from "bun:test";
+import { describe, expect, it } from "bun:test";
 
 describe("POST", () => {
 	it("URL Not Found", async () => {
@@ -18,7 +18,7 @@ describe("POST", () => {
 	});
 
 	it("App Version", async () => {
-		const response = await app.request("/api", {
+		const response = await app.request("/api/version", {
 			method: "get",
 			body: JSON.stringify({
 				first_name: "OK",

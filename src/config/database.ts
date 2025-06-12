@@ -31,7 +31,7 @@ prismaClient.$on("info", (e: Prisma.LogEvent): void => {
 	log.info(e);
 });
 prismaClient.$on("query", (e: Prisma.QueryEvent): void => {
-	log.verbose(`Query: ${e.query}`);
-	log.verbose(`Params: ${e.params}`);
-	log.verbose(`Duration: ${e.duration} ms`);
+	log.debug(`Query: ${e.query}`);
+	log.debug(`Params: ${e.params}`);
+	log.debug(`Duration: ${e.duration} ms`);
 });

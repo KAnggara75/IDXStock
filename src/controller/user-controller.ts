@@ -1,4 +1,5 @@
 import { Hono } from "hono";
+import { log } from "../config/logger.ts";
 import { validator } from "hono/validator";
 import type { User } from "@prisma/client";
 import { UserService } from "../service/user-service";
@@ -17,7 +18,7 @@ userController.delete(
 
 	async (c) => {
 		const user: User = c.get("user");
-		console.warn(user);
+		log.debug(JSON.stringify(user));
 		await AuthService.logout(user);
 		return c.body(null, 204);
 	}

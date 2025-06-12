@@ -12,8 +12,6 @@ import { type CustomError, toErrorDetail } from "../model/errors-model.ts";
 
 export class AuthService {
 	static async register(request: RegisterUserRequest): Promise<UserResponse> {
-		request = AuthValidation.REGISTER.parse(request);
-
 		const totalUserWithSameUsername: number = await prismaClient.user.count({
 			where: {
 				OR: [
