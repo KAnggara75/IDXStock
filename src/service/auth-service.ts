@@ -30,8 +30,8 @@ export class AuthService {
 		if (totalUserWithSameUsername != 0) {
 			const errorPayload: CustomError[] = await toErrorDetail(
 				"bad_request",
-				["username", "email"],
-				"Username or email already exists"
+				"Username or email already exists",
+				["username", "email"]
 			);
 			throw new HTTPException(400, {
 				message: JSON.stringify(errorPayload),

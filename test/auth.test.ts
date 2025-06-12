@@ -143,7 +143,7 @@ describe("POST /api/login", () => {
 	});
 });
 
-describe("DELETE /api/logout", () => {
+describe("DELETE /api/users/logout", () => {
 	let token: string = "";
 
 	beforeEach(async () => {
@@ -156,15 +156,20 @@ describe("DELETE /api/logout", () => {
 	});
 
 	it("should failed logout cause invalid request", async () => {
-		const response = await app.request("/api/logout", {
+		const response = await app.request("/api/users/logout", {
 			method: "delete",
 		});
 
 		expect(response.status).toBe(401);
+		const body = await response.json();
+		expect(body.errors).toBeDefined();
+		expect(body.errors[0].validation).toBe("jwt");
+		expect(body.errors[0].code).toBe("unauthorized");
+		expect(body.errors[0].message).toBe("Authorization header is missing");
 	});
 
 	it("should failed logout cause invalid token", async () => {
-		const response = await app.request("/api/logout", {
+		const response = await app.request("/api/users/logout", {
 			method: "delete",
 			headers: {
 				Authorization: `Bearer ${token}a`,
@@ -172,10 +177,31 @@ describe("DELETE /api/logout", () => {
 		});
 
 		expect(response.status).toBe(401);
+		const body = await response.json();
+		expect(body.errors).toBeDefined();
+		expect(body.errors[0].validation).toBe("jwt");
+		expect(body.errors[0].code).toBe("invalid_or_expired_token");
+		expect(body.errors[0].message).toBe("Token is invalid or has expired");
+	});
+
+	it("should failed logout cause invalid header auth format", async () => {
+		const response = await app.request("/api/users/logout", {
+			method: "delete",
+			headers: {
+				Authorization: `${token}`,
+			},
+		});
+
+		expect(response.status).toBe(400);
+		const body = await response.json();
+		expect(body.errors).toBeDefined();
+		expect(body.errors[0].validation).toBe("jwt");
+		expect(body.errors[0].code).toBe("unauthorized");
+		expect(body.errors[0].message).toBe("Authorization header is malformed");
 	});
 
 	it("should be success logout", async () => {
-		const logout = await app.request("/api/logout", {
+		const logout = await app.request("/api/users/logout", {
 			method: "DELETE",
 			headers: {
 				Authorization: `Bearer ${token}`,
@@ -189,13 +215,16 @@ describe("DELETE /api/logout", () => {
 				Authorization: `Bearer ${token}`,
 			},
 		});
-		expect(getUser.status).toBe(401);
+		expect(getUser.status).toBe(403);
 		const body = await getUser.json();
 		expect(body.errors).toBeDefined();
+		expect(body.errors[0].validation).toBe("jwt");
+		expect(body.errors[0].code).toBe("unauthorized_user");
+		expect(body.errors[0].message).toBe("Invalid Token: User not authorized");
 	});
 
 	it("test with invalid jwt zod validation", async () => {
-		const logout = await app.request("/api/logout", {
+		const logout = await app.request("/api/users/logout", {
 			method: "DELETE",
 			headers: {
 				Authorization: "Bearer test",

@@ -1,21 +1,17 @@
 export interface CustomError {
+	validation?: string;
 	code: string;
 	expected?: string;
 	received?: string;
-	path: string[];
-	message: string;
+	path?: (string | number)[];
+	message?: string;
 }
 
 export async function toErrorDetail(
 	code: string,
-	path: string[],
-	message: string
+	message: string,
+	path?: (string | number)[],
+	validation?: string
 ): Promise<CustomError[]> {
-	return [
-		{
-			code: code,
-			path: path,
-			message: message,
-		},
-	];
+	return [{ validation: validation, code: code, path: path, message: message }];
 }
