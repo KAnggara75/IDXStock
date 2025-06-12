@@ -18,6 +18,7 @@ import { jsonMiddleware, validateJsonBody } from "./middleware/json-middleware";
 import { stockController } from "./controller/stock-controller";
 import { converterController } from "./controller/convert-controller.ts";
 import { authMiddleware } from "./middleware/auth-middleware.ts";
+import { JsonUtils } from "./utils/jsonUtils.ts";
 
 const port: number = Number(Bun.env.API_PORT ?? 3000);
 
@@ -52,25 +53,25 @@ app.notFound((c) => {
 
 app.onError(async (err, c) => {
 	if (err instanceof HTTPException) {
-		let response;
-		try {
-			response = JSON.parse(err.message);
-		} catch {
-			response = err.message;
-		}
+		const response = JsonUtils.safeParseJSON(err.message);
 		return c.json({ errors: response }, err.status);
-	} else if (err instanceof ZodError) {
-		return c.json({ errors: JSON.parse(err.message) }, 400);
-	} else if (err instanceof PrismaClientKnownRequestError) {
-		log.error("PrismaClientKnownRequestError");
-		return c.json({ errors: err.message }, 503);
-	} else if (err instanceof PrismaClientUnknownRequestError) {
-		log.error("PrismaClientUnknownRequestError");
-		return c.json({ errors: JSON.parse(err.message) }, 503);
-	} else if (err instanceof PrismaClientRustPanicError) {
-		log.error("PrismaClientRustPanicError");
-		return c.json({ errors: JSON.parse(err.message) }, 503);
-	} else if (err instanceof PrismaClientInitializationError) {
+	}
+
+	if (err instanceof ZodError) {
+		return c.json({ errors: JsonUtils.safeParseJSON(err.message) }, 400);
+	}
+
+	if (
+		err instanceof PrismaClientKnownRequestError ||
+		err instanceof PrismaClientUnknownRequestError ||
+		err instanceof PrismaClientRustPanicError ||
+		err instanceof PrismaClientValidationError
+	) {
+		log.error(err.constructor.name);
+		return c.json({ errors: JsonUtils.safeParseJSON(err.message) }, 503);
+	}
+
+	if (err instanceof PrismaClientInitializationError) {
 		log.error("PrismaClientInitializationError");
 		return c.json(
 			{
@@ -79,13 +80,10 @@ app.onError(async (err, c) => {
 			},
 			503
 		);
-	} else if (err instanceof PrismaClientValidationError) {
-		log.error("PrismaClientValidationError");
-		return c.json({ errors: JSON.parse(err.message) }, 503);
-	} else {
-		log.error("Unknown error occurred " + err.message);
-		return c.json({ errors: err.message }, 500);
 	}
+
+	log.error("Unknown error: " + (err as Error).message);
+	return c.json({ errors: (err as Error).message }, 500);
 });
 
 const server: ServerType = serve({
