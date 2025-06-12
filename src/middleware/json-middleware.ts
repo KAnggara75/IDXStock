@@ -56,8 +56,6 @@ export const validateJsonBody: MiddlewareHandler = async (c, next) => {
 	if (contentType?.includes("application/json")) {
 		log.debug("validateJsonBody");
 		try {
-			const body = await c.req.json();
-			c.set("parsedBody", body);
 			await next();
 		} catch {
 			const errorPayload: CustomError[] = await toErrorDetail(
