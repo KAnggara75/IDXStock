@@ -12,7 +12,7 @@ authController.post(
 	"/register",
 	validateWithSchema("json", AuthValidation.REGISTER),
 	async (c) => {
-		log.debug("Registering new user");
+		log.debug("Try to registering new user");
 		const request = await c.req.json();
 		const response: UserResponse = await AuthService.register(request);
 		log.debug(`Registering ${response.username}`);

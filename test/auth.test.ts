@@ -95,7 +95,7 @@ describe("POST /api/login", () => {
 	});
 
 	it("should be able to login", async () => {
-		const response = await app.request("/api/login", {
+		const response = await app.request("/api/auth/login", {
 			method: "post",
 			headers: { "Content-Type": "application/json" },
 			body: JSON.stringify({
@@ -111,7 +111,7 @@ describe("POST /api/login", () => {
 	});
 
 	it("should be rejected if username is wrong", async () => {
-		const response = await app.request("/api/login", {
+		const response = await app.request("/api/auth/login", {
 			method: "post",
 			headers: { "Content-Type": "application/json" },
 			body: JSON.stringify({
@@ -127,7 +127,7 @@ describe("POST /api/login", () => {
 	});
 
 	it("should be rejected if password is wrong", async () => {
-		const response = await app.request("/api/login", {
+		const response = await app.request("/api/auth/login", {
 			method: "post",
 			headers: { "Content-Type": "application/json" },
 			body: JSON.stringify({
@@ -153,6 +153,17 @@ describe("DELETE /api/users/logout", () => {
 
 	afterEach(async () => {
 		await UserTest.delete();
+	});
+
+	it("should failed logout cause user not registered", async () => {
+		const logout = await app.request("/api/users/logout", {
+			method: "DELETE",
+			headers: {
+				Authorization:
+					"Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1lIjoibm90Zm91bmQiLCJlbWFpbCI6Im5vdGZvdW5kQGdtYWlsLmNvbSIsInVzZXJuYW1lIjoibm90Zm91bmQiLCJleHAiOjE3NTIzMzQ2MDcsImlhdCI6MTc0OTc0MjYwN30.Uif93W-NnzmprpnFKXUF4_HwalWNySRE9R-yh6I_A_0",
+			},
+		});
+		expect(logout.status).toBe(403);
 	});
 
 	it("should failed logout cause invalid request", async () => {

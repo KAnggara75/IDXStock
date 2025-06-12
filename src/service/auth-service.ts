@@ -4,10 +4,10 @@ import {
 	toUserResponse,
 	type UserResponse,
 } from "../model/user-model.ts";
+import { log } from "../config/logger.ts";
 import type { User } from "@prisma/client";
 import { HTTPException } from "hono/http-exception";
 import { prismaClient } from "../config/database.ts";
-import { AuthValidation } from "../validation/auth-validation.ts";
 import { type CustomError, toErrorDetail } from "../model/errors-model.ts";
 
 export class AuthService {
@@ -49,8 +49,12 @@ export class AuthService {
 	}
 
 	static async login(request: LoginUserRequest): Promise<UserResponse> {
-		request = AuthValidation.LOGIN.parse(request);
-
+		log.debug(`${request.username} Try to login`);
+		const errorPayload: CustomError[] = await toErrorDetail(
+			"unauthorized",
+			"Username or password is wrong",
+			["username", "password"]
+		);
 		const user: User | null = await prismaClient.user.findUnique({
 			where: {
 				username: request.username,
@@ -62,15 +66,19 @@ export class AuthService {
 				message: "Username or Password is wrong",
 			});
 		}
+		log.debug(
+			`${request.username} Login result: ${user ? "success" : "failed"}`
+		);
 
 		const isPasswordValid = await Bun.password.verify(
 			request.password,
 			user.password,
 			"bcrypt"
 		);
+
 		if (!isPasswordValid) {
 			throw new HTTPException(401, {
-				message: "Username or password is wrong",
+				message: JSON.stringify(errorPayload),
 			});
 		}
 		return toUserResponse(user, true);
@@ -78,6 +86,7 @@ export class AuthService {
 
 	static async logout(user: User): Promise<void> {
 		try {
+			log.debug(`${user.username} Try to logout`);
 			await prismaClient.user.update({
 				where: {
 					username: user.username,
@@ -87,6 +96,7 @@ export class AuthService {
 				},
 			});
 		} catch {
+			log.error(`${user.username} Logout failed, user not registered`);
 			throw new HTTPException(404, {
 				message: "user not register",
 			});
