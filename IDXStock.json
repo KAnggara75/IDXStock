@@ -7,14 +7,14 @@
   },
   "servers": [
     {
-      "url": "http://localhost:3000"
+      "url": "http://localhost:3000/api"
     },
     {
-      "url": "https://idxstock.kanggara.my.id"
+      "url": "https://idxstock.kanggara.my.id/api"
     }
   ],
   "paths": {
-    "/api": {
+    "/version": {
       "get": {
         "summary": "Get api Version",
         "description": "Return API Name, Version and Description",
@@ -46,7 +46,7 @@
         }
       }
     },
-    "/api/register": {
+    "/register": {
       "post": {
         "summary": "Register new User",
         "description": "Return Token if success regis new user",

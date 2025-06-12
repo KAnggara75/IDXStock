@@ -23,7 +23,7 @@ const port: number = Number(Bun.env.API_PORT ?? 3000);
 
 export const app = new Hono().basePath("/api");
 
-app.get("/", (c) => {
+app.get("/version", (c) => {
 	return c.json(
 		{
 			message: pkg.description ?? "KAnggara Web APP",
@@ -34,14 +34,14 @@ app.get("/", (c) => {
 	);
 });
 
-app.route("/", authController);
+app.route("/auth", authController);
 
 app.use(jsonMiddleware);
 app.use(authMiddleware);
 
-app.route("/", userController);
-app.route("/", stockController);
-app.route("/", converterController);
+app.route("/users", userController);
+app.route("/stocks", stockController);
+app.route("/convert", converterController);
 
 app.notFound((c) => {
 	log.error(`Not Found: ${c.req.path}`);
