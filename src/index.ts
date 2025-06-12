@@ -14,7 +14,7 @@ import { HTTPException } from "hono/http-exception";
 import { serve, type ServerType } from "@hono/node-server";
 import { userController } from "./controller/user-controller";
 import { authController } from "./controller/auth-controller";
-import { jsonMiddleware } from "./middleware/json-middleware";
+import { jsonMiddleware, validateJsonBody } from "./middleware/json-middleware";
 import { stockController } from "./controller/stock-controller";
 import { converterController } from "./controller/convert-controller.ts";
 import { authMiddleware } from "./middleware/auth-middleware.ts";
@@ -22,6 +22,8 @@ import { authMiddleware } from "./middleware/auth-middleware.ts";
 const port: number = Number(Bun.env.API_PORT ?? 3000);
 
 export const app = new Hono().basePath("/api");
+
+app.use(validateJsonBody);
 
 app.get("/version", (c) => {
 	return c.json(
@@ -33,7 +35,6 @@ app.get("/version", (c) => {
 		200
 	);
 });
-
 app.route("/auth", authController);
 
 app.use(jsonMiddleware);
@@ -55,13 +56,13 @@ app.onError(async (err, c) => {
 		return c.json({ errors: JSON.parse(err.message) }, 400);
 	} else if (err instanceof PrismaClientKnownRequestError) {
 		log.error("PrismaClientKnownRequestError");
-		return c.json({ errors: err.message }, 400);
+		return c.json({ errors: err.message }, 503);
 	} else if (err instanceof PrismaClientUnknownRequestError) {
 		log.error("PrismaClientUnknownRequestError");
-		return c.json({ errors: JSON.parse(err.message) }, 400);
+		return c.json({ errors: JSON.parse(err.message) }, 503);
 	} else if (err instanceof PrismaClientRustPanicError) {
 		log.error("PrismaClientRustPanicError");
-		return c.json({ errors: JSON.parse(err.message) }, 400);
+		return c.json({ errors: JSON.parse(err.message) }, 503);
 	} else if (err instanceof PrismaClientInitializationError) {
 		log.error("PrismaClientInitializationError");
 		return c.json(
@@ -73,8 +74,9 @@ app.onError(async (err, c) => {
 		);
 	} else if (err instanceof PrismaClientValidationError) {
 		log.error("PrismaClientValidationError");
-		return c.json({ errors: JSON.parse(err.message) }, 400);
+		return c.json({ errors: JSON.parse(err.message) }, 503);
 	} else {
+		log.error("Unknown error occurred " + err.message);
 		return c.json({ errors: err.message }, 500);
 	}
 });

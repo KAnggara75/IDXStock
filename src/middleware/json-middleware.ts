@@ -1,7 +1,16 @@
 import type { MiddlewareHandler } from "hono";
+const methodsWithBody = ["POST", "PUT", "PATCH"];
+
+function isMethodsWithBody(method: string): boolean {
+	return methodsWithBody.includes(method);
+}
 
 export const jsonMiddleware: MiddlewareHandler = async (c, next) => {
 	console.warn("jsonMiddleware");
+
+	if (!isMethodsWithBody(c.req.method.toUpperCase())) {
+		return next();
+	}
 
 	if (c.req.method === "GET" || c.req.method === "DELETE") {
 		return next();
