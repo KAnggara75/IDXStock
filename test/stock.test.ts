@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it } from "bun:test";
 import type { User } from "@prisma/client";
-import { DailyTest, UserTest } from "./test-util.ts";
+import { DailyTest, RedisTest, UserTest } from "./test-util.ts";
 import { JwtHelper } from "../src/helpers/jwt-helper.ts";
 import { app } from "../src";
 
@@ -14,6 +14,7 @@ describe("POST /api/stocks/idx", () => {
 
 	afterEach(async () => {
 		await UserTest.delete();
+		await RedisTest.delete();
 	});
 
 	it("should failed cause invalid token", async () => {
@@ -52,6 +53,7 @@ describe("PATCH /api/stocks/google", () => {
 	afterEach(async () => {
 		await DailyTest.delete();
 		await UserTest.delete();
+		await RedisTest.delete();
 	});
 
 	it("should failed cause invalid token", async () => {

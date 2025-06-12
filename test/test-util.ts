@@ -1,5 +1,6 @@
 import type { User } from "@prisma/client";
 import { prismaClient } from "../src/config/database";
+import { RedisService } from "../src/config/redis.ts";
 
 export class UserTest {
 	static async create(): Promise<User> {
@@ -42,5 +43,12 @@ export class HistoryTest {
 				code: "TEST",
 			},
 		});
+	}
+}
+
+export class RedisTest {
+	static async delete() {
+		const redis = new RedisService();
+		await redis.del("idx-test");
 	}
 }

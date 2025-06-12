@@ -3,9 +3,10 @@ import type { MiddlewareHandler } from "hono";
 import { JwtHelper } from "../helpers/jwt-helper";
 import type { UserJwt } from "../model/user-model";
 import { HTTPException } from "hono/http-exception";
-import { AuthRepository } from "../repository/auth-repo.ts";
 import { AuthValidation } from "../validation/auth-validation";
 import { type CustomError, toErrorDetail } from "../model/errors-model.ts";
+import { RedisService } from "../config/redis.ts";
+import { AuthRepository } from "../repository/auth-repo.ts";
 
 export const authMiddleware: MiddlewareHandler = async (c, next) => {
 	log.warn("authMiddleware");
@@ -61,10 +62,22 @@ export const authMiddleware: MiddlewareHandler = async (c, next) => {
 			message: JSON.stringify(errorPayload),
 		});
 	}
+	const redis = new RedisService();
+	let logoutAt = await redis.getLogoutAt(jwtPayload.username);
+	if (logoutAt === 0) {
+		log.debug(`logoutAt is 0, checking from db ${jwtPayload.username}`);
+		logoutAt = await AuthRepository.getLogoutAt(jwtPayload);
 
-	const user: number = await AuthRepository.checkUser(jwtPayload);
+		if (logoutAt !== 0) {
+			await redis.setLogoutAt(jwtPayload.username, logoutAt);
+		}
+	}
+	log.debug(`logoutAt ${logoutAt}`);
 
-	if (user !== 1) {
+	const jwtIat: number = Number(jwtPayload.iat ?? 0);
+
+	if (logoutAt >= jwtIat) {
+		log.warn(`Token for ${jwtPayload.username} is unauthorized`);
 		errorPayload = await toErrorDetail(
 			"unauthorized_user",
 			"Invalid Token: User not authorized",

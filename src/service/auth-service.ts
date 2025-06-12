@@ -9,6 +9,7 @@ import type { User } from "@prisma/client";
 import { HTTPException } from "hono/http-exception";
 import { prismaClient } from "../config/database.ts";
 import { type CustomError, toErrorDetail } from "../model/errors-model.ts";
+import { RedisService } from "../config/redis.ts";
 
 export class AuthService {
 	static async register(request: RegisterUserRequest): Promise<UserResponse> {
@@ -85,21 +86,24 @@ export class AuthService {
 	}
 
 	static async logout(user: User): Promise<void> {
-		try {
-			log.debug(`${user.username} Try to logout`);
-			await prismaClient.user.update({
-				where: {
-					username: user.username,
-				},
-				data: {
-					logoutAt: Math.floor(Date.now() / 1000),
-				},
-			});
-		} catch {
+		const now: number = Math.floor(Date.now() / 1000);
+		log.debug(`${user.username} Try to logout`);
+		const result = await prismaClient.user.updateMany({
+			where: {
+				username: user.username,
+			},
+			data: {
+				logoutAt: now,
+			},
+		});
+
+		if (result.count !== 1) {
 			log.error(`${user.username} Logout failed, user not registered`);
-			throw new HTTPException(404, {
-				message: "user not register",
+			throw new HTTPException(403, {
+				message: `Logout forbidden: user ${user.username} not registered or already revoked`,
 			});
+		} else {
+			await new RedisService().setLogoutAt(user.username, now);
 		}
 	}
 }

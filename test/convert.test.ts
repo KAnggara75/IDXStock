@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it } from "bun:test";
 import { app } from "../src";
-import { UserTest } from "./test-util";
+import { RedisTest, UserTest } from "./test-util";
 import type { User } from "@prisma/client";
 import { JwtHelper } from "../src/helpers/jwt-helper";
 import * as fs from "node:fs";
@@ -15,6 +15,7 @@ describe("POST /api/convert", () => {
 
 	afterEach(async () => {
 		await UserTest.delete();
+		await RedisTest.delete();
 	});
 
 	it("should be able convert xlsx to json", async () => {

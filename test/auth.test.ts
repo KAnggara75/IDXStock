@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it } from "bun:test";
 import { log as logger } from "../src/config/logger";
-import { UserTest } from "./test-util";
+import { RedisTest, UserTest } from "./test-util";
 import { app } from "../src";
 import type { User } from "@prisma/client";
 import { JwtHelper } from "../src/helpers/jwt-helper";
@@ -8,6 +8,7 @@ import { JwtHelper } from "../src/helpers/jwt-helper";
 describe("POST /api/auth/register", () => {
 	afterEach(async () => {
 		await UserTest.delete();
+		await RedisTest.delete();
 	});
 
 	it("should reject register new user if request is invalid", async () => {
@@ -92,6 +93,7 @@ describe("POST /api/login", () => {
 
 	afterEach(async () => {
 		await UserTest.delete();
+		await RedisTest.delete();
 	});
 
 	it("should be able to login", async () => {
@@ -153,14 +155,15 @@ describe("DELETE /api/users/logout", () => {
 
 	afterEach(async () => {
 		await UserTest.delete();
+		await RedisTest.delete();
 	});
 
 	it("should failed logout cause user not registered", async () => {
+		await UserTest.delete();
 		const logout = await app.request("/api/users/logout", {
 			method: "DELETE",
 			headers: {
-				Authorization:
-					"Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1lIjoibm90Zm91bmQiLCJlbWFpbCI6Im5vdGZvdW5kQGdtYWlsLmNvbSIsInVzZXJuYW1lIjoibm90Zm91bmQiLCJleHAiOjE3NTIzMzQ2MDcsImlhdCI6MTc0OTc0MjYwN30.Uif93W-NnzmprpnFKXUF4_HwalWNySRE9R-yh6I_A_0",
+				Authorization: `Bearer ${token}`,
 			},
 		});
 		expect(logout.status).toBe(403);

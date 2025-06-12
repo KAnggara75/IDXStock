@@ -1,7 +1,7 @@
-import { describe, it, expect, afterEach, beforeEach } from "bun:test";
+import { afterEach, beforeEach, describe, expect, it } from "bun:test";
 import { log as logger } from "../src/config/logger";
 import { app } from "../src";
-import { UserTest } from "./test-util";
+import { RedisTest, UserTest } from "./test-util";
 import type { User } from "@prisma/client";
 import { JwtHelper } from "../src/helpers/jwt-helper";
 
@@ -15,6 +15,7 @@ describe("GET /api/users/current", () => {
 
 	afterEach(async () => {
 		await UserTest.delete();
+		await RedisTest.delete();
 	});
 
 	it("should be able to get user", async () => {
@@ -72,6 +73,7 @@ describe("PATCH /api/users/current", () => {
 
 	afterEach(async () => {
 		await UserTest.delete();
+		await RedisTest.delete();
 	});
 
 	it("should be rejected if request is invalid", async () => {
