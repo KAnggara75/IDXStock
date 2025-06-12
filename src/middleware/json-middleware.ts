@@ -1,4 +1,8 @@
 import type { MiddlewareHandler } from "hono";
+import { log } from "../config/logger.ts";
+import { type CustomError, toErrorDetail } from "../model/errors-model.ts";
+import { HTTPException } from "hono/http-exception";
+
 const methodsWithBody = ["POST", "PUT", "PATCH"];
 
 function isMethodsWithBody(method: string): boolean {
@@ -45,4 +49,28 @@ export const jsonMiddleware: MiddlewareHandler = async (c, next) => {
 	}
 
 	await next();
+};
+
+export const validateJsonBody: MiddlewareHandler = async (c, next) => {
+	if (!isMethodsWithBody(c.req.method.toUpperCase())) {
+		return next();
+	}
+
+	const contentType = c.req.header("content-type");
+	if (contentType?.includes("application/json")) {
+		log.debug("validateJsonBody");
+		try {
+			const body = await c.req.json();
+			c.set("parsedBody", body);
+			await next();
+		} catch {
+			const errorPayload: CustomError[] = await toErrorDetail(
+				"bad_request",
+				"Invalid or missing JSON body"
+			);
+			throw new HTTPException(400, {
+				message: JSON.stringify(errorPayload),
+			});
+		}
+	}
 };

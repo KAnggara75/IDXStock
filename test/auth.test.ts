@@ -5,13 +5,13 @@ import { app } from "../src";
 import type { User } from "@prisma/client";
 import { JwtHelper } from "../src/helpers/jwt-helper";
 
-describe("POST /api/register", () => {
+describe("POST /api/auth/register", () => {
 	afterEach(async () => {
 		await UserTest.delete();
 	});
 
 	it("should reject register new user if request is invalid", async () => {
-		const response = await app.request("/api/register", {
+		const response = await app.request("/api/auth/register", {
 			method: "post",
 			headers: { "Content-Type": "application/json" },
 			body: JSON.stringify({
@@ -30,7 +30,7 @@ describe("POST /api/register", () => {
 	});
 
 	it("should reject register new user if request is invalid 2", async () => {
-		const response = await app.request("/api/register", {
+		const response = await app.request("/api/auth/register", {
 			method: "post",
 			headers: { "Content-Type": "application/json" },
 		});
@@ -45,7 +45,7 @@ describe("POST /api/register", () => {
 	it("should reject register new user if username already exists", async () => {
 		await UserTest.create();
 
-		const response = await app.request("/api/register", {
+		const response = await app.request("/api/auth/register", {
 			method: "post",
 			headers: { "Content-Type": "application/json" },
 			body: JSON.stringify({
@@ -64,7 +64,7 @@ describe("POST /api/register", () => {
 	});
 
 	it("should register new user success", async () => {
-		const response = await app.request("/api/register", {
+		const response = await app.request("/api/auth/register", {
 			method: "post",
 			headers: { "Content-Type": "application/json" },
 			body: JSON.stringify({
