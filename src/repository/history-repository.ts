@@ -25,7 +25,7 @@ export class HistoryRepository {
 						},
 					})
 					.catch((error) => {
-						log.error("Error upsert data:", error);
+						log.error(`Error upsert data: ${error}`);
 					});
 
 				const stockData = await prismaClient.history
@@ -36,7 +36,7 @@ export class HistoryRepository {
 						},
 					})
 					.catch((error) => {
-						log.error("Error Find data:", error);
+						log.error(`Error Find data: ${error}`);
 					});
 				if (!stockData) {
 					log.info(
@@ -77,7 +77,7 @@ export class HistoryRepository {
 							},
 						})
 						.catch((error) => {
-							log.error("Error inserting data:", error);
+							log.error(`Error inserting data: ${error}`);
 						});
 				} else {
 					log.info(

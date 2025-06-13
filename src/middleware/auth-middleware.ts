@@ -9,7 +9,7 @@ import { RedisService } from "../config/redis.ts";
 import { AuthRepository } from "../repository/auth-repo.ts";
 
 export const authMiddleware: MiddlewareHandler = async (c, next) => {
-	log.warn("authMiddleware");
+	log.debug("authMiddleware");
 	let errorPayload: CustomError[];
 
 	const authHeader = c.req.header("Authorization");
@@ -25,7 +25,7 @@ export const authMiddleware: MiddlewareHandler = async (c, next) => {
 			message: JSON.stringify(errorPayload),
 		});
 	}
-	log.warn("authHeader exists");
+	log.debug("authHeader exists");
 
 	if (!authHeader.startsWith("Bearer ")) {
 		errorPayload = await toErrorDetail(
@@ -38,7 +38,7 @@ export const authMiddleware: MiddlewareHandler = async (c, next) => {
 			message: JSON.stringify(errorPayload),
 		});
 	}
-	log.warn("authHeader startsWith Bearer");
+	log.debug("authHeader startsWith Bearer");
 
 	const token = authHeader.split(" ")[1];
 	const result = AuthValidation.TOKEN.safeParse(token);
@@ -77,7 +77,7 @@ export const authMiddleware: MiddlewareHandler = async (c, next) => {
 	const jwtIat: number = Number(jwtPayload.iat ?? 0);
 
 	if (logoutAt >= jwtIat) {
-		log.warn(`Token for ${jwtPayload.username} is unauthorized`);
+		log.info(`Token for ${jwtPayload.username} is unauthorized`);
 		errorPayload = await toErrorDetail(
 			"unauthorized_user",
 			"Invalid Token: User not authorized",

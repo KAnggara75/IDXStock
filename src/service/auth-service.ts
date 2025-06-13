@@ -98,7 +98,7 @@ export class AuthService {
 		});
 
 		if (result.count !== 1) {
-			log.error(`${user.username} Logout failed, user not registered`);
+			log.warn(`${user.username} Logout failed, user not registered`);
 			throw new HTTPException(403, {
 				message: `Logout forbidden: user ${user.username} not registered or already revoked`,
 			});

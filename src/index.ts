@@ -47,7 +47,7 @@ app.route("/stocks", stockController);
 app.route("/convert", converterController);
 
 app.notFound((c) => {
-	log.error(`Not Found: ${c.req.path}`);
+	log.warn(`Not Found: ${c.req.path}`);
 	return c.json({ errors: "Not Found" }, 404);
 });
 
@@ -82,7 +82,7 @@ app.onError(async (err, c) => {
 		);
 	}
 
-	log.error("Unknown error: " + (err as Error).message);
+	log.error(`Unknown error: ${(err as Error).message}`);
 	return c.json({ errors: (err as Error).message }, 500);
 });
 

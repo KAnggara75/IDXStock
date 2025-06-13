@@ -49,7 +49,7 @@ export class JwtHelper {
 			return payload;
 			// eslint-disable-next-line @typescript-eslint/no-explicit-any
 		} catch (err: any) {
-			log.error(`Authorization error ${err.name}`);
+			log.warn(`Authorization error ${err.name}`);
 			if (err instanceof JwtTokenExpired) {
 				throw new HTTPException(401, {
 					message: "Session expired, please log in again",
