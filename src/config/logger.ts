@@ -19,30 +19,16 @@ const myTransports: (
 	| transports.FileTransportInstance
 )[] = [
 	new transports.File({
-		filename: `${logFolder}-error.log`,
-		level: "error",
+		filename: `${logFolder}-app.log`,
+		level: logLevel,
 	}),
-	new transports.File({
-		filename: `${logFolder}-warn.log`,
-		level: "warn",
+	new transports.Console({
+		level: logLevel,
 	}),
 ];
 
-if (logLevel == "info") {
-	myTransports.push(
-		new transports.Console({
-			level: "info",
-		})
-	);
-} else {
-	myTransports.push(
-		new transports.Console({
-			level: "debug",
-		})
-	);
-}
-
 export const log = createLogger({
+	level: logLevel,
 	format: combine(
 		timestamp({ format: "YYYY-MM-DD HH:mm:ss.SSS" }),
 		logsFormat,
