@@ -1,10 +1,14 @@
 import { createLogger, format, transports } from "winston";
+import { Format, type TransformableInfo } from "logform";
 
 const { combine, timestamp, printf, colorize } = format;
 
-const logsFormat = printf(({ level, message, timestamp }) => {
-	return `${timestamp}|[${level.toUpperCase()}]|${message}|`;
-});
+const logsFormat: Format = printf(
+	({ level, message, timestamp, stack }: TransformableInfo): string => {
+		const logMessage: unknown = stack || message;
+		return `${timestamp}|[${level.toUpperCase().padEnd(5)}]|${logMessage}`;
+	}
+);
 
 const logLevel: string = Bun.env.LOG_LEVEL ?? "warn";
 const todayDate: string = new Date().toISOString().slice(0, 10);
