@@ -6,6 +6,8 @@ import { UserService } from "../service/user-service";
 import { AuthService } from "../service/auth-service";
 import type { ApplicationVariables } from "../model/app-model";
 import { type UpdateUserRequest, type UserResponse } from "../model/user-model";
+import { validateWithSchema } from "../validation/validate-with-schema.ts";
+import { UserValidation } from "../validation/user-validation.ts";
 
 export const userController = new Hono<{ Variables: ApplicationVariables }>();
 
@@ -34,14 +36,15 @@ userController.get("/current", async (c) => {
 	});
 });
 
-userController.patch("/current", async (c) => {
-	const user: User = c.get("user");
-
-	const request: UpdateUserRequest = await c.req.json();
-
-	const response = await UserService.update(user, request);
-
-	return c.json({
-		data: response,
-	});
-});
+userController.patch(
+	"/current",
+	validateWithSchema("json", UserValidation.UPDATE),
+	async (c) => {
+		const user: User = c.get("user");
+		const request: UpdateUserRequest = await c.req.json();
+		const response: UserResponse = await UserService.update(user, request);
+		return c.json({
+			data: response,
+		});
+	}
+);

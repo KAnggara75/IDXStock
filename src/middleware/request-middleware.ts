@@ -22,8 +22,7 @@ export const requestLogger: MiddlewareHandler = async (
 	return requestContext.run({ requestId: id }, async () => {
 		c.set("requestId", id);
 		c.header("x-request-id", id);
-
-		log.info(`➡️  ${method} ${url} from ${ip}`);
+		log.info(`➡️ ${method} ${url} from ${ip}`);
 
 		try {
 			await next();

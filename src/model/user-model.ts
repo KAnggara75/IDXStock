@@ -44,8 +44,7 @@ export async function toUserResponse(
 	};
 
 	if (generateToken) {
-		const token = await JwtHelper.jwtSign(user);
-		response.token = token;
+		response.token = await JwtHelper.jwtSign(user);
 	}
 	return response;
 }

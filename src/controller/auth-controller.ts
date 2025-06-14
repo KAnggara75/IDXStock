@@ -1,7 +1,11 @@
-import { Hono } from "hono";
+import { type Context, Hono } from "hono";
 import { log } from "../config/logger";
 import { AuthService } from "../service/auth-service";
-import type { UserResponse } from "../model/user-model";
+import type {
+	LoginUserRequest,
+	RegisterUserRequest,
+	UserResponse,
+} from "../model/user-model";
 import type { ApplicationVariables } from "../model/app-model";
 import { AuthValidation } from "../validation/auth-validation";
 import { validateWithSchema } from "../validation/validate-with-schema";
@@ -11,9 +15,9 @@ export const authController = new Hono<{ Variables: ApplicationVariables }>();
 authController.post(
 	"/register",
 	validateWithSchema("json", AuthValidation.REGISTER),
-	async (c) => {
+	async (c: Context<{ Variables: ApplicationVariables }>) => {
 		log.debug("Try to registering new user");
-		const request = await c.req.json();
+		const request: RegisterUserRequest = await c.req.json();
 		const response: UserResponse = await AuthService.register(request);
 		log.debug(`Registering ${response.username}`);
 
@@ -26,9 +30,9 @@ authController.post(
 authController.post(
 	"/login",
 	validateWithSchema("json", AuthValidation.LOGIN),
-	async (c) => {
-		const request = await c.req.json();
-		const response = await AuthService.login(request);
+	async (c: Context<{ Variables: ApplicationVariables }>) => {
+		const request: LoginUserRequest = await c.req.json();
+		const response: UserResponse = await AuthService.login(request);
 
 		return c.json({
 			data: response,

@@ -1,15 +1,15 @@
 import {
 	toUserResponse,
-	type UserResponse,
 	type UpdateUserRequest,
+	type UserResponse,
 } from "../model/user-model";
 import type { User } from "@prisma/client";
+import { AuthService } from "./auth-service";
 import { prismaClient } from "../config/database";
-import { UserValidation } from "../validation/user-validation";
 
 export class UserService {
 	static async get(token: User): Promise<UserResponse> {
-		const user = await prismaClient.user.findFirst({
+		const user: User | null = await prismaClient.user.findFirst({
 			where: {
 				username: token.username,
 			},
@@ -22,8 +22,6 @@ export class UserService {
 		user: User,
 		request: UpdateUserRequest
 	): Promise<UserResponse> {
-		request = UserValidation.UPDATE.parse(request);
-
 		if (request.password) {
 			request.password = await Bun.password.hash(request.password, {
 				algorithm: "bcrypt",
@@ -37,6 +35,8 @@ export class UserService {
 			},
 			data: request,
 		});
+
+		await AuthService.logout(user);
 
 		return toUserResponse(user, true);
 	}
