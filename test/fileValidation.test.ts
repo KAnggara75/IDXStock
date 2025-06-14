@@ -1,5 +1,5 @@
 import { describe, expect, it } from "bun:test";
-import { FileValidation } from "../src/validation/file-validation.ts";
+import { FileValidation } from "../src/validation/file-validation";
 
 describe("FileValidation Test", () => {
 	const path = "./test/Stock Summary-12345678.xlsx";

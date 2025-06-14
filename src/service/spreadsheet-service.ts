@@ -1,6 +1,6 @@
 import type { WorkBook, WorkSheet } from "xlsx";
 import * as XLSX from "xlsx";
-import type { SummaryData } from "../model/summary-model.ts";
+import type { SummaryData } from "../model/summary-model";
 
 export class SheetService {
 	static async toSummaryData(request: File): Promise<SummaryData[]> {

@@ -1,9 +1,9 @@
-import { log } from "../config/logger.ts";
-import { DateUtils } from "../utils/dateUtils.ts";
-import { prismaClient } from "../config/database.ts";
-import type { SummaryData } from "../model/summary-model.ts";
-import { NumberUtil } from "../utils/numberUtils.ts";
-import { BoardUtils } from "../utils/boardUtils.ts";
+import { log } from "../config/logger";
+import { DateUtils } from "../utils/dateUtils";
+import { prismaClient } from "../config/database";
+import type { SummaryData } from "../model/summary-model";
+import { NumberUtil } from "../utils/numberUtils";
+import { BoardUtils } from "../utils/boardUtils";
 
 export class HistoryRepository {
 	static async insertSummary(data: SummaryData[]) {

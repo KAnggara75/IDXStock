@@ -1,6 +1,6 @@
 import { log } from "../config/logger";
 import { type User } from "@prisma/client";
-import { prismaClient } from "../config/database.ts";
+import { prismaClient } from "../config/database";
 import type { StockModel } from "../model/googleFinance-model";
 
 export class DailyRepository {

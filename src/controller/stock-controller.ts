@@ -1,7 +1,7 @@
 import { Hono } from "hono";
 import type { User } from "@prisma/client";
 import type { ApplicationVariables } from "../model/app-model";
-import { StockUsecase } from "../usecase/stock-usecase.ts";
+import { StockUsecase } from "../usecase/stock-usecase";
 
 export const stockController = new Hono<{ Variables: ApplicationVariables }>();
 

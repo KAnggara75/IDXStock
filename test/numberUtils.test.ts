@@ -1,5 +1,5 @@
 import { describe, expect, it } from "bun:test";
-import { NumberUtil } from "../src/utils/numberUtils.ts";
+import { NumberUtil } from "../src/utils/numberUtils";
 
 describe("NumberUtil to Int", () => {
 	it.each([

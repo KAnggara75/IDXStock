@@ -1,5 +1,5 @@
-import { prismaClient } from "../config/database.ts";
-import type { UserJwt } from "../model/user-model.ts";
+import { prismaClient } from "../config/database";
+import type { UserJwt } from "../model/user-model";
 
 export class AuthRepository {
 	public constructor() {}

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "bun:test";
-import { JwtHelper } from "../src/helpers/jwt-helper.ts";
-import type { UserJwt } from "../src/model/user-model.ts";
+import { JwtHelper } from "../src/helpers/jwt-helper";
+import type { UserJwt } from "../src/model/user-model";
 import { sign } from "hono/jwt";
 import { HTTPException } from "hono/http-exception";
 import type { User } from "@prisma/client";

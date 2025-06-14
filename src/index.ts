@@ -16,9 +16,9 @@ import { userController } from "./controller/user-controller";
 import { authController } from "./controller/auth-controller";
 import { jsonMiddleware, validateJsonBody } from "./middleware/json-middleware";
 import { stockController } from "./controller/stock-controller";
-import { converterController } from "./controller/convert-controller.ts";
-import { authMiddleware } from "./middleware/auth-middleware.ts";
-import { JsonUtils } from "./utils/jsonUtils.ts";
+import { converterController } from "./controller/convert-controller";
+import { authMiddleware } from "./middleware/auth-middleware";
+import { JsonUtils } from "./utils/jsonUtils";
 
 const port: number = Number(Bun.env.API_PORT ?? 3000);
 

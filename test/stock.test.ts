@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it } from "bun:test";
 import type { User } from "@prisma/client";
-import { DailyTest, RedisTest, UserTest } from "./test-util.ts";
-import { JwtHelper } from "../src/helpers/jwt-helper.ts";
+import { DailyTest, RedisTest, UserTest } from "./test-util";
+import { JwtHelper } from "../src/helpers/jwt-helper";
 import { app } from "../src";
 
 describe("POST /api/stocks/idx", () => {

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "bun:test";
 import { Board } from "@prisma/client";
-import { BoardUtils } from "../src/utils/boardUtils.ts";
+import { BoardUtils } from "../src/utils/boardUtils";
 
 describe("BoardUtils Test", () => {
 	it.each([

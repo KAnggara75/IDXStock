@@ -3,11 +3,11 @@ import { HTTPException } from "hono/http-exception";
 import { DailyRepository } from "../repository/daily-repo";
 import { GoogleFinanceService } from "../service/googleFinance-service";
 import { type StockModel, toGoogleFinance } from "../model/googleFinance-model";
-import type { SummaryData } from "../model/summary-model.ts";
-import { FileValidation } from "../validation/file-validation.ts";
-import { SheetService } from "../service/spreadsheet-service.ts";
-import { HistoryRepository } from "../repository/history-repository.ts";
-import { log } from "../config/logger.ts";
+import type { SummaryData } from "../model/summary-model";
+import { FileValidation } from "../validation/file-validation";
+import { SheetService } from "../service/spreadsheet-service";
+import { HistoryRepository } from "../repository/history-repository";
+import { log } from "../config/logger";
 
 export class StockUsecase {
 	static async updateDailyStock(user: User): Promise<StockModel[]> {

@@ -1,7 +1,7 @@
 import { beforeEach, describe, it } from "bun:test";
-import { HistoryRepository } from "../src/repository/history-repository.ts";
-import type { SummaryData } from "../src/model/summary-model.ts";
-import { HistoryTest } from "./test-util.ts";
+import { HistoryRepository } from "../src/repository/history-repository";
+import type { SummaryData } from "../src/model/summary-model";
+import { HistoryTest } from "./test-util";
 
 describe("HistoryRepo", () => {
 	beforeEach(async () => {

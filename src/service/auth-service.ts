@@ -3,13 +3,13 @@ import {
 	type RegisterUserRequest,
 	toUserResponse,
 	type UserResponse,
-} from "../model/user-model.ts";
-import { log } from "../config/logger.ts";
+} from "../model/user-model";
+import { log } from "../config/logger";
 import type { User } from "@prisma/client";
 import { HTTPException } from "hono/http-exception";
-import { prismaClient } from "../config/database.ts";
-import { type CustomError, toErrorDetail } from "../model/errors-model.ts";
-import { RedisService } from "../config/redis.ts";
+import { prismaClient } from "../config/database";
+import { type CustomError, toErrorDetail } from "../model/errors-model";
+import { RedisService } from "../config/redis";
 
 export class AuthService {
 	static async register(request: RegisterUserRequest): Promise<UserResponse> {

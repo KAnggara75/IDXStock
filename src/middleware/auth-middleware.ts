@@ -4,9 +4,9 @@ import { JwtHelper } from "../helpers/jwt-helper";
 import type { UserJwt } from "../model/user-model";
 import { HTTPException } from "hono/http-exception";
 import { AuthValidation } from "../validation/auth-validation";
-import { type CustomError, toErrorDetail } from "../model/errors-model.ts";
-import { RedisService } from "../config/redis.ts";
-import { AuthRepository } from "../repository/auth-repo.ts";
+import { type CustomError, toErrorDetail } from "../model/errors-model";
+import { RedisService } from "../config/redis";
+import { AuthRepository } from "../repository/auth-repo";
 
 export const authMiddleware: MiddlewareHandler = async (c, next) => {
 	log.debug("authMiddleware");

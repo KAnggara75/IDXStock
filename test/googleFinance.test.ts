@@ -4,7 +4,7 @@ import {
 	type GoogleFinance,
 	type StockModel,
 	toGoogleFinance,
-} from "../src/model/googleFinance-model.ts";
+} from "../src/model/googleFinance-model";
 import { HTTPException } from "hono/http-exception";
 
 describe("Google Finance", () => {

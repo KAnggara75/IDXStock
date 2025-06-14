@@ -2,7 +2,7 @@ import { HTTPException } from "hono/http-exception";
 import { AppConstant } from "../config/appConstant";
 import { NumberUtil } from "../utils/numberUtils";
 import { DateUtils } from "../utils/dateUtils";
-import { log } from "../config/logger.ts";
+import { log } from "../config/logger";
 
 export interface GoogleFinance {
 	range?: string;

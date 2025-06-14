@@ -1,6 +1,6 @@
 import { describe, expect, it } from "bun:test";
-import { SheetService } from "../src/service/spreadsheet-service.ts";
-import type { SummaryData } from "../src/model/summary-model.ts";
+import { SheetService } from "../src/service/spreadsheet-service";
+import type { SummaryData } from "../src/model/summary-model";
 
 describe("Convert xlsx to JSON", () => {
 	it("Code %s, price %d ", async () => {

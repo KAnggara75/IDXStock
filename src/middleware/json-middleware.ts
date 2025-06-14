@@ -1,6 +1,6 @@
 import type { MiddlewareHandler } from "hono";
-import { log } from "../config/logger.ts";
-import { type CustomError, toErrorDetail } from "../model/errors-model.ts";
+import { log } from "../config/logger";
+import { type CustomError, toErrorDetail } from "../model/errors-model";
 import { HTTPException } from "hono/http-exception";
 
 const methodsWithBody = ["POST", "PUT", "PATCH"];

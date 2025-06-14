@@ -1,9 +1,9 @@
 import { Hono } from "hono";
-import { log } from "../config/logger.ts";
+import { log } from "../config/logger";
 import { validator } from "hono/validator";
 import type { User } from "@prisma/client";
 import { UserService } from "../service/user-service";
-import { AuthService } from "../service/auth-service.ts";
+import { AuthService } from "../service/auth-service";
 import type { ApplicationVariables } from "../model/app-model";
 import { type UpdateUserRequest, type UserResponse } from "../model/user-model";
 

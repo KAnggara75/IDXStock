@@ -1,10 +1,10 @@
 import { Hono } from "hono";
-import { log } from "../config/logger.ts";
-import { AuthService } from "../service/auth-service.ts";
-import type { UserResponse } from "../model/user-model.ts";
-import type { ApplicationVariables } from "../model/app-model.ts";
-import { AuthValidation } from "../validation/auth-validation.ts";
-import { validateWithSchema } from "../validation/validate-with-schema.ts";
+import { log } from "../config/logger";
+import { AuthService } from "../service/auth-service";
+import type { UserResponse } from "../model/user-model";
+import type { ApplicationVariables } from "../model/app-model";
+import { AuthValidation } from "../validation/auth-validation";
+import { validateWithSchema } from "../validation/validate-with-schema";
 
 export const authController = new Hono<{ Variables: ApplicationVariables }>();
 

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "bun:test";
-import { DateUtils } from "../src/utils/dateUtils.ts";
+import { DateUtils } from "../src/utils/dateUtils";
 
 describe("expInDays", () => {
 	it("correct days", () => {
