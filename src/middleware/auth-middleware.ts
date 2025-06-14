@@ -6,7 +6,7 @@ import { HTTPException } from "hono/http-exception";
 import { AuthValidation } from "../validation/auth-validation";
 import { type CustomError, toErrorDetail } from "../model/errors-model";
 import { RedisService } from "../config/redis";
-import { AuthRepository } from "../repository/auth-repo";
+import { AuthRepository } from "../repository/auth-repository.ts";
 
 export const authMiddleware: MiddlewareHandler = async (c, next) => {
 	log.debug("authMiddleware");
