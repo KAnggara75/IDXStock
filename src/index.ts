@@ -19,11 +19,13 @@ import { stockController } from "./controller/stock-controller";
 import { converterController } from "./controller/convert-controller";
 import { authMiddleware } from "./middleware/auth-middleware";
 import { JsonUtils } from "./utils/jsonUtils";
+import { requestLogger } from "./middleware/request-middleware.ts";
 
 const port: number = Number(Bun.env.API_PORT ?? 3000);
 
 export const app = new Hono().basePath("/api");
 
+app.use(requestLogger);
 app.use(validateJsonBody);
 
 app.get("/version", (c) => {
@@ -53,7 +55,7 @@ app.notFound((c) => {
 
 app.onError(async (err, c) => {
 	if (err instanceof HTTPException) {
-		const response = JsonUtils.safeParseJSON(err.message);
+		const response: unknown = JsonUtils.safeParseJSON(err.message);
 		return c.json({ errors: response }, err.status);
 	}
 

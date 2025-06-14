@@ -1,12 +1,14 @@
-import { createLogger, format, transports } from "winston";
 import { Format, type TransformableInfo } from "logform";
+import { getRequestId } from "../helpers/request-helper";
+import { createLogger, format, type Logger, transports } from "winston";
 
-const { combine, timestamp, printf, colorize } = format;
+const { combine, timestamp, printf, colorize, errors } = format;
 
 const logsFormat: Format = printf(
 	({ level, message, timestamp, stack }: TransformableInfo): string => {
 		const logMessage: unknown = stack || message;
-		return `${timestamp}|[${level.toUpperCase().padEnd(5)}]|${logMessage}`;
+		const requestId = getRequestId() ?? " ".padEnd(36, " ");
+		return `${timestamp}|[${level.toUpperCase().padEnd(5)}]|[${requestId}]|${logMessage}`;
 	}
 );
 
@@ -27,9 +29,10 @@ const myTransports: (
 	}),
 ];
 
-export const log = createLogger({
+export const log: Logger = createLogger({
 	level: logLevel,
 	format: combine(
+		errors({ stack: true }),
 		timestamp({ format: "YYYY-MM-DD HH:mm:ss.SSS" }),
 		logsFormat,
 		colorize()
