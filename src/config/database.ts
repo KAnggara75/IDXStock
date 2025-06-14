@@ -1,6 +1,6 @@
 import { log } from "./logger";
 import { Prisma, PrismaClient } from "@prisma/client";
-import { isSensitiveQuery } from "../helpers/sensitive-helper.ts";
+import { isSensitiveQuery } from "../helpers/sensitive-helper";
 
 export const prismaClient = new PrismaClient({
 	log: [
@@ -33,12 +33,8 @@ prismaClient.$on("info", (e: Prisma.LogEvent): void => {
 });
 
 prismaClient.$on("query", (e: Prisma.QueryEvent): void => {
-	if (isSensitiveQuery(e.query)) {
-		log.debug("SQL|Query: [SENSITIVE QUERY HIDDEN]");
-		log.debug("SQL|Params: [REDACTED]");
-	} else {
-		log.debug(`SQL|Query: ${e.query}`);
-		log.debug(`SQL|Params: ${e.params}`);
-	}
+	const sensitive = isSensitiveQuery(e.query);
+	log.debug(`SQL|Query: ${sensitive ? "[SENSITIVE QUERY HIDDEN]" : e.query}`);
+	log.debug(`SQL|Params: ${sensitive ? "[REDACTED]" : e.params}`);
 	log.debug(`SQL|Duration: ${e.duration} ms`);
 });
