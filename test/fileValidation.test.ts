@@ -1,7 +1,8 @@
-import { describe, expect, it } from "bun:test";
+import { describe, expect, test } from "bun:test";
 import { FileValidation } from "../src/validation/file-validation";
+import { ZodError } from "zod";
 
-describe("FileValidation Test", (): void => {
+describe("FileValidation.DOCUMENT_CHECK", (): void => {
 	const path = "./test/Stock Summary-12345678.xlsx";
 	const blob = Bun.file(path);
 
