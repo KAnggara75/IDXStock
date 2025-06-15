@@ -9,5 +9,5 @@ redisClient.on("error", (err: Error): void => {
 	log.error("Redis error:", err);
 });
 
-redisClient.on("connect", (): Logger => log.warn("Redis CONNECT"));
-redisClient.on("ready", (): Logger => log.warn("Redis READY"));
+redisClient.on("connect", (): Logger => log.debug("Redis CONNECT"));
+redisClient.on("ready", (): Logger => log.debug("Redis READY"));

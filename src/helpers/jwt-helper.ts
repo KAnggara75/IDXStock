@@ -14,16 +14,16 @@ import {
 } from "hono/utils/jwt/types";
 
 export class JwtHelper {
-	static async jwtSign(user: User): Promise<string> {
-		const secret = Bun.env.JWT_SECRET_KEY ?? "";
-		const exp = Bun.env.JWT_TOKEN_EXP ?? "1";
+	static async jwtSign(user: User, iat?: number): Promise<string> {
+		const secret: string = Bun.env.JWT_SECRET_KEY ?? "";
+		const exp: string = Bun.env.JWT_TOKEN_EXP ?? "1";
 
 		const payload: UserJwt = {
 			name: user.name,
 			email: user.email,
 			username: user.username,
 			exp: DateUtils.expInDays(exp),
-			iat: Math.floor(Date.now() / 1000),
+			iat: iat ?? Math.floor(Date.now() / 1000),
 		};
 		log.debug(`create token for ${user.username} exp in ${exp} days`);
 		return await sign(payload, secret);
@@ -49,7 +49,7 @@ export class JwtHelper {
 			return payload;
 			// eslint-disable-next-line @typescript-eslint/no-explicit-any
 		} catch (err: any) {
-			log.warn(`Authorization error ${err.name}`);
+			log.warn(`JwtHelper.jwtVerify Authorization error ${err.name}`);
 			if (err instanceof JwtTokenExpired) {
 				throw new HTTPException(401, {
 					message: "Session expired, please log in again",

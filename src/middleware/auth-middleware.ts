@@ -72,12 +72,10 @@ export const authMiddleware: MiddlewareHandler = async (c, next: Next) => {
 		await RedisService.setLogoutAt(username, logoutAt);
 	}
 
-	log.warn(`${username} logoutAt ${logoutAt}`);
-
 	const jwtIat: number = Number(jwtPayload.iat ?? 0);
-	log.warn(`${username} issuedAt ${jwtIat}`);
+	log.debug(`${username} logoutAt ${logoutAt}, issuedAt ${jwtIat}`);
 
-	if (logoutAt >= jwtIat) {
+	if (logoutAt > jwtIat) {
 		log.info(`Token for ${username} is unauthorized`);
 		errorPayload = await toErrorDetail(
 			"unauthorized_user",

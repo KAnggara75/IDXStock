@@ -150,7 +150,8 @@ describe("DELETE /api/users/logout", () => {
 
 	beforeEach(async () => {
 		const user: User = await UserTest.create();
-		token = await JwtHelper.jwtSign(user);
+		const now: number = Math.floor(Date.now() / 1000);
+		token = await JwtHelper.jwtSign(user, now - 10);
 	});
 
 	afterEach(async () => {
