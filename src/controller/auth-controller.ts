@@ -14,7 +14,7 @@ export const authController = new Hono<{ Variables: ApplicationVariables }>();
 
 authController.post(
 	"/register",
-	validateWithSchema("json", AuthValidation.REGISTER),
+	validateWithSchema(AuthValidation.REGISTER),
 	async (c: Context<{ Variables: ApplicationVariables }>) => {
 		log.debug("Try to registering new user");
 		const request: RegisterUserRequest = await c.req.json();
@@ -29,7 +29,7 @@ authController.post(
 
 authController.post(
 	"/login",
-	validateWithSchema("json", AuthValidation.LOGIN),
+	validateWithSchema(AuthValidation.LOGIN),
 	async (c: Context<{ Variables: ApplicationVariables }>) => {
 		const request: LoginUserRequest = await c.req.json();
 		const response: UserResponse = await AuthService.login(request);
