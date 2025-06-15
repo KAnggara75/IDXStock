@@ -1,6 +1,6 @@
 import type { User } from "@prisma/client";
 import { prismaClient } from "../src/config/database";
-import { RedisService } from "../src/service/redis-service.ts";
+import { RedisService } from "../src/service/redis-service";
 
 export class UserTest {
 	static async create(): Promise<User> {

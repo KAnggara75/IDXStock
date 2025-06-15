@@ -4,8 +4,8 @@ import type { User } from "@prisma/client";
 import { UserService } from "../service/user-service";
 import { AuthService } from "../service/auth-service";
 import type { ApplicationVariables } from "../model/app-model";
-import { UserValidation } from "../validation/user-validation.ts";
-import { validateWithSchema } from "../validation/validate-with-schema.ts";
+import { UserValidation } from "../validation/user-validation";
+import { validateWithSchema } from "../validation/validate-with-schema";
 import { type UpdateUserRequest, type UserResponse } from "../model/user-model";
 
 export const userController = new Hono<{ Variables: ApplicationVariables }>();

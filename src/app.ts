@@ -1,17 +1,14 @@
 import { Hono } from "hono";
 import pkg from "../package.json";
-import { log } from "./config/logger.ts";
-import { requestLogger } from "./middleware/request-middleware.ts";
-import {
-	jsonMiddleware,
-	validateJsonBody,
-} from "./middleware/json-middleware.ts";
-import { authController } from "./controller/auth-controller.ts";
-import { authMiddleware } from "./middleware/auth-middleware.ts";
-import { userController } from "./controller/user-controller.ts";
-import { stockController } from "./controller/stock-controller.ts";
-import { converterController } from "./controller/convert-controller.ts";
-import { errorHandler } from "./middleware/error-handler.ts";
+import { log } from "./config/logger";
+import { requestLogger } from "./middleware/request-middleware";
+import { jsonMiddleware, validateJsonBody } from "./middleware/json-middleware";
+import { authController } from "./controller/auth-controller";
+import { authMiddleware } from "./middleware/auth-middleware";
+import { userController } from "./controller/user-controller";
+import { stockController } from "./controller/stock-controller";
+import { converterController } from "./controller/convert-controller";
+import { errorHandler } from "./middleware/error-handler";
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
 import type { BlankEnv, BlankSchema } from "hono/dist/types/types";

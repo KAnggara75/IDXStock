@@ -1,5 +1,5 @@
 import { redisClient } from "../config/redis";
-import { log } from "../config/logger.ts";
+import { log } from "../config/logger";
 
 export class RedisService {
 	static async set(

@@ -1,6 +1,6 @@
 import type { User } from "@prisma/client";
 import { HTTPException } from "hono/http-exception";
-import { DailyRepository } from "../repository/daily-repository.ts";
+import { DailyRepository } from "../repository/daily-repository";
 import { GoogleFinanceService } from "../service/googleFinance-service";
 import { type StockModel, toGoogleFinance } from "../model/googleFinance-model";
 import type { SummaryData } from "../model/summary-model";

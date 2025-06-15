@@ -1,4 +1,4 @@
-import app from "./app.ts";
+import app from "./app";
 import { log } from "./config/logger";
 import type { Logger } from "winston";
 import { prismaClient } from "./config/database";

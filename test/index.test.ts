@@ -1,4 +1,4 @@
-import { app } from "../src/app.ts";
+import { app } from "../src/app";
 import { describe, expect, it } from "bun:test";
 
 describe("POST", (): void => {

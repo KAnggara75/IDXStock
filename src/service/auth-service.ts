@@ -6,7 +6,7 @@ import {
 } from "../model/user-model";
 import { log } from "../config/logger";
 import { prismaClient } from "../config/database";
-import { RedisService } from "./redis-service.ts";
+import { RedisService } from "./redis-service";
 import type { Prisma, User } from "@prisma/client";
 import { HTTPException } from "hono/http-exception";
 import { type CustomError, toErrorDetail } from "../model/errors-model";

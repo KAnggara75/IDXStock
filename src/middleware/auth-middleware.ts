@@ -4,9 +4,9 @@ import type { SafeParseReturnType } from "zod";
 import { JwtHelper } from "../helpers/jwt-helper";
 import type { UserJwt } from "../model/user-model";
 import { HTTPException } from "hono/http-exception";
-import { RedisService } from "../service/redis-service.ts";
+import { RedisService } from "../service/redis-service";
 import { AuthValidation } from "../validation/auth-validation";
-import { AuthRepository } from "../repository/auth-repository.ts";
+import { AuthRepository } from "../repository/auth-repository";
 import { type CustomError, toErrorDetail } from "../model/errors-model";
 
 export const authMiddleware: MiddlewareHandler = async (c, next: Next) => {
