@@ -1,5 +1,5 @@
 import { afterAll, beforeAll, describe, expect, it } from "bun:test";
-import { RedisService } from "../src/config/redis.ts";
+import { RedisService } from "../src/service/redis-service.ts";
 
 const redis = new RedisService();
 const testKey = "test-key";

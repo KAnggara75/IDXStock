@@ -6,10 +6,10 @@ import {
 } from "../model/user-model";
 import { log } from "../config/logger";
 import type { User } from "@prisma/client";
-import { HTTPException } from "hono/http-exception";
 import { prismaClient } from "../config/database";
+import { RedisService } from "./redis-service.ts";
+import { HTTPException } from "hono/http-exception";
 import { type CustomError, toErrorDetail } from "../model/errors-model";
-import { RedisService } from "../config/redis";
 
 export class AuthService {
 	static async register(request: RegisterUserRequest): Promise<UserResponse> {

@@ -3,10 +3,10 @@ import type { MiddlewareHandler } from "hono";
 import { JwtHelper } from "../helpers/jwt-helper";
 import type { UserJwt } from "../model/user-model";
 import { HTTPException } from "hono/http-exception";
+import { RedisService } from "../service/redis-service.ts";
 import { AuthValidation } from "../validation/auth-validation";
-import { type CustomError, toErrorDetail } from "../model/errors-model";
-import { RedisService } from "../config/redis";
 import { AuthRepository } from "../repository/auth-repository.ts";
+import { type CustomError, toErrorDetail } from "../model/errors-model";
 
 export const authMiddleware: MiddlewareHandler = async (c, next) => {
 	log.debug("authMiddleware");
@@ -84,7 +84,7 @@ export const authMiddleware: MiddlewareHandler = async (c, next) => {
 			[],
 			"jwt"
 		);
-		throw new HTTPException(403, {
+		throw new HTTPException(401, {
 			message: JSON.stringify(errorPayload),
 		});
 	}

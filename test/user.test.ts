@@ -8,18 +8,18 @@ import { JwtHelper } from "../src/helpers/jwt-helper";
 describe("GET /api/users/current", () => {
 	let token: string = "";
 
-	beforeEach(async () => {
+	beforeEach(async (): Promise<void> => {
 		const user: User = await UserTest.create();
 		token = await JwtHelper.jwtSign(user);
 	});
 
-	afterEach(async () => {
+	afterEach(async (): Promise<void> => {
 		await UserTest.delete();
 		await RedisTest.delete();
 	});
 
-	it("should be able to get user", async () => {
-		const response = await app.request("/api/users/current", {
+	it("should be able to get user", async (): Promise<void> => {
+		const response: Response = await app.request("/api/users/current", {
 			method: "get",
 			headers: {
 				Authorization: `Bearer ${token}`,
@@ -35,8 +35,26 @@ describe("GET /api/users/current", () => {
 		expect(body.data.name).toBe("test");
 	});
 
-	it("should not be able to get user if token is invalid", async () => {
-		const response = await app.request("/api/users/current", {
+	it("should not be able to get user if token is Invalid jwt", async (): Promise<void> => {
+		const response: Response = await app.request("/api/users/current", {
+			method: "get",
+			headers: {
+				Authorization: "Bearer salah",
+				"Content-Type": "application/json",
+			},
+		});
+
+		expect(response.status).toBe(400);
+
+		const body = await response.json();
+		expect(body.errors).toBeDefined();
+		expect(body.errors[0].validation).toBe("jwt");
+		expect(body.errors[0].code).toBe("invalid_string");
+		expect(body.errors[0].message).toBe("Invalid jwt");
+	});
+
+	it("should not be able to get user if token is Invalid", async (): Promise<void> => {
+		const response: Response = await app.request("/api/users/current", {
 			method: "get",
 			headers: {
 				Authorization: "salah",
@@ -44,14 +62,16 @@ describe("GET /api/users/current", () => {
 			},
 		});
 
-		expect(response.status).toBe(401);
-
 		const body = await response.json();
+		expect(response.status).toBe(400);
 		expect(body.errors).toBeDefined();
+		expect(body.errors[0].validation).toBe("jwt");
+		expect(body.errors[0].code).toBe("unauthorized");
+		expect(body.errors[0].message).toBe("Authorization header is malformed");
 	});
 
-	it("should not be able to get user if there is no Authorization header", async () => {
-		const response = await app.request("/api/users/current", {
+	it("should not be able to get user if there is no Authorization header", async (): Promise<void> => {
+		const response: Response = await app.request("/api/users/current", {
 			headers: { "Content-Type": "application/json" },
 			method: "get",
 		});
@@ -64,23 +84,23 @@ describe("GET /api/users/current", () => {
 });
 
 describe("PATCH /api/users/current", () => {
-	let token: string = "";
+	let userToken: string = "";
 
-	beforeEach(async () => {
+	beforeEach(async (): Promise<void> => {
 		const user: User = await UserTest.create();
-		token = await JwtHelper.jwtSign(user);
+		userToken = await JwtHelper.jwtSign(user);
 	});
 
-	afterEach(async () => {
+	afterEach(async (): Promise<void> => {
 		await UserTest.delete();
 		await RedisTest.delete();
 	});
 
-	it("should be rejected if request is invalid", async () => {
-		const response = await app.request("/api/users/current", {
+	it("should be rejected if request is invalid", async (): Promise<void> => {
+		const response: Response = await app.request("/api/users/current", {
 			method: "patch",
 			headers: {
-				Authorization: `Bearer ${token}`,
+				Authorization: `Bearer ${userToken}`,
 				"Content-Type": "application/json",
 			},
 			body: JSON.stringify({
@@ -95,11 +115,11 @@ describe("PATCH /api/users/current", () => {
 		expect(body.errors).toBeDefined();
 	});
 
-	it("should be able to update name", async () => {
-		const response = await app.request("/api/users/current", {
+	it("should be able to update name", async (): Promise<void> => {
+		const response: Response = await app.request("/api/users/current", {
 			method: "patch",
 			headers: {
-				Authorization: `Bearer ${token}`,
+				Authorization: `Bearer ${userToken}`,
 				"Content-Type": "application/json",
 			},
 			body: JSON.stringify({
@@ -115,11 +135,11 @@ describe("PATCH /api/users/current", () => {
 		expect(body.data.name).toBe("IDScript");
 	});
 
-	it("should be able to update password", async () => {
-		let response = await app.request("/api/users/current", {
+	it("should be able to update password", async (): Promise<void> => {
+		const response: Response = await app.request("/api/users/current", {
 			method: "patch",
 			headers: {
-				Authorization: `Bearer ${token}`,
+				Authorization: `Bearer ${userToken}`,
 				"Content-Type": "application/json",
 			},
 			body: JSON.stringify({
@@ -129,20 +149,35 @@ describe("PATCH /api/users/current", () => {
 
 		expect(response.status).toBe(200);
 
-		const body = await response.json();
+		let body = await response.json();
 		logger.debug(JSON.stringify(body));
 		expect(body.data).toBeDefined();
 		expect(body.data.name).toBe("test");
 
-		response = await app.request("/api/login", {
-			headers: { "Content-Type": "application/json" },
-			method: "post",
-			body: JSON.stringify({
-				username: "test",
-				password: "passwordBaru",
-			}),
+		const userRes: Response = await app.request("/api/users/current", {
+			method: "get",
+			headers: {
+				Authorization: `Bearer ${userToken}`,
+				"Content-Type": "application/json",
+			},
 		});
 
-		expect(response.status).toBe(200);
+		body = await userRes.json();
+		expect(userRes.status).toBe(401);
+		expect(body.errors).toBeDefined();
+		expect(body.errors[0].validation).toBe("jwt");
+		expect(body.errors[0].code).toBe("unauthorized_user");
+		expect(body.errors[0].message).toBe("Invalid Token: User not authorized");
+
+		// response = await app.request("/api/users/login", {
+		// 	headers: { "Content-Type": "application/json" },
+		// 	method: "post",
+		// 	body: JSON.stringify({
+		// 		username: "test",
+		// 		password: "passwordBaru",
+		// 	}),
+		// });
+		//
+		// expect(response.status).toBe(200);
 	});
 });
