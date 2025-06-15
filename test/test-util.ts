@@ -48,7 +48,6 @@ export class HistoryTest {
 
 export class RedisTest {
 	static async delete() {
-		const redis = new RedisService();
-		await redis.del("idx-test");
+		await RedisService.del("idx-test");
 	}
 }

@@ -27,14 +27,14 @@ export class RedisService {
 
 	static async getLogoutAt(username: string): Promise<number> {
 		const key = `idx-${username}`;
-		const value = await this.get(key);
+		const value: string | null = await this.get(key);
 		return value ? Number(value) : 0;
 	}
 
 	static async setLogoutAt(
 		username: string,
 		timestamp: number,
-		ttlSeconds = 60 * 60 * 24 * 7
+		ttlSeconds: number = 60 * 60 * 24 * 7
 	): Promise<void> {
 		const key = `idx-${username}`;
 		await this.set(key, timestamp.toString(), ttlSeconds);

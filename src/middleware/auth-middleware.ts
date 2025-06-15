@@ -62,14 +62,13 @@ export const authMiddleware: MiddlewareHandler = async (c, next) => {
 			message: JSON.stringify(errorPayload),
 		});
 	}
-	const redis = new RedisService();
-	let logoutAt = await redis.getLogoutAt(jwtPayload.username);
+	let logoutAt = await RedisService.getLogoutAt(jwtPayload.username);
 	if (logoutAt === 0) {
 		log.debug(`logoutAt is 0, checking from db ${jwtPayload.username}`);
 		logoutAt = await AuthRepository.getLogoutAt(jwtPayload);
 
 		if (logoutAt !== 0) {
-			await redis.setLogoutAt(jwtPayload.username, logoutAt);
+			await RedisService.setLogoutAt(jwtPayload.username, logoutAt);
 		}
 	}
 	log.debug(`logoutAt ${logoutAt}`);

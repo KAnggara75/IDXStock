@@ -1,56 +1,55 @@
 import { afterAll, beforeAll, describe, expect, it } from "bun:test";
 import { RedisService } from "../src/service/redis-service.ts";
 
-const redis = new RedisService();
 const testKey = "test-key";
 const testUser = "test-user";
 
-beforeAll(async () => {
-	await redis.del(testKey);
-	await redis.del(`idx-${testUser}`);
+beforeAll(async (): Promise<void> => {
+	await RedisService.del(testKey);
+	await RedisService.del(`idx-${testUser}`);
 });
 
-afterAll(async () => {
-	await redis.del(testKey);
-	await redis.del(`idx-${testUser}`);
+afterAll(async (): Promise<void> => {
+	await RedisService.del(testKey);
+	await RedisService.del(`idx-${testUser}`);
 });
 
 describe("RedisService", () => {
-	it("should set and get a key", async () => {
-		await redis.set(testKey, "hello", 10);
-		const result = await redis.get(testKey);
+	it("should set and get a key", async (): Promise<void> => {
+		await RedisService.set(testKey, "hello", 10);
+		const result: string | null = await RedisService.get(testKey);
 		expect(result).toBe("hello");
 	});
 
-	it("should delete a key", async () => {
-		await redis.set(testKey, "to-delete");
-		await redis.del(testKey);
-		const result = await redis.get(testKey);
+	it("should delete a key", async (): Promise<void> => {
+		await RedisService.set(testKey, "to-delete");
+		await RedisService.del(testKey);
+		const result: string | null = await RedisService.get(testKey);
 		expect(result).toBeNull();
 	});
 
-	it("should return true if key exists", async () => {
-		await redis.set(testKey, "exists-check");
-		const exists = await redis.exists(testKey);
+	it("should return true if key exists", async (): Promise<void> => {
+		await RedisService.set(testKey, "exists-check");
+		const exists: boolean = await RedisService.exists(testKey);
 		expect(exists).toBe(true);
 	});
 
-	it("should return false if key does not exist", async () => {
-		await redis.del(testKey);
-		const exists = await redis.exists(testKey);
+	it("should return false if key does not exist", async (): Promise<void> => {
+		await RedisService.del(testKey);
+		const exists: boolean = await RedisService.exists(testKey);
 		expect(exists).toBe(false);
 	});
 
-	it("should set and get logoutAt", async () => {
-		const timestamp = Math.floor(Date.now() / 1000);
-		await redis.setLogoutAt(testUser, timestamp);
-		const result = await redis.getLogoutAt(testUser);
+	it("should set and get logoutAt", async (): Promise<void> => {
+		const timestamp: number = Math.floor(Date.now() / 1000);
+		await RedisService.setLogoutAt(testUser, timestamp);
+		const result: number = await RedisService.getLogoutAt(testUser);
 		expect(result).toBe(timestamp);
 	});
 
-	it("should return 0 for logoutAt if key missing", async () => {
-		await redis.del(`idx-${testUser}`);
-		const result = await redis.getLogoutAt(testUser);
+	it("should return 0 for logoutAt if key missing", async (): Promise<void> => {
+		await RedisService.del(`idx-${testUser}`);
+		const result: number = await RedisService.getLogoutAt(testUser);
 		expect(result).toBe(0);
 	});
 });

@@ -103,7 +103,7 @@ export class AuthService {
 				message: `Logout forbidden: user ${user.username} not registered or already revoked`,
 			});
 		} else {
-			await new RedisService().setLogoutAt(user.username, now);
+			await RedisService.setLogoutAt(user.username, now);
 		}
 	}
 }
