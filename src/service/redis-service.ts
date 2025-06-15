@@ -1,36 +1,37 @@
 import { redisClient } from "../config/redis";
-import type Redis from "ioredis";
 
 export class RedisService {
-	private client: Redis = redisClient;
-
-	async set(key: string, value: string, ttlSeconds?: number): Promise<void> {
+	static async set(
+		key: string,
+		value: string,
+		ttlSeconds?: number
+	): Promise<void> {
 		if (ttlSeconds) {
-			await this.client.set(key, value, "EX", ttlSeconds);
+			await redisClient.set(key, value, "EX", ttlSeconds);
 		} else {
-			await this.client.set(key, value);
+			await redisClient.set(key, value);
 		}
 	}
 
-	async get(key: string): Promise<string | null> {
-		return this.client.get(key);
+	static async get(key: string): Promise<string | null> {
+		return redisClient.get(key);
 	}
 
-	async del(key: string): Promise<void> {
-		await this.client.del(key);
+	static async del(key: string): Promise<void> {
+		await redisClient.del(key);
 	}
 
-	async exists(key: string): Promise<boolean> {
-		return (await this.client.exists(key)) === 1;
+	static async exists(key: string): Promise<boolean> {
+		return (await redisClient.exists(key)) === 1;
 	}
 
-	async getLogoutAt(username: string): Promise<number> {
+	static async getLogoutAt(username: string): Promise<number> {
 		const key = `idx-${username}`;
 		const value = await this.get(key);
 		return value ? Number(value) : 0;
 	}
 
-	async setLogoutAt(
+	static async setLogoutAt(
 		username: string,
 		timestamp: number,
 		ttlSeconds = 60 * 60 * 24 * 7
