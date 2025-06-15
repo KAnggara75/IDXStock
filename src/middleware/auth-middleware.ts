@@ -1,5 +1,6 @@
 import { log } from "../config/logger";
-import type { MiddlewareHandler } from "hono";
+import type { MiddlewareHandler, Next } from "hono";
+import type { SafeParseReturnType } from "zod";
 import { JwtHelper } from "../helpers/jwt-helper";
 import type { UserJwt } from "../model/user-model";
 import { HTTPException } from "hono/http-exception";
@@ -8,11 +9,11 @@ import { AuthValidation } from "../validation/auth-validation";
 import { AuthRepository } from "../repository/auth-repository.ts";
 import { type CustomError, toErrorDetail } from "../model/errors-model";
 
-export const authMiddleware: MiddlewareHandler = async (c, next) => {
+export const authMiddleware: MiddlewareHandler = async (c, next: Next) => {
 	log.debug("authMiddleware");
 	let errorPayload: CustomError[];
 
-	const authHeader = c.req.header("Authorization");
+	const authHeader: string | undefined = c.req.header("Authorization");
 
 	if (!authHeader) {
 		errorPayload = await toErrorDetail(
@@ -40,8 +41,9 @@ export const authMiddleware: MiddlewareHandler = async (c, next) => {
 	}
 	log.debug("authHeader startsWith Bearer");
 
-	const token = authHeader.split(" ")[1];
-	const result = AuthValidation.TOKEN.safeParse(token);
+	const token: string = authHeader.split(" ")[1];
+	const result: SafeParseReturnType<unknown, unknown> =
+		AuthValidation.TOKEN.safeParse(token);
 
 	if (result.error) {
 		return c.json({ errors: JSON.parse(result.error.message) }, 400);
@@ -62,21 +64,21 @@ export const authMiddleware: MiddlewareHandler = async (c, next) => {
 			message: JSON.stringify(errorPayload),
 		});
 	}
-	let logoutAt = await RedisService.getLogoutAt(jwtPayload.username);
+	const username: string = jwtPayload.username;
+	let logoutAt: number = await RedisService.getLogoutAt(username);
 	if (logoutAt === 0) {
-		log.debug(`logoutAt is 0, checking from db ${jwtPayload.username}`);
+		log.debug(`${username} logoutAt is nil, checking from db ${username}`);
 		logoutAt = await AuthRepository.getLogoutAt(jwtPayload);
-
-		if (logoutAt !== 0) {
-			await RedisService.setLogoutAt(jwtPayload.username, logoutAt);
-		}
+		await RedisService.setLogoutAt(username, logoutAt);
 	}
-	log.debug(`logoutAt ${logoutAt}`);
+
+	log.warn(`${username} logoutAt ${logoutAt}`);
 
 	const jwtIat: number = Number(jwtPayload.iat ?? 0);
+	log.warn(`${username} issuedAt ${jwtIat}`);
 
 	if (logoutAt >= jwtIat) {
-		log.info(`Token for ${jwtPayload.username} is unauthorized`);
+		log.info(`Token for ${username} is unauthorized`);
 		errorPayload = await toErrorDetail(
 			"unauthorized_user",
 			"Invalid Token: User not authorized",

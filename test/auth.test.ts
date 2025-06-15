@@ -229,7 +229,7 @@ describe("DELETE /api/users/logout", () => {
 				Authorization: `Bearer ${token}`,
 			},
 		});
-		expect(getUser.status).toBe(403);
+		expect(getUser.status).toBe(401);
 		const body = await getUser.json();
 		expect(body.errors).toBeDefined();
 		expect(body.errors[0].validation).toBe("jwt");

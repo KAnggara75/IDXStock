@@ -1,4 +1,5 @@
 import { redisClient } from "../config/redis";
+import { log } from "../config/logger.ts";
 
 export class RedisService {
 	static async set(
@@ -38,5 +39,6 @@ export class RedisService {
 	): Promise<void> {
 		const key = `idx-${username}`;
 		await this.set(key, timestamp.toString(), ttlSeconds);
+		log.debug(`${username} logged out at ${timestamp}`);
 	}
 }

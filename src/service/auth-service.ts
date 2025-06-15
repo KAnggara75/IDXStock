@@ -5,9 +5,9 @@ import {
 	type UserResponse,
 } from "../model/user-model";
 import { log } from "../config/logger";
-import type { User } from "@prisma/client";
 import { prismaClient } from "../config/database";
 import { RedisService } from "./redis-service.ts";
+import type { Prisma, User } from "@prisma/client";
 import { HTTPException } from "hono/http-exception";
 import { type CustomError, toErrorDetail } from "../model/errors-model";
 
@@ -42,7 +42,7 @@ export class AuthService {
 			cost: 10,
 		});
 
-		const user = await prismaClient.user.create({
+		const user: User = await prismaClient.user.create({
 			data: request,
 		});
 
@@ -71,7 +71,7 @@ export class AuthService {
 			`${request.username} Login result: ${user ? "success" : "failed"}`
 		);
 
-		const isPasswordValid = await Bun.password.verify(
+		const isPasswordValid: boolean = await Bun.password.verify(
 			request.password,
 			user.password,
 			"bcrypt"
@@ -87,8 +87,8 @@ export class AuthService {
 
 	static async logout(user: User): Promise<void> {
 		const now: number = Math.floor(Date.now() / 1000);
-		log.debug(`${user.username} Try to logout`);
-		const result = await prismaClient.user.updateMany({
+		log.debug(`${user.username} Try to logout, set logoutAt=${now}`);
+		const result: Prisma.BatchPayload = await prismaClient.user.updateMany({
 			where: {
 				username: user.username,
 			},
