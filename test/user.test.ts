@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it } from "bun:test";
 import { log as logger } from "../src/config/logger";
-import { app } from "../src";
+import { app } from "../src/app.ts";
 import { RedisTest, UserTest } from "./test-util";
 import type { User } from "@prisma/client";
 import { JwtHelper } from "../src/helpers/jwt-helper";

@@ -12,8 +12,13 @@ import { userController } from "./controller/user-controller.ts";
 import { stockController } from "./controller/stock-controller.ts";
 import { converterController } from "./controller/convert-controller.ts";
 import { errorHandler } from "./middleware/error-handler.ts";
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore
+import type { BlankEnv, BlankSchema } from "hono/dist/types/types";
 
-export const app = new Hono().basePath("/api");
+export const app: Hono<BlankEnv, BlankSchema, "/api"> = new Hono().basePath(
+	"/api"
+);
 
 app.use(requestLogger);
 app.use(validateJsonBody);

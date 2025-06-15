@@ -1,4 +1,4 @@
-import app from "./index.ts";
+import app from "./app.ts";
 import { log } from "./config/logger";
 import type { Logger } from "winston";
 import { prismaClient } from "./config/database";
@@ -42,3 +42,5 @@ async function gracefulShutdown(): Promise<number> {
 
 	return status;
 }
+
+export default server;
