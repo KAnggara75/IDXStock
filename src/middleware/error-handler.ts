@@ -7,12 +7,14 @@ import {
 } from "@prisma/client/runtime/library";
 import { ZodError } from "zod";
 import { log } from "../config/logger";
-import { HTTPException } from "hono/http-exception";
 import { JsonUtils } from "../utils/jsonUtils";
+import { HTTPException } from "hono/http-exception";
 
-export async function errorHandler(err: unknown, c: any) {
+import type { Context } from "hono";
+
+export async function errorHandler(err: unknown, c: Context) {
 	if (err instanceof HTTPException) {
-		const response = JsonUtils.safeParseJSON(err.message);
+		const response: unknown = JsonUtils.safeParseJSON(err.message);
 		return c.json({ errors: response }, err.status);
 	}
 
