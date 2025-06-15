@@ -1,14 +1,14 @@
 import { describe, expect, it } from "bun:test";
 import { NumberUtil } from "../src/utils/numberUtils";
 
-describe("NumberUtil to Int", () => {
+describe("NumberUtil to Int", (): void => {
 	it.each([
 		[2, 2],
 		[-1, -1],
 		[3.1, 3],
 		[4.9, 4],
 		[0.9, 0],
-	])("%d => %d", (a: string | number, expected: number) => {
+	])("%d => %d", (a: string | number, expected: number): void => {
 		const result: number = NumberUtil.toInt(a);
 		expect(result).toBe(expected);
 		expect(result).toBeTypeOf("number");
@@ -27,14 +27,14 @@ describe("NumberUtil to Int", () => {
 		["1.m3", 0],
 		["1.15503E+11", 115503000000],
 		["1,15503E+11", 115503000000],
-	])("%s => %d", (a: string | number, expected: number) => {
+	])("%s => %d", (a: string | number, expected: number): void => {
 		const result: number = NumberUtil.toInt(a);
 		expect(result).toBe(expected);
 		expect(result).toBeTypeOf("number");
 	});
 });
 
-describe("NumberUtil to Float", () => {
+describe("NumberUtil to Float", (): void => {
 	it.each([
 		[1, 1.0],
 		[2, 2.0],
@@ -42,7 +42,7 @@ describe("NumberUtil to Float", () => {
 		[3.1, 3.1],
 		[4.9, 4.9],
 		[0.9, 0.9],
-	])("%d => %d", (a: string | number, expected: number) => {
+	])("%d => %d", (a: string | number, expected: number): void => {
 		const result: number = NumberUtil.toFloat(a);
 		expect(result).toBe(expected);
 		expect(result).toBeTypeOf("number");
@@ -61,21 +61,21 @@ describe("NumberUtil to Float", () => {
 		["1.m3", 0.0],
 		["1.15503E+11", 115503000000.0],
 		["1,15503E+11", 115503000000.0],
-	])("%s => %d", (a: string | number, expected: number) => {
+	])("%s => %d", (a: string | number, expected: number): void => {
 		const result: number = NumberUtil.toFloat(a);
 		expect(result).toBe(expected);
 		expect(result).toBeTypeOf("number");
 	});
 });
 
-describe("NumberUtil to BigInt", () => {
+describe("NumberUtil to BigInt", (): void => {
 	it.each([
 		[2, 2],
 		[-1, -1],
 		[3.1, 3],
 		[4.9, 4],
 		[0.9, 0],
-	])("%d => %d", (a: number, expected: number) => {
+	])("%d => %d", (a: number, expected: number): void => {
 		const result: bigint = NumberUtil.toBigInt(a);
 		expect(result).toBe(BigInt(expected));
 		expect(result).toBeTypeOf("bigint");
@@ -93,7 +93,7 @@ describe("NumberUtil to BigInt", () => {
 		["1.m3", 0],
 		["1.15503E+11", 115503000000],
 		["1,15503E+11", 115503000000],
-	])("%s => %d", (a: string, expected: number) => {
+	])("%s => %d", (a: string, expected: number): void => {
 		const result: bigint = NumberUtil.toBigInt(a);
 		expect(result).toBe(BigInt(expected));
 		expect(result).toBeTypeOf("bigint");

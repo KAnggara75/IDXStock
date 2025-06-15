@@ -2,7 +2,7 @@ import { describe, expect, it } from "bun:test";
 import { Board } from "@prisma/client";
 import { BoardUtils } from "../src/utils/boardUtils";
 
-describe("BoardUtils Test", () => {
+describe("BoardUtils Test", (): void => {
 	it.each([
 		["Saham MVS", Board.B_SERIES],
 		["Saham Main", Board.Main],
@@ -11,7 +11,7 @@ describe("BoardUtils Test", () => {
 		["Saham Seri C", Board.C_SERIES],
 		["Saham Preferen", Board.PREFEREN],
 		["SAHAM Preferen", Board.PREFEREN],
-	])("%s => %s", (name: string, expected: Board) => {
+	])("%s => %s", (name: string, expected: Board): void => {
 		const board: Board = BoardUtils.getBoardName(name);
 		expect(board).toBe(expected);
 	});

@@ -1,14 +1,12 @@
 import { app } from "../src";
 import { describe, expect, it } from "bun:test";
 
-describe("POST", () => {
-	it("URL Not Found", async () => {
-		const url = crypto.randomUUID();
-		const response = await app.request("/" + url, {
+describe("POST", (): void => {
+	it("URL Not Found", async (): Promise<void> => {
+		const url: `${string}-${string}-${string}-${string}-${string}` =
+			crypto.randomUUID();
+		const response: Response = await app.request("/" + url, {
 			method: "get",
-			body: JSON.stringify({
-				first_name: "OK",
-			}),
 		});
 
 		expect(response.status).toBe(404);
@@ -17,12 +15,9 @@ describe("POST", () => {
 		expect(body.errors).toBeDefined();
 	});
 
-	it("App Version", async () => {
-		const response = await app.request("/api/version", {
+	it("App Version", async (): Promise<void> => {
+		const response: Response = await app.request("/api/version", {
 			method: "get",
-			body: JSON.stringify({
-				first_name: "OK",
-			}),
 		});
 
 		expect(response.status).toBe(200);
@@ -30,7 +25,7 @@ describe("POST", () => {
 		const body = await response.json();
 		expect(body.message).toBeDefined();
 		expect(body.version).toBeDefined();
-		expect(body.stability).toBeDefined();
 		expect(body.errors).toBeUndefined();
+		expect(body.stability).toBeDefined();
 	});
 });

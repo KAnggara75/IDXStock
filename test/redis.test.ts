@@ -14,7 +14,7 @@ afterAll(async (): Promise<void> => {
 	await RedisService.del(`idx-${testUser}`);
 });
 
-describe("RedisService", () => {
+describe("RedisService", (): void => {
 	it("should set and get a key", async (): Promise<void> => {
 		await RedisService.set(testKey, "hello", 10);
 		const result: string | null = await RedisService.get(testKey);

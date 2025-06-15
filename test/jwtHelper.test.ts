@@ -5,8 +5,8 @@ import { sign } from "hono/jwt";
 import { HTTPException } from "hono/http-exception";
 import type { User } from "@prisma/client";
 
-describe("JWT Helper", () => {
-	it("It success create Token", async () => {
+describe("JWT Helper", (): void => {
+	it("It success create Token", async (): Promise<void> => {
 		const payload = {
 			name: "unitTest",
 			username: "username",
@@ -24,8 +24,8 @@ describe("JWT Helper", () => {
 		}
 	});
 
-	it("It expired", async () => {
-		const secret = Bun.env.JWT_SECRET_KEY ?? "";
+	it("It expired", async (): Promise<void> => {
+		const secret: string = Bun.env.JWT_SECRET_KEY ?? "";
 
 		const payload: UserJwt = {
 			name: "unitTest",
@@ -46,8 +46,8 @@ describe("JWT Helper", () => {
 		}
 	});
 
-	it("It Issued At", async () => {
-		const secret = Bun.env.JWT_SECRET_KEY ?? "";
+	it("It Issued At", async (): Promise<void> => {
+		const secret: string = Bun.env.JWT_SECRET_KEY ?? "";
 
 		const payload: UserJwt = {
 			name: "unitTest",
@@ -68,8 +68,8 @@ describe("JWT Helper", () => {
 		}
 	});
 
-	it("It Jwt Token Not Before", async () => {
-		const secret = Bun.env.JWT_SECRET_KEY ?? "";
+	it("It Jwt Token Not Before", async (): Promise<void> => {
+		const secret: string = Bun.env.JWT_SECRET_KEY ?? "";
 
 		const payload: UserJwt = {
 			name: "unitTest",
@@ -90,8 +90,8 @@ describe("JWT Helper", () => {
 		}
 	});
 
-	it("It Jwt Token Signature Mismatched", async () => {
-		const secret = Bun.env.JWT_SECRET_KEY ?? "";
+	it("It Jwt Token Signature Mismatched", async (): Promise<void> => {
+		const secret: string = Bun.env.JWT_SECRET_KEY ?? "";
 
 		const payload: UserJwt = {
 			name: "unitTest",
@@ -111,8 +111,8 @@ describe("JWT Helper", () => {
 		}
 	});
 
-	it("It Invalid Authorization", async () => {
-		const secret = Bun.env.JWT_SECRET_KEY ?? "";
+	it("It Invalid Authorization", async (): Promise<void> => {
+		const secret: string = Bun.env.JWT_SECRET_KEY ?? "";
 
 		const payload: UserJwt = {
 			name: "unitTest",
@@ -124,7 +124,7 @@ describe("JWT Helper", () => {
 		try {
 			const token: string = await sign(payload, secret);
 
-			const new_token = token.split(".");
+			const new_token: string[] = token.split(".");
 
 			await JwtHelper.jwtVerify(
 				"eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzVTMiJ9." +
@@ -140,7 +140,7 @@ describe("JWT Helper", () => {
 		}
 	});
 
-	it("It Jwt Token Invalid", async () => {
+	it("It Jwt Token Invalid", async (): Promise<void> => {
 		const secret = Bun.env.JWT_SECRET_KEY ?? "";
 
 		const payload: UserJwt = {
@@ -153,7 +153,7 @@ describe("JWT Helper", () => {
 		try {
 			const token: string = await sign(payload, secret);
 
-			const new_token = token.split(".");
+			const new_token: string[] = token.split(".");
 
 			await JwtHelper.jwtVerify(
 				new_token[0] + "." + new_token[1] + "jojo." + new_token[2]

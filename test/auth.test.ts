@@ -5,14 +5,14 @@ import { app } from "../src";
 import type { User } from "@prisma/client";
 import { JwtHelper } from "../src/helpers/jwt-helper";
 
-describe("POST /api/auth/register", () => {
-	afterEach(async () => {
+describe("POST /api/auth/register", (): void => {
+	afterEach(async (): Promise<void> => {
 		await UserTest.delete();
 		await RedisTest.delete();
 	});
 
-	it("should reject register new user if request is invalid", async () => {
-		const response = await app.request("/api/auth/register", {
+	it("should reject register new user if request is invalid", async (): Promise<void> => {
+		const response: Response = await app.request("/api/auth/register", {
 			method: "post",
 			headers: { "Content-Type": "application/json" },
 			body: JSON.stringify({
@@ -30,8 +30,8 @@ describe("POST /api/auth/register", () => {
 		expect(body.errors).toBeDefined();
 	});
 
-	it("should reject register new user if request is invalid 2", async () => {
-		const response = await app.request("/api/auth/register", {
+	it("should reject register new user if request is invalid 2", async (): Promise<void> => {
+		const response: Response = await app.request("/api/auth/register", {
 			method: "post",
 			headers: { "Content-Type": "application/json" },
 		});
@@ -43,10 +43,10 @@ describe("POST /api/auth/register", () => {
 		expect(body.errors).toBeDefined();
 	});
 
-	it("should reject register new user if username already exists", async () => {
+	it("should reject register new user if username already exists", async (): Promise<void> => {
 		await UserTest.create();
 
-		const response = await app.request("/api/auth/register", {
+		const response: Response = await app.request("/api/auth/register", {
 			method: "post",
 			headers: { "Content-Type": "application/json" },
 			body: JSON.stringify({
@@ -64,8 +64,8 @@ describe("POST /api/auth/register", () => {
 		expect(body.errors).toBeDefined();
 	});
 
-	it("should register new user success", async () => {
-		const response = await app.request("/api/auth/register", {
+	it("should register new user success", async (): Promise<void> => {
+		const response: Response = await app.request("/api/auth/register", {
 			method: "post",
 			headers: { "Content-Type": "application/json" },
 			body: JSON.stringify({
@@ -86,18 +86,18 @@ describe("POST /api/auth/register", () => {
 	});
 });
 
-describe("POST /api/login", () => {
-	beforeEach(async () => {
+describe("POST /api/login", (): void => {
+	beforeEach(async (): Promise<void> => {
 		await UserTest.create();
 	});
 
-	afterEach(async () => {
+	afterEach(async (): Promise<void> => {
 		await UserTest.delete();
 		await RedisTest.delete();
 	});
 
-	it("should be able to login", async () => {
-		const response = await app.request("/api/auth/login", {
+	it("should be able to login", async (): Promise<void> => {
+		const response: Response = await app.request("/api/auth/login", {
 			method: "post",
 			headers: { "Content-Type": "application/json" },
 			body: JSON.stringify({
@@ -112,8 +112,8 @@ describe("POST /api/login", () => {
 		expect(body.data.token).toBeDefined();
 	});
 
-	it("should be rejected if username is wrong", async () => {
-		const response = await app.request("/api/auth/login", {
+	it("should be rejected if username is wrong", async (): Promise<void> => {
+		const response: Response = await app.request("/api/auth/login", {
 			method: "post",
 			headers: { "Content-Type": "application/json" },
 			body: JSON.stringify({
@@ -128,8 +128,8 @@ describe("POST /api/login", () => {
 		expect(body.errors).toBeDefined();
 	});
 
-	it("should be rejected if password is wrong", async () => {
-		const response = await app.request("/api/auth/login", {
+	it("should be rejected if password is wrong", async (): Promise<void> => {
+		const response: Response = await app.request("/api/auth/login", {
 			method: "post",
 			headers: { "Content-Type": "application/json" },
 			body: JSON.stringify({
@@ -145,23 +145,23 @@ describe("POST /api/login", () => {
 	});
 });
 
-describe("DELETE /api/users/logout", () => {
+describe("DELETE /api/users/logout", (): void => {
 	let token: string = "";
 
-	beforeEach(async () => {
+	beforeEach(async (): Promise<void> => {
 		const user: User = await UserTest.create();
 		const now: number = Math.floor(Date.now() / 1000);
 		token = await JwtHelper.jwtSign(user, now - 10);
 	});
 
-	afterEach(async () => {
+	afterEach(async (): Promise<void> => {
 		await UserTest.delete();
 		await RedisTest.delete();
 	});
 
-	it("should failed logout cause user not registered", async () => {
+	it("should failed logout cause user not registered", async (): Promise<void> => {
 		await UserTest.delete();
-		const logout = await app.request("/api/users/logout", {
+		const logout: Response = await app.request("/api/users/logout", {
 			method: "DELETE",
 			headers: {
 				Authorization: `Bearer ${token}`,
@@ -170,8 +170,8 @@ describe("DELETE /api/users/logout", () => {
 		expect(logout.status).toBe(403);
 	});
 
-	it("should failed logout cause invalid request", async () => {
-		const response = await app.request("/api/users/logout", {
+	it("should failed logout cause invalid request", async (): Promise<void> => {
+		const response: Response = await app.request("/api/users/logout", {
 			method: "delete",
 		});
 
@@ -183,8 +183,8 @@ describe("DELETE /api/users/logout", () => {
 		expect(body.errors[0].message).toBe("Authorization header is missing");
 	});
 
-	it("should failed logout cause invalid token", async () => {
-		const response = await app.request("/api/users/logout", {
+	it("should failed logout cause invalid token", async (): Promise<void> => {
+		const response: Response = await app.request("/api/users/logout", {
 			method: "delete",
 			headers: {
 				Authorization: `Bearer ${token}a`,
@@ -199,8 +199,8 @@ describe("DELETE /api/users/logout", () => {
 		expect(body.errors[0].message).toBe("Token is invalid or has expired");
 	});
 
-	it("should failed logout cause invalid header auth format", async () => {
-		const response = await app.request("/api/users/logout", {
+	it("should failed logout cause invalid header auth format", async (): Promise<void> => {
+		const response: Response = await app.request("/api/users/logout", {
 			method: "delete",
 			headers: {
 				Authorization: `${token}`,
@@ -215,8 +215,8 @@ describe("DELETE /api/users/logout", () => {
 		expect(body.errors[0].message).toBe("Authorization header is malformed");
 	});
 
-	it("should be success logout", async () => {
-		const logout = await app.request("/api/users/logout", {
+	it("should be success logout", async (): Promise<void> => {
+		const logout: Response = await app.request("/api/users/logout", {
 			method: "DELETE",
 			headers: {
 				Authorization: `Bearer ${token}`,
@@ -224,7 +224,7 @@ describe("DELETE /api/users/logout", () => {
 		});
 		expect(logout.status).toBe(204);
 
-		const getUser = await app.request("/api/users/current", {
+		const getUser: Response = await app.request("/api/users/current", {
 			method: "get",
 			headers: {
 				Authorization: `Bearer ${token}`,
@@ -238,8 +238,8 @@ describe("DELETE /api/users/logout", () => {
 		expect(body.errors[0].message).toBe("Invalid Token: User not authorized");
 	});
 
-	it("test with invalid jwt zod validation", async () => {
-		const logout = await app.request("/api/users/logout", {
+	it("test with invalid jwt zod validation", async (): Promise<void> => {
+		const logout: Response = await app.request("/api/users/logout", {
 			method: "DELETE",
 			headers: {
 				Authorization: "Bearer test",
