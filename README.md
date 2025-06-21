@@ -39,7 +39,7 @@ Harap menyebutkan sumber secara lengkap serta tanggal akses saat mengutip inform
 
 Projek ini dilisensikan dengan CC BY-NC 4.0. Lisensi ini membatasi Anda untuk tidak menggunakan data atau apapun yang berhubungan dengan projek ini untuk tujuan komersial.
 
-Anda dapat membaca lisensi di [sini](LICENSE.md). Rangkuman pendek dari lisensi ini dapat Anda baca di [sini](https://creativecommons.org/licenses/by-nc/4.0/)
+Anda dapat membaca lisensi di [sini](LICENSE.md). Rangkuman pendek dari lisensi ini dapat Anda baca di [sini](https://www.gnu.org/licenses/)
 
 ## Jajan?
 
