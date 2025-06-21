@@ -4,3 +4,6 @@
 [submodule "datasets/csv"]
 	path = datasets/csv
 	url = https://github.com/KAnggara75/Dataset-Saham-IDX.git
+[submodule "datasets/sql"]
+	path = datasets/sql
+	url = https://github.com/KAnggara75/Dataset-Saham-IDX-SQL.git
