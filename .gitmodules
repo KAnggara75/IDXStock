@@ -1,3 +1,6 @@
 [submodule "dataset"]
 	path = dataset
 	url = https://github.com/KAnggara75/Dataset-Saham-IDX.git
+[submodule "datasets/csv"]
+	path = datasets/csv
+	url = https://github.com/KAnggara75/Dataset-Saham-IDX.git
