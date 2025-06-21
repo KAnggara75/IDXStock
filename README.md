@@ -3,6 +3,7 @@
 Stock Data from IDX
 
 ![coverage](coverage.svg)
+[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2FKAnggara75%2FIDXStock.svg?type=shield)](https://app.fossa.com/projects/git%2Bgithub.com%2FKAnggara75%2FIDXStock?ref=badge_shield)
 
 ## Catatan - LIHAT TANGGAL TERAKHIR DATASET DI-UPDATE
 
@@ -47,3 +48,7 @@ Kalau dataset ini membantu Anda dalam pekerjaan, penelitian, atau apapun itu, mu
 Credit to [@wildangunawan](https://github.com/wildangunawan) of [Dataset-Saham-IDX](https://github.com/wildangunawan/Dataset-Saham-IDX)
 
 [Stock List](https://www.idx.co.id/en/market-data/stocks-data/stock-list/)
+
+
+## License
+[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2FKAnggara75%2FIDXStock.svg?type=large)](https://app.fossa.com/projects/git%2Bgithub.com%2FKAnggara75%2FIDXStock?ref=badge_large)
