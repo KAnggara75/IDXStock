@@ -13,7 +13,7 @@ Walaupun Anda telah membuat _issue_, saya tidak menjamin bahwa saya akan segera 
 
 ## Overview
 
-Projek ini bertujuan untuk menyediakan sebuah dataset untuk para researcher yang ingin belajar/meneliti lebih lanjut terutama mengenai time series analysis. Dataset ini diharapkan agar dapat digunakan untuk tujuan penelitian sekaligus agar dapat meningkatkan pemahaman akan data yang bersifat time series.
+Project ini bertujuan untuk menyediakan sebuah dataset untuk para researcher yang ingin belajar/meneliti lebih lanjut terutama mengenai time series analysis. Dataset ini diharapkan agar dapat digunakan untuk tujuan penelitian sekaligus agar dapat meningkatkan pemahaman akan data yang bersifat time series.
 
 Untuk mengetahui fungsi tiap-tiap kolom, silakan baca [Keterangan Nama Kolom](Keterangan%20Nama%20Kolom.md). Apabila Anda mengetahui atau ingin memperbaiki fungsi dari suatu kolom, silakan buka Pull Requests pada repositori ini.
 
@@ -29,7 +29,7 @@ Mengacu pada [Syarat Penggunaan](https://idx.co.id/id/syarat-penggunaan/) PT Bur
 
 #### Bagi Pengguna Untuk Tujuan Komersial
 
-Pengguna dataset ini DILARANG KERAS untuk menggunakan informasi untuk tujuan komersial apapun tanpa persetujuan tertulis dari PT Bursa Efek Indonesia dan/atau pemilik asal data. Pemilik projek ini tidak bertanggungjawab apapun apabila pengguna menyalahi aturan ini dan tidak dapat dituntut secara hukum.
+Pengguna dataset ini DILARANG KERAS untuk menggunakan informasi untuk tujuan komersial apapun tanpa persetujuan tertulis dari PT Bursa Efek Indonesia dan/atau pemilik asal data. Pemilik projek ini tidak bertanggung jawab apapun apabila pengguna menyalahi aturan ini dan tidak dapat dituntut secara hukum.
 
 #### Bagi Pengguna Untuk Tujuan Non Komersial
 
@@ -39,13 +39,11 @@ Harap menyebutkan sumber secara lengkap serta tanggal akses saat mengutip inform
 
 Projek ini dilisensikan dengan CC BY-NC 4.0. Lisensi ini membatasi Anda untuk tidak menggunakan data atau apapun yang berhubungan dengan projek ini untuk tujuan komersial.
 
-Anda dapat membaca lisensi di [sini](LICENSE.md). Rangkuman pendek dari lisensi ini dapat Anda baca di [sini](https://www.gnu.org/licenses/)
+Anda dapat membaca lisensi di [sini](LICENSE). Rangkuman pendek dari lisensi ini dapat Anda baca di [sini](https://www.gnu.org/licenses/gpl-3.0.html)
 
 ## Jajan?
 
 Kalau dataset ini membantu Anda dalam pekerjaan, penelitian, atau apapun itu, mungkin boleh beliin saya jajan biar makin sering update? [https://trakteer.id/kanggara75](https://trakteer.id/kanggara75/tip) 😅✌️
-
-Credit to [@wildangunawan](https://github.com/wildangunawan) of [Dataset-Saham-IDX](https://github.com/wildangunawan/Dataset-Saham-IDX)
 
 [Stock List](https://www.idx.co.id/en/market-data/stocks-data/stock-list/)
 
