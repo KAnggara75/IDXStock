@@ -1,0 +1,59 @@
+name: 🚀 SQL Dump Release
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  version:
+    name: Create version number
+    runs-on: ubuntu-24.04
+    if: ${{ contains(github.event.head_commit.message, '#release') }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Fetch all history for all tags and branches
+        run: git fetch --prune --unshallow
+      - name: Install GitVersion
+        uses: gittools/actions/gitversion/setup@v3.1.1
+        with:
+          versionSpec: "6.0.x"
+      - name: Use GitVersion
+        id: gitversion
+        uses: gittools/actions/gitversion/execute@v3.1.1
+      - name: Create version.txt with MajorMinorPatch
+        run: echo ${{ steps.gitversion.outputs.MajorMinorPatch  }} > version.txt
+      - name: Upload version.txt
+        uses: actions/upload-artifact@v4.5.0
+        with:
+          name: gitversion
+          path: version.txt
+          overwrite: "true"
+
+  build:
+    name: Convert CSV to SQL and Create release
+    needs: [version]
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Get version.txt
+        uses: actions/download-artifact@v4.1.8
+        with:
+          name: gitversion
+      - name: Read version
+        id: version
+        uses: juliangruber/read-file-action@v1.1.7
+        with:
+          path: version.txt
+      - name: Convert CSV to SQL
+        run: |
+          git submodule update --init --recursive
+          chmod +x script/*.sh
+          ./script/csv2sql.sh
+      - name: Create a Release in GitHub
+        uses: ncipollo/release-action@v1.15.0
+        with:
+          artifacts: "sql_dump/*.sql"
+          token: ${{ secrets.GH_TOKEN }}
+          tag: ${{ steps.version.outputs.content }}
+          commit: ${{ github.sha }}

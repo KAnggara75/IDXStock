@@ -17,8 +17,27 @@ package main
 
 import (
 	"fmt"
+	"github.com/KAnggara75/IDXStock/config"
+	"github.com/KAnggara75/scc2go"
+	"github.com/gin-gonic/gin"
+	"os"
 )
 
+func init() {
+	scc2go.GetEnv(os.Getenv("SCC_URL"), os.Getenv("AUTH"))
+}
+
 func main() {
-	fmt.Println("Starting IDXStock API...")
+	router := gin.Default()
+	router.GET("/ping", func(c *gin.Context) {
+		deviceId := config.GetDBConn()
+		fmt.Println("Device ID:", deviceId)
+		c.JSON(200, gin.H{
+			"message": "pong",
+		})
+	})
+	err := router.Run()
+	if err != nil {
+		return
+	} // listen and serve on 0.0.0.0:8080
 }
