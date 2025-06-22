@@ -18,6 +18,7 @@ package main
 import (
 	"fmt"
 	"github.com/KAnggara75/IDXStock/config"
+	"github.com/KAnggara75/IDXStock/internal/route"
 	"github.com/KAnggara75/scc2go"
 	"github.com/gin-gonic/gin"
 	"os"
@@ -30,14 +31,11 @@ func init() {
 func main() {
 	gin.SetMode(config.GetGinMode())
 
-	router := gin.Default()
+	router := route.SetupRouter()
+
 	if err := router.SetTrustedProxies(config.GetTrustedProxies()); err != nil {
 		panic(err)
 	}
-
-	router.GET("/ping", func(c *gin.Context) {
-		c.JSON(200, gin.H{"message": "pong"})
-	})
 
 	if err := router.Run(config.GetPort()); err != nil {
 		panic(err)
