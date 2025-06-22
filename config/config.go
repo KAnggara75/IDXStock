@@ -17,8 +17,42 @@ package config
 
 import (
 	"github.com/spf13/viper"
+	"strings"
 )
 
 func GetDBConn() string {
 	return viper.GetString("db.idxstock.host")
+}
+
+func GetGinMode() string {
+	mode := viper.GetString("gin.mode")
+	switch mode {
+	case "debug", "":
+		return "debug"
+	case "release":
+		return "release"
+	case "test":
+		return "test"
+	default:
+		return "debug"
+	}
+}
+
+func GetTrustedProxies() []string {
+	proxies := viper.GetString("gin.trusted_proxies")
+	if proxies == "" {
+		return []string{"127.0.0.1"}
+	}
+	return strings.Split(proxies, ",")
+}
+
+func GetPort() string {
+	port := viper.GetString("gin.port")
+	if port == "" {
+		port = "8080"
+	}
+	if port[0] != ':' {
+		port = ":" + port
+	}
+	return port
 }

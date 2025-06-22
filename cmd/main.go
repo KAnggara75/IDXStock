@@ -24,20 +24,24 @@ import (
 )
 
 func init() {
-	scc2go.GetEnv(os.Getenv("SCC_URL"), os.Getenv("AUTH"))
+	scc2go.GetEnv(os.Getenv("SCC_IDXSTOCK_URL"), os.Getenv("AUTH"))
 }
 
 func main() {
+	gin.SetMode(config.GetGinMode())
+
 	router := gin.Default()
+	if err := router.SetTrustedProxies(config.GetTrustedProxies()); err != nil {
+		panic(err)
+	}
+
 	router.GET("/ping", func(c *gin.Context) {
-		deviceId := config.GetDBConn()
-		fmt.Println("Device ID:", deviceId)
-		c.JSON(200, gin.H{
-			"message": "pong",
-		})
+		c.JSON(200, gin.H{"message": "pong"})
 	})
-	err := router.Run()
-	if err != nil {
-		return
-	} // listen and serve on 0.0.0.0:8080
+
+	if err := router.Run(config.GetPort()); err != nil {
+		panic(err)
+	}
+
+	fmt.Println("IDXStock server is running on port", config.GetPort())
 }
