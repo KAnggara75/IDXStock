@@ -16,34 +16,62 @@
 package handler
 
 import (
+	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/xuri/excelize/v2"
 	"io"
 	"net/http"
 	"os"
+	"path/filepath"
+	"regexp"
+	"strings"
+	"time"
 )
 
 func UploadExcel(c *gin.Context) {
-	// Ambil file dari form (key: "file")
 	file, err := c.FormFile("file")
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "File not found"})
 		return
 	}
 
-	// Validasi ekstensi
-	if ext := file.Filename[len(file.Filename)-5:]; ext != ".xlsx" {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Only .xlsx files allowed"})
+	filename := file.Filename
+	ext := strings.ToLower(filepath.Ext(filename))
+	if ext != ".xlsx" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "File harus .xlsx"})
 		return
 	}
 
-	// Simpan sementara ke disk (opsional, bisa juga pakai io.Reader langsung)
+	const prefix = "Daftar Saham"
+	if !strings.HasPrefix(filename, prefix) {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Nama file harus diawali dengan 'Daftar Saham'"})
+		return
+	}
+
+	datePattern := regexp.MustCompile(`(\d{8})\.xlsx$`)
+	matches := datePattern.FindStringSubmatch(filename)
+	if matches == nil || len(matches) < 2 {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Nama file harus diakhiri dengan tanggal format YYYYMMDD sebelum .xlsx"})
+		return
+	}
+	tanggalFile := matches[1]
+	today := time.Now().Format("20060102")
+	if tanggalFile != today {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error":      fmt.Sprintf("Tanggal di filename harus hari ini: %s", today),
+			"file_date":  tanggalFile,
+			"today_date": today,
+		})
+		return
+	}
+
+	// Simpan sementara file, proses selanjutnya seperti biasa
 	tmpFile, err := os.CreateTemp("", "upload-*.xlsx")
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Could not create temp file"})
 		return
 	}
-	defer os.Remove(tmpFile.Name()) // hapus file setelah selesai
+	defer os.Remove(tmpFile.Name())
 
 	src, err := file.Open()
 	if err != nil {
@@ -56,9 +84,8 @@ func UploadExcel(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to copy file"})
 		return
 	}
-	tmpFile.Close() // harus di-close sebelum open oleh excelize
+	tmpFile.Close()
 
-	// Baca Excel pakai excelize
 	f, err := excelize.OpenFile(tmpFile.Name())
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid Excel file"})
@@ -66,7 +93,6 @@ func UploadExcel(c *gin.Context) {
 	}
 	defer f.Close()
 
-	// Ambil data dari sheet pertama
 	sheetName := f.GetSheetName(0)
 	rows, err := f.GetRows(sheetName)
 	if err != nil {
@@ -74,9 +100,10 @@ func UploadExcel(c *gin.Context) {
 		return
 	}
 
-	// Contoh: Tampilkan isi baris sebagai array of array string
 	c.JSON(http.StatusOK, gin.H{
-		"sheet": sheetName,
-		"rows":  rows,
+		"filename":  filename,
+		"sheet":     sheetName,
+		"rows":      rows,
+		"validated": true,
 	})
 }
