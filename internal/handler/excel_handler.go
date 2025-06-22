@@ -17,108 +17,79 @@ package handler
 
 import (
 	"fmt"
-	"github.com/KAnggara75/IDXStock/internal/config"
-	"github.com/gin-gonic/gin"
-	"github.com/xuri/excelize/v2"
-	"io"
-	"net/http"
 	"os"
+	"path/filepath"
 	"regexp"
 	"strings"
 	"time"
+
+	"github.com/gofiber/fiber/v2"
+	"github.com/xuri/excelize/v2"
 )
 
-func UploadExcel(c *gin.Context) {
-	file, err := c.FormFile("file")
+func UploadExcel(c *fiber.Ctx) error {
+	// Ambil file
+	fileHeader, err := c.FormFile("file")
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "File not found"})
-		return
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "File not found"})
 	}
+	filename := fileHeader.Filename
 
-	filename := file.Filename
+	// Validasi ekstensi .xlsx
 	if !strings.HasSuffix(strings.ToLower(filename), ".xlsx") {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid File Type"})
-		return
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "File harus .xlsx"})
 	}
 
-	prefix := config.GetStockListPrefix()
+	// Validasi prefix (bisa configurable pakai viper)
+	const prefix = "Daftar Saham"
 	if !strings.HasPrefix(filename, prefix) {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid Filename"})
-		return
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Nama file harus diawali dengan 'Daftar Saham'"})
 	}
 
+	// Validasi tanggal di belakang (YYYYMMDD)
 	datePattern := regexp.MustCompile(`(\d{8})\.xlsx$`)
 	matches := datePattern.FindStringSubmatch(filename)
 	if matches == nil || len(matches) < 2 {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Data Not Update"})
-		return
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Nama file harus diakhiri dengan tanggal format YYYYMMDD sebelum .xlsx"})
 	}
-
 	tanggalFile := matches[1]
 	today := time.Now().Format("20060102")
 	if tanggalFile != today {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error":      fmt.Sprintf("Data Not Update: %s", today),
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"error":      fmt.Sprintf("Tanggal di filename harus hari ini: %s", today),
 			"file_date":  tanggalFile,
 			"today_date": today,
 		})
-		return
 	}
 
-	tmpFile, err := os.CreateTemp("", "upload-*.xlsx")
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Could not create temp file"})
-		return
+	// Simpan file ke tmp
+	tempPath := filepath.Join(os.TempDir(), filename)
+	if err := c.SaveFile(fileHeader, tempPath); err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Could not save temp file"})
 	}
-	defer func(name string) {
-		err := os.Remove(name)
-		if err != nil {
+	defer os.Remove(tempPath)
 
-		}
-	}(tmpFile.Name())
-
-	src, err := file.Open()
+	// Baca isi Excel
+	f, err := excelize.OpenFile(tempPath)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Could not open file"})
-		return
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Invalid Excel file"})
 	}
 	defer func() {
-		if err := src.Close(); err != nil {
-			fmt.Printf("Warning: failed to close file: %v\n", err)
-		}
-	}()
-
-	_, err = io.Copy(tmpFile, src)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to copy file"})
-		return
-	}
-	defer func() {
-		if err := tmpFile.Close(); err != nil {
-			fmt.Printf("Warning: Failed to copy file: %v\n", err)
-		}
-	}()
-
-	f, err := excelize.OpenFile(tmpFile.Name())
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid Excel file"})
-		return
-	}
-	defer func() {
-		if err := f.Close(); err != nil {
-			fmt.Printf("Warning: Invalid Excel file: %v\n", err)
+		if cerr := f.Close(); cerr != nil {
+			fmt.Printf("Warning: failed to close excel file: %v\n", cerr)
 		}
 	}()
 
 	sheetName := f.GetSheetName(0)
 	rows, err := f.GetRows(sheetName)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Could not read rows"})
-		return
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Could not read rows"})
 	}
 
-	c.JSON(http.StatusOK, gin.H{
-		"filename": filename,
-		"data":     rows,
+	return c.JSON(fiber.Map{
+		"filename":  filename,
+		"sheet":     sheetName,
+		"rows":      rows,
+		"validated": true,
 	})
 }

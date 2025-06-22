@@ -16,11 +16,9 @@
 package main
 
 import (
-	"fmt"
 	"github.com/KAnggara75/IDXStock/internal/config"
 	"github.com/KAnggara75/IDXStock/internal/route"
 	"github.com/KAnggara75/scc2go"
-	"github.com/gin-gonic/gin"
 	"os"
 )
 
@@ -29,17 +27,8 @@ func init() {
 }
 
 func main() {
-	gin.SetMode(config.GetGinMode())
-
-	router := route.SetupRouter()
-
-	if err := router.SetTrustedProxies(config.GetTrustedProxies()); err != nil {
+	app := route.SetupRouter()
+	if err := app.Listen(config.GetPort()); err != nil {
 		panic(err)
 	}
-
-	if err := router.Run(config.GetPort()); err != nil {
-		panic(err)
-	}
-
-	fmt.Println("IDXStock server is running on port", config.GetPort())
 }

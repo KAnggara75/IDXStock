@@ -17,11 +17,11 @@ package route
 
 import (
 	"github.com/KAnggara75/IDXStock/internal/handler"
-	"github.com/gin-gonic/gin"
+	"github.com/gofiber/fiber/v2"
 )
 
-func SetupRouter() *gin.Engine {
-	r := gin.Default()
-	r.POST("/upload", handler.UploadExcel)
-	return r
+func SetupRouter() *fiber.App {
+	app := fiber.New()
+	app.Post("/upload", handler.UploadExcel)
+	return app
 }
