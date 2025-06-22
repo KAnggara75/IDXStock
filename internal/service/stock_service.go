@@ -8,20 +8,9 @@
  *
  * See <https://www.gnu.org/licenses/gpl-3.0.html>.
  *
- * @author KAnggara75 on Sun 22/06/25 15.44
- * @project IDXStock route
- * https://github.com/KAnggara75/IDXStock/tree/main/route
+ * @author KAnggara75 on Sun 22/06/25 21.29
+ * @project IDXStock service
+ * https://github.com/KAnggara75/IDXStock/tree/main/service
  */
 
-package route
-
-import (
-	"github.com/KAnggara75/IDXStock/internal/handler"
-	"github.com/gofiber/fiber/v2"
-)
-
-func SetupRouter() *fiber.App {
-	app := fiber.New()
-	app.Post("/upload", handler.StockList)
-	return app
-}
+package service

@@ -27,8 +27,7 @@ import (
 	"github.com/xuri/excelize/v2"
 )
 
-func UploadExcel(c *fiber.Ctx) error {
-	// Ambil file
+func StockList(c *fiber.Ctx) error {
 	fileHeader, err := c.FormFile("file")
 	if err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "File not found"})
