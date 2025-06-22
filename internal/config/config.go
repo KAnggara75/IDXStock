@@ -24,6 +24,14 @@ func GetDBConn() string {
 	return viper.GetString("db.idxstock.host")
 }
 
+func GetStockListPrefix() string {
+	prefix := viper.GetString("app.stockListPrefix")
+	if prefix == "" {
+		prefix = "Daftar Saham"
+	}
+	return prefix
+}
+
 func GetGinMode() string {
 	mode := viper.GetString("gin.mode")
 	switch mode {

@@ -17,7 +17,7 @@ package main
 
 import (
 	"fmt"
-	"github.com/KAnggara75/IDXStock/config"
+	"github.com/KAnggara75/IDXStock/internal/config"
 	"github.com/KAnggara75/IDXStock/internal/route"
 	"github.com/KAnggara75/scc2go"
 	"github.com/gin-gonic/gin"
