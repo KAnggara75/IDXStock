@@ -28,6 +28,7 @@
 # [2]: https://help.github.com/articles/about-codeowners/
 # [3]: pkg/internal/codeowners
 
-/datasets/csv   @wildangunawan @kanggara75
+#/datasets/csv   @wildangunawan @kanggara75 #Unknown owner on line 31: make sure @wildangunawan exists and has write access to the repository
+/datasets/csv   @kanggara75
 /datasets       @kanggara75
 /datasets/sql   @kanggara75
