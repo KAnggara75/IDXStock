@@ -27,7 +27,7 @@ func init() {
 }
 
 func main() {
-	app := route.SetupRouter()
+	app := route.NewRouter()
 	if err := app.Listen(config.GetPort()); err != nil {
 		panic(err)
 	}

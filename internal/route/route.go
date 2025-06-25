@@ -20,8 +20,8 @@ import (
 	"github.com/gofiber/fiber/v2"
 )
 
-func SetupRouter() *fiber.App {
+func NewRouter() *fiber.App {
 	app := fiber.New()
-	app.Post("/upload", handler.StockList)
+	app.Post("/upload", handler.UploadStocks)
 	return app
 }
