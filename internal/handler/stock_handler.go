@@ -17,21 +17,21 @@ package handler
 
 import (
 	"fmt"
-	"github.com/gofiber/fiber/v2"
-	"github.com/xuri/excelize/v2"
 	"os"
 	"path/filepath"
 	"strings"
 	"time"
+
+	"github.com/gofiber/fiber/v2"
+	"github.com/xuri/excelize/v2"
 )
 
 type Stock struct {
-	Code          string `json:"code"`
-	Name          string `json:"name"`
-	ListingDate   string `json:"listing_date,omitempty"`
-	DelistingDate string `json:"delisting_date,omitempty"`
-	Shares        int64  `json:"shares"`
-	Board         string `json:"board"`
+	Code         string `json:"code"`
+	CompanyName  string `json:"company_name"`
+	ListingDate  string `json:"listing_date"`
+	Shares       int64  `json:"shares"`
+	ListingBoard string `json:"listing_board"`
 }
 
 func UploadStocks(c *fiber.Ctx) error {
@@ -65,43 +65,68 @@ func UploadStocks(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "could not read rows or sheet kosong"})
 	}
 
-	// Asumsi header kolom urut: Code, Name, ListingDate, DelistingDate, Shares, Board
+	// Cari header index
+	header := rows[0]
+	idxCode := findIndex(header, "Code")
+	idxCompany := findIndex(header, "Company Name")
+	idxListingDate := findIndex(header, "Listing Date")
+	idxShares := findIndex(header, "Shares")
+	idxBoard := findIndex(header, "Listing Board")
+
 	var stocks []Stock
 	for i, row := range rows {
 		if i == 0 {
 			continue // skip header
 		}
-		// minimal ada 6 kolom, sesuaikan kalau excel-mu beda
-		if len(row) < 6 {
+		// Minimal field harus ada, kalau tidak cukup, skip
+		if idxCode == -1 || idxCompany == -1 || idxListingDate == -1 || idxShares == -1 || idxBoard == -1 {
 			continue
 		}
+		// Kalau kolom kurang di row, skip
+		if len(row) <= idxBoard {
+			continue
+		}
+
 		shares := int64(0)
-		if s := strings.TrimSpace(row[4]); s != "" {
+		if s := strings.TrimSpace(row[idxShares]); s != "" {
 			_, _ = fmt.Sscanf(s, "%d", &shares)
 		}
 
 		stocks = append(stocks, Stock{
-			Code:          strings.TrimSpace(row[0]),
-			Name:          strings.TrimSpace(row[1]),
-			ListingDate:   parseDate(row[2]),
-			DelistingDate: parseDate(row[3]),
-			Shares:        shares,
-			Board:         strings.TrimSpace(row[5]),
+			Code:         getOrEmpty(row, idxCode),
+			CompanyName:  getOrEmpty(row, idxCompany),
+			ListingDate:  parseDate(getOrEmpty(row, idxListingDate)),
+			Shares:       shares,
+			ListingBoard: getOrEmpty(row, idxBoard),
 		})
 	}
 
 	return c.JSON(stocks)
 }
 
-// Helper parse date, biar format konsisten (YYYY-MM-DD), atau kosong kalau gagal
+func findIndex(header []string, name string) int {
+	for i, h := range header {
+		if strings.EqualFold(strings.TrimSpace(h), strings.TrimSpace(name)) {
+			return i
+		}
+	}
+	return -1
+}
+
+func getOrEmpty(row []string, idx int) string {
+	if idx >= 0 && idx < len(row) {
+		return strings.TrimSpace(row[idx])
+	}
+	return ""
+}
+
 func parseDate(s string) string {
 	s = strings.TrimSpace(s)
 	if s == "" {
 		return ""
 	}
-	// Coba format YYYY-MM-DD
 	if t, err := time.Parse("2006-01-02", s); err == nil {
 		return t.Format("2006-01-02")
 	}
-	return s // fallback: tetap return original string
+	return s
 }
