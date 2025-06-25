@@ -34,6 +34,36 @@ type Stock struct {
 	ListingBoard string `json:"listing_board"`
 }
 
+var (
+	// ENGLISH HEADERS
+	headerEng = map[string]string{
+		"code":          "Code",
+		"company_name":  "Company Name",
+		"listing_date":  "Listing Date",
+		"shares":        "Shares",
+		"listing_board": "Listing Board",
+	}
+	// INDONESIAN HEADERS
+	headerIndo = map[string]string{
+		"code":          "Kode",
+		"company_name":  "Nama Perusahaan",
+		"listing_date":  "Tanggal Pencatatan",
+		"shares":        "Saham",
+		"listing_board": "Papan Pencatatan",
+	}
+	boardIDtoEN = map[string]string{
+		"Akselerasi":        "Acceleration",
+		"Pengembangan":      "Development",
+		"Ekonomi Baru":      "Ekonomi Baru",
+		"Utama":             "Main",
+		"Pemantauan Khusus": "Watchlist",
+		"Acceleration":      "Acceleration",
+		"Development":       "Development",
+		"Main":              "Main",
+		"Watchlist":         "Watchlist",
+	}
+)
+
 func UploadStocks(c *fiber.Ctx) error {
 	fileHeader, err := c.FormFile("file")
 	if err != nil {
@@ -55,9 +85,7 @@ func UploadStocks(c *fiber.Ctx) error {
 	if err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "invalid Excel file"})
 	}
-	defer func() {
-		_ = f.Close()
-	}()
+	defer func() { _ = f.Close() }()
 
 	sheetName := f.GetSheetName(0)
 	rows, err := f.GetRows(sheetName)
@@ -65,39 +93,51 @@ func UploadStocks(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "could not read rows or sheet kosong"})
 	}
 
-	// Cari header index
 	header := rows[0]
-	idxCode := findIndex(header, "Code")
-	idxCompany := findIndex(header, "Company Name")
-	idxListingDate := findIndex(header, "Listing Date")
-	idxShares := findIndex(header, "Shares")
-	idxBoard := findIndex(header, "Listing Board")
+	var headerMap map[string]string
+	if findIndex(header, headerEng["code"]) != -1 && findIndex(header, headerEng["company_name"]) != -1 {
+		headerMap = headerEng
+	} else if findIndex(header, headerIndo["code"]) != -1 && findIndex(header, headerIndo["company_name"]) != -1 {
+		headerMap = headerIndo
+	} else {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Header tidak dikenali (harus Inggris atau Indonesia)"})
+	}
+
+	idxCode := findIndex(header, headerMap["code"])
+	idxShares := findIndex(header, headerMap["shares"])
+	idxBoard := findIndex(header, headerMap["listing_board"])
+	idxCompany := findIndex(header, headerMap["company_name"])
+	idxListingDate := findIndex(header, headerMap["listing_date"])
 
 	var stocks []Stock
 	for i, row := range rows {
 		if i == 0 {
 			continue // skip header
 		}
+
 		if idxCode == -1 || idxCompany == -1 || idxListingDate == -1 || idxShares == -1 || idxBoard == -1 {
 			continue
 		}
+
 		if len(row) <= idxBoard {
 			continue
 		}
 
-		shares := parseShares(getOrEmpty(row, idxShares))
+		shares := parseSharesMulti(getOrEmpty(row, idxShares))
 
 		stocks = append(stocks, Stock{
 			Code:         getOrEmpty(row, idxCode),
 			CompanyName:  getOrEmpty(row, idxCompany),
-			ListingDate:  parseDate(getOrEmpty(row, idxListingDate)),
+			ListingDate:  parseDateFlexible(getOrEmpty(row, idxListingDate)),
 			Shares:       shares,
-			ListingBoard: getOrEmpty(row, idxBoard),
+			ListingBoard: mapBoardToEN(getOrEmpty(row, idxBoard)),
 		})
 	}
 
 	return c.JSON(stocks)
 }
+
+// --- UTILS ---
 
 func findIndex(header []string, name string) int {
 	for i, h := range header {
@@ -115,30 +155,63 @@ func getOrEmpty(row []string, idx int) string {
 	return ""
 }
 
-func parseDate(s string) string {
+// Parse format tanggal Indonesia & Inggris (contoh: "09 Dec 1997", "09 Des 1997", fallback as is)
+func parseDateFlexible(s string) string {
 	s = strings.TrimSpace(s)
 	if s == "" {
 		return ""
 	}
-	if t, err := time.Parse("2006-01-02", s); err == nil {
-		return t.Format("2006-01-02")
+	formats := []string{
+		"02 Jan 2006", // English
+		"02 Jan 06",
+		"02 January 2006",
+		"02 Jan 2006", // Bisa juga dipakai untuk "09 Dec 1997"
+		"02 Jan 2006", // Repeated so that code is easy to extend
+	}
+
+	idToEnMonth := map[string]string{
+		"Jan": "Jan", "Feb": "Feb", "Mar": "Mar", "Apr": "Apr", "Mei": "May",
+		"Jun": "Jun", "Jul": "Jul", "Agu": "Aug", "Sep": "Sep", "Okt": "Oct",
+		"Nov": "Nov", "Des": "Dec",
+	}
+
+	parts := strings.Split(s, " ")
+	if len(parts) == 3 {
+		if m, ok := idToEnMonth[parts[1]]; ok {
+			parts[1] = m
+			s = strings.Join(parts, " ")
+		}
+	}
+	for _, f := range formats {
+		if t, err := time.Parse(f, s); err == nil {
+			return t.Format("2006-01-02")
+		}
 	}
 	return s
 }
 
-func parseShares(s string) int64 {
+func parseSharesMulti(s string) int64 {
 	s = strings.ReplaceAll(s, ",", "")
+	s = strings.ReplaceAll(s, ".", "")
 	s = strings.TrimSpace(s)
 	if s == "" {
 		return 0
 	}
 	val, err := strconv.ParseInt(s, 10, 64)
 	if err != nil {
-		// Kalau error, bisa juga coba parse float, lalu dibulatkan ke int64
 		if f, err2 := strconv.ParseFloat(s, 64); err2 == nil {
 			return int64(f)
 		}
 		return 0
 	}
 	return val
+}
+
+func mapBoardToEN(s string) string {
+	s = strings.TrimSpace(s)
+	if en, ok := boardIDtoEN[s]; ok {
+		return en
+	}
+	// Kalau tidak cocok, return as-is
+	return s
 }
