@@ -16,6 +16,8 @@
 package excel
 
 import (
+	"errors"
+
 	"github.com/KAnggara75/IDXStock/internal/helper"
 	"github.com/KAnggara75/IDXStock/internal/utils"
 	"github.com/xuri/excelize/v2"
@@ -49,22 +51,21 @@ var (
 )
 
 func ParseStock(f *excelize.File) ([]Stock, error) {
-	var stocks []Stock
-
 	sheetName := f.GetSheetName(0)
 	rows, err := f.GetRows(sheetName)
 	if err != nil || len(rows) < 2 {
-		return stocks, err
+		return nil, errors.New("could not read rows or sheet kosong")
 	}
 
 	header := rows[0]
 	var headerMap map[string]string
-	if utils.FindIndex(header, headerEng["code"]) != -1 && utils.FindIndex(header, headerEng["company_name"]) != -1 {
+	switch {
+	case utils.FindIndex(header, headerEng["code"]) != -1 && utils.FindIndex(header, headerEng["company_name"]) != -1:
 		headerMap = headerEng
-	} else if utils.FindIndex(header, headerIndo["code"]) != -1 && utils.FindIndex(header, headerIndo["company_name"]) != -1 {
+	case utils.FindIndex(header, headerIndo["code"]) != -1 && utils.FindIndex(header, headerIndo["company_name"]) != -1:
 		headerMap = headerIndo
-	} else {
-		return stocks, err
+	default:
+		return nil, errors.New("header tidak dikenali (harus Inggris atau Indonesia)")
 	}
 
 	idxCode := utils.FindIndex(header, headerMap["code"])
@@ -73,15 +74,15 @@ func ParseStock(f *excelize.File) ([]Stock, error) {
 	idxCompany := utils.FindIndex(header, headerMap["company_name"])
 	idxListingDate := utils.FindIndex(header, headerMap["listing_date"])
 
+	if idxCode == -1 || idxCompany == -1 || idxListingDate == -1 || idxShares == -1 || idxBoard == -1 {
+		return nil, errors.New("beberapa header kolom tidak ditemukan")
+	}
+
+	var stocks []Stock
 	for i, row := range rows {
 		if i == 0 {
-			continue // skip header
-		}
-
-		if idxCode == -1 || idxCompany == -1 || idxListingDate == -1 || idxShares == -1 || idxBoard == -1 {
 			continue
 		}
-
 		if len(row) <= idxBoard {
 			continue
 		}

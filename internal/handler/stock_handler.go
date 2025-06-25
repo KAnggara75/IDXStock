@@ -17,21 +17,14 @@ package handler
 
 import (
 	"fmt"
-	"github.com/KAnggara75/IDXStock/internal/excel"
-	"github.com/gofiber/fiber/v2"
-	"github.com/xuri/excelize/v2"
 	"os"
 	"path/filepath"
 	"strings"
-)
 
-type Stock struct {
-	Code         string `json:"code"`
-	CompanyName  string `json:"company_name"`
-	ListingDate  string `json:"listing_date"`
-	Shares       int64  `json:"shares"`
-	ListingBoard string `json:"listing_board"`
-}
+	"github.com/KAnggara75/IDXStock/internal/excel"
+	"github.com/gofiber/fiber/v2"
+	"github.com/xuri/excelize/v2"
+)
 
 func ConvertStocks(c *fiber.Ctx) error {
 	fileHeader, err := c.FormFile("file")
@@ -61,6 +54,8 @@ func ConvertStocks(c *fiber.Ctx) error {
 	defer func() { _ = f.Close() }()
 
 	stocks, err := excel.ParseStock(f)
-
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": err.Error()})
+	}
 	return c.JSON(stocks)
 }
