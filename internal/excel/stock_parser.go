@@ -18,18 +18,11 @@ package excel
 import (
 	"errors"
 
+	"github.com/KAnggara75/IDXStock/domain"
 	"github.com/KAnggara75/IDXStock/internal/helper"
 	"github.com/KAnggara75/IDXStock/internal/utils"
 	"github.com/xuri/excelize/v2"
 )
-
-type Stock struct {
-	Code         string `json:"code"`
-	CompanyName  string `json:"company_name"`
-	ListingDate  string `json:"listing_date"`
-	Shares       int64  `json:"shares"`
-	ListingBoard string `json:"listing_board"`
-}
 
 var (
 	// ENGLISH HEADERS
@@ -50,7 +43,7 @@ var (
 	}
 )
 
-func ParseStock(f *excelize.File) ([]Stock, error) {
+func ParseStock(f *excelize.File) ([]domain.Stock, error) {
 	sheetName := f.GetSheetName(0)
 	rows, err := f.GetRows(sheetName)
 	if err != nil || len(rows) < 2 {
@@ -78,7 +71,7 @@ func ParseStock(f *excelize.File) ([]Stock, error) {
 		return nil, errors.New("beberapa header kolom tidak ditemukan")
 	}
 
-	var stocks []Stock
+	var stocks []domain.Stock
 	for i, row := range rows {
 		if i == 0 {
 			continue
@@ -87,7 +80,7 @@ func ParseStock(f *excelize.File) ([]Stock, error) {
 			continue
 		}
 
-		stocks = append(stocks, Stock{
+		stocks = append(stocks, domain.Stock{
 			Code:         utils.GetOrEmpty(row, idxCode),
 			CompanyName:  utils.GetOrEmpty(row, idxCompany),
 			ListingDate:  utils.ParseDateFlexible(utils.GetOrEmpty(row, idxListingDate)),
