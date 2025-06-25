@@ -16,9 +16,9 @@
 package handler
 
 import (
-	"fmt"
 	"os"
 	"path/filepath"
+	"strconv"
 	"strings"
 	"time"
 
@@ -78,19 +78,14 @@ func UploadStocks(c *fiber.Ctx) error {
 		if i == 0 {
 			continue // skip header
 		}
-		// Minimal field harus ada, kalau tidak cukup, skip
 		if idxCode == -1 || idxCompany == -1 || idxListingDate == -1 || idxShares == -1 || idxBoard == -1 {
 			continue
 		}
-		// Kalau kolom kurang di row, skip
 		if len(row) <= idxBoard {
 			continue
 		}
 
-		shares := int64(0)
-		if s := strings.TrimSpace(row[idxShares]); s != "" {
-			_, _ = fmt.Sscanf(s, "%d", &shares)
-		}
+		shares := parseShares(getOrEmpty(row, idxShares))
 
 		stocks = append(stocks, Stock{
 			Code:         getOrEmpty(row, idxCode),
@@ -129,4 +124,21 @@ func parseDate(s string) string {
 		return t.Format("2006-01-02")
 	}
 	return s
+}
+
+func parseShares(s string) int64 {
+	s = strings.ReplaceAll(s, ",", "")
+	s = strings.TrimSpace(s)
+	if s == "" {
+		return 0
+	}
+	val, err := strconv.ParseInt(s, 10, 64)
+	if err != nil {
+		// Kalau error, bisa juga coba parse float, lalu dibulatkan ke int64
+		if f, err2 := strconv.ParseFloat(s, 64); err2 == nil {
+			return int64(f)
+		}
+		return 0
+	}
+	return val
 }
