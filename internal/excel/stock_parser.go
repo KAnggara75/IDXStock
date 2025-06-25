@@ -17,8 +17,7 @@ package excel
 
 import (
 	"errors"
-
-	"github.com/KAnggara75/IDXStock/domain"
+	"github.com/KAnggara75/IDXStock/internal/dto"
 	"github.com/KAnggara75/IDXStock/internal/helper"
 	"github.com/KAnggara75/IDXStock/internal/utils"
 	"github.com/xuri/excelize/v2"
@@ -43,7 +42,7 @@ var (
 	}
 )
 
-func ParseStock(f *excelize.File) ([]domain.Stock, error) {
+func ParseStock(f *excelize.File) ([]dto.Stock, error) {
 	sheetName := f.GetSheetName(0)
 	rows, err := f.GetRows(sheetName)
 	if err != nil || len(rows) < 2 {
@@ -71,7 +70,7 @@ func ParseStock(f *excelize.File) ([]domain.Stock, error) {
 		return nil, errors.New("beberapa header kolom tidak ditemukan")
 	}
 
-	var stocks []domain.Stock
+	var stocks []dto.Stock
 	for i, row := range rows {
 		if i == 0 {
 			continue
@@ -80,7 +79,7 @@ func ParseStock(f *excelize.File) ([]domain.Stock, error) {
 			continue
 		}
 
-		stocks = append(stocks, domain.Stock{
+		stocks = append(stocks, dto.Stock{
 			Code:         utils.GetOrEmpty(row, idxCode),
 			CompanyName:  utils.GetOrEmpty(row, idxCompany),
 			ListingDate:  utils.ParseDateFlexible(utils.GetOrEmpty(row, idxListingDate)),
