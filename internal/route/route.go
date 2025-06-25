@@ -10,7 +10,7 @@
  *
  * @author KAnggara75 on Sun 22/06/25 15.44
  * @project IDXStock route
- * https://github.com/KAnggara75/IDXStock/tree/main/route
+ * https://github.com/KAnggara75/IDXStock/tree/main/internal/route
  */
 
 package route

@@ -10,7 +10,7 @@
  *
  * @author KAnggara75 on Sun 22/06/25 21.37
  * @project IDXStock db
- * https://github.com/KAnggara75/IDXStock/tree/main/db
+ * https://github.com/KAnggara75/IDXStock/tree/main/internal/db
  */
 
 package db

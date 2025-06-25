@@ -10,7 +10,7 @@
  *
  * @author KAnggara75 on Sun 22/06/25 15.45
  * @project IDXStock handler
- * https://github.com/KAnggara75/IDXStock/tree/main/handler
+ * https://github.com/KAnggara75/IDXStock/tree/main/internal/handler
  */
 
 package handler

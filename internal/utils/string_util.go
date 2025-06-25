@@ -10,7 +10,7 @@
  *
  * @author KAnggara75 on Wed 25/06/25 09.22
  * @project IDXStock utils
- * https://github.com/KAnggara75/IDXStock/tree/main/utils
+ * https://github.com/KAnggara75/IDXStock/tree/main/internal/utils
  */
 
 package utils
