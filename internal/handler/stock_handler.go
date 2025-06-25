@@ -17,6 +17,7 @@ package handler
 
 import (
 	"fmt"
+	"github.com/KAnggara75/IDXStock/internal/utils"
 	"os"
 	"path/filepath"
 	"strconv"
@@ -128,14 +129,14 @@ func UploadStocks(c *fiber.Ctx) error {
 			continue
 		}
 
-		shares := parseSharesMulti(getOrEmpty(row, idxShares))
+		shares := parseSharesMulti(utils.GetOrEmpty(row, idxShares))
 
 		stocks = append(stocks, Stock{
-			Code:         getOrEmpty(row, idxCode),
-			CompanyName:  getOrEmpty(row, idxCompany),
-			ListingDate:  parseDateFlexible(getOrEmpty(row, idxListingDate)),
+			Code:         utils.GetOrEmpty(row, idxCode),
+			CompanyName:  utils.GetOrEmpty(row, idxCompany),
+			ListingDate:  parseDateFlexible(utils.GetOrEmpty(row, idxListingDate)),
 			Shares:       shares,
-			ListingBoard: mapBoardToEN(getOrEmpty(row, idxBoard)),
+			ListingBoard: mapBoardToEN(utils.GetOrEmpty(row, idxBoard)),
 		})
 	}
 
@@ -151,13 +152,6 @@ func findIndex(header []string, name string) int {
 		}
 	}
 	return -1
-}
-
-func getOrEmpty(row []string, idx int) string {
-	if idx >= 0 && idx < len(row) {
-		return strings.TrimSpace(row[idx])
-	}
-	return ""
 }
 
 func parseDateFlexible(s string) string {
