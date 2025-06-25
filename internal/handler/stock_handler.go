@@ -20,7 +20,6 @@ import (
 	"github.com/KAnggara75/IDXStock/internal/utils"
 	"os"
 	"path/filepath"
-	"strconv"
 	"strings"
 	"time"
 
@@ -129,13 +128,11 @@ func UploadStocks(c *fiber.Ctx) error {
 			continue
 		}
 
-		shares := parseSharesMulti(utils.GetOrEmpty(row, idxShares))
-
 		stocks = append(stocks, Stock{
 			Code:         utils.GetOrEmpty(row, idxCode),
 			CompanyName:  utils.GetOrEmpty(row, idxCompany),
 			ListingDate:  parseDateFlexible(utils.GetOrEmpty(row, idxListingDate)),
-			Shares:       shares,
+			Shares:       utils.ParseToNumber(utils.GetOrEmpty(row, idxShares)),
 			ListingBoard: mapBoardToEN(utils.GetOrEmpty(row, idxBoard)),
 		})
 	}
@@ -184,23 +181,6 @@ func parseDateFlexible(s string) string {
 		}
 	}
 	return s
-}
-
-func parseSharesMulti(s string) int64 {
-	s = strings.ReplaceAll(s, ",", "")
-	s = strings.ReplaceAll(s, ".", "")
-	s = strings.TrimSpace(s)
-	if s == "" {
-		return 0
-	}
-	val, err := strconv.ParseInt(s, 10, 64)
-	if err != nil {
-		if f, err2 := strconv.ParseFloat(s, 64); err2 == nil {
-			return int64(f)
-		}
-		return 0
-	}
-	return val
 }
 
 func mapBoardToEN(s string) string {
