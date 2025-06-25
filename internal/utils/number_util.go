@@ -36,3 +36,12 @@ func ParseToNumber(s string) int64 {
 	}
 	return val
 }
+
+func FindIndex(header []string, name string) int {
+	for i, h := range header {
+		if strings.EqualFold(strings.TrimSpace(h), strings.TrimSpace(name)) {
+			return i
+		}
+	}
+	return -1
+}

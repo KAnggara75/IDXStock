@@ -17,14 +17,13 @@ package handler
 
 import (
 	"fmt"
+	"github.com/KAnggara75/IDXStock/internal/helper"
 	"github.com/KAnggara75/IDXStock/internal/utils"
+	"github.com/gofiber/fiber/v2"
+	"github.com/xuri/excelize/v2"
 	"os"
 	"path/filepath"
 	"strings"
-	"time"
-
-	"github.com/gofiber/fiber/v2"
-	"github.com/xuri/excelize/v2"
 )
 
 type Stock struct {
@@ -51,17 +50,6 @@ var (
 		"listing_date":  "Tanggal Pencatatan",
 		"shares":        "Saham",
 		"listing_board": "Papan Pencatatan",
-	}
-	boardIDtoEN = map[string]string{
-		"Akselerasi":        "Acceleration",
-		"Pengembangan":      "Development",
-		"Ekonomi Baru":      "Ekonomi Baru",
-		"Utama":             "Main",
-		"Pemantauan Khusus": "Watchlist",
-		"Acceleration":      "Acceleration",
-		"Development":       "Development",
-		"Main":              "Main",
-		"Watchlist":         "Watchlist",
 	}
 )
 
@@ -100,19 +88,19 @@ func UploadStocks(c *fiber.Ctx) error {
 
 	header := rows[0]
 	var headerMap map[string]string
-	if findIndex(header, headerEng["code"]) != -1 && findIndex(header, headerEng["company_name"]) != -1 {
+	if utils.FindIndex(header, headerEng["code"]) != -1 && utils.FindIndex(header, headerEng["company_name"]) != -1 {
 		headerMap = headerEng
-	} else if findIndex(header, headerIndo["code"]) != -1 && findIndex(header, headerIndo["company_name"]) != -1 {
+	} else if utils.FindIndex(header, headerIndo["code"]) != -1 && utils.FindIndex(header, headerIndo["company_name"]) != -1 {
 		headerMap = headerIndo
 	} else {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Header tidak dikenali (harus Inggris atau Indonesia)"})
 	}
 
-	idxCode := findIndex(header, headerMap["code"])
-	idxShares := findIndex(header, headerMap["shares"])
-	idxBoard := findIndex(header, headerMap["listing_board"])
-	idxCompany := findIndex(header, headerMap["company_name"])
-	idxListingDate := findIndex(header, headerMap["listing_date"])
+	idxCode := utils.FindIndex(header, headerMap["code"])
+	idxShares := utils.FindIndex(header, headerMap["shares"])
+	idxBoard := utils.FindIndex(header, headerMap["listing_board"])
+	idxCompany := utils.FindIndex(header, headerMap["company_name"])
+	idxListingDate := utils.FindIndex(header, headerMap["listing_date"])
 
 	var stocks []Stock
 	for i, row := range rows {
@@ -131,62 +119,11 @@ func UploadStocks(c *fiber.Ctx) error {
 		stocks = append(stocks, Stock{
 			Code:         utils.GetOrEmpty(row, idxCode),
 			CompanyName:  utils.GetOrEmpty(row, idxCompany),
-			ListingDate:  parseDateFlexible(utils.GetOrEmpty(row, idxListingDate)),
+			ListingDate:  utils.ParseDateFlexible(utils.GetOrEmpty(row, idxListingDate)),
 			Shares:       utils.ParseToNumber(utils.GetOrEmpty(row, idxShares)),
-			ListingBoard: mapBoardToEN(utils.GetOrEmpty(row, idxBoard)),
+			ListingBoard: helper.MapBoardToEN(utils.GetOrEmpty(row, idxBoard)),
 		})
 	}
 
 	return c.JSON(stocks)
-}
-
-// --- UTILS ---
-
-func findIndex(header []string, name string) int {
-	for i, h := range header {
-		if strings.EqualFold(strings.TrimSpace(h), strings.TrimSpace(name)) {
-			return i
-		}
-	}
-	return -1
-}
-
-func parseDateFlexible(s string) string {
-	s = strings.TrimSpace(s)
-	if s == "" {
-		return ""
-	}
-	formats := []string{
-		"02 Jan 06",
-		"02 Jan 2006",
-		"02 January 2006",
-	}
-
-	idToEnMonth := map[string]string{
-		"Jan": "Jan", "Feb": "Feb", "Mar": "Mar", "Apr": "Apr", "Mei": "May",
-		"Jun": "Jun", "Jul": "Jul", "Agu": "Aug", "Sep": "Sep", "Okt": "Oct",
-		"Nov": "Nov", "Des": "Dec",
-	}
-
-	parts := strings.Split(s, " ")
-	if len(parts) == 3 {
-		if m, ok := idToEnMonth[parts[1]]; ok {
-			parts[1] = m
-			s = strings.Join(parts, " ")
-		}
-	}
-	for _, f := range formats {
-		if t, err := time.Parse(f, s); err == nil {
-			return t.Format("2006-01-02")
-		}
-	}
-	return s
-}
-
-func mapBoardToEN(s string) string {
-	s = strings.TrimSpace(s)
-	if en, ok := boardIDtoEN[s]; ok {
-		return en
-	}
-	return s
 }
