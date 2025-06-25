@@ -66,7 +66,11 @@ func StockList(c *fiber.Ctx) error {
 	if err := c.SaveFile(fileHeader, tempPath); err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Could not save temp file"})
 	}
-	defer os.Remove(tempPath)
+	defer func() {
+		if err := os.Remove(tempPath); err != nil {
+			fmt.Printf("Warning: failed to remove %s: %v\n", tempPath, err)
+		}
+	}()
 
 	// Baca isi Excel
 	f, err := excelize.OpenFile(tempPath)
@@ -74,8 +78,8 @@ func StockList(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Invalid Excel file"})
 	}
 	defer func() {
-		if cerr := f.Close(); cerr != nil {
-			fmt.Printf("Warning: failed to close excel file: %v\n", cerr)
+		if err := f.Close(); err != nil {
+			fmt.Printf("Warning: failed to close excel file: %v\n", err)
 		}
 	}()
 

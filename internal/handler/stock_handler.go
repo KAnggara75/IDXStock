@@ -16,6 +16,7 @@
 package handler
 
 import (
+	"fmt"
 	"os"
 	"path/filepath"
 	"strconv"
@@ -79,7 +80,11 @@ func UploadStocks(c *fiber.Ctx) error {
 	if err := c.SaveFile(fileHeader, tempPath); err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "could not save temp file"})
 	}
-	defer os.Remove(tempPath)
+	defer func() {
+		if err := os.Remove(tempPath); err != nil {
+			fmt.Printf("Warning: failed to remove %s: %v\n", tempPath, err)
+		}
+	}()
 
 	f, err := excelize.OpenFile(tempPath)
 	if err != nil {
@@ -155,18 +160,15 @@ func getOrEmpty(row []string, idx int) string {
 	return ""
 }
 
-// Parse format tanggal Indonesia & Inggris (contoh: "09 Dec 1997", "09 Des 1997", fallback as is)
 func parseDateFlexible(s string) string {
 	s = strings.TrimSpace(s)
 	if s == "" {
 		return ""
 	}
 	formats := []string{
-		"02 Jan 2006", // English
 		"02 Jan 06",
+		"02 Jan 2006",
 		"02 January 2006",
-		"02 Jan 2006", // Bisa juga dipakai untuk "09 Dec 1997"
-		"02 Jan 2006", // Repeated so that code is easy to extend
 	}
 
 	idToEnMonth := map[string]string{
@@ -212,6 +214,5 @@ func mapBoardToEN(s string) string {
 	if en, ok := boardIDtoEN[s]; ok {
 		return en
 	}
-	// Kalau tidak cocok, return as-is
 	return s
 }
