@@ -29,3 +29,5 @@
 # [3]: pkg/internal/codeowners
 
 /datasets/csv   @wildangunawan @kanggara75
+/datasets       @kanggara75
+/datasets/sql   @kanggara75
