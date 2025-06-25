@@ -16,7 +16,7 @@
 package db
 
 import (
-	"github.com/KAnggara75/IDXStock/model"
+	"github.com/KAnggara75/IDXStock/internal/model"
 	"gorm.io/gorm"
 )
 
