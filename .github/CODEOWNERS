@@ -29,6 +29,11 @@
 # [3]: pkg/internal/codeowners
 
 #/datasets/csv   @wildangunawan @kanggara75 #Unknown owner on line 31: make sure @wildangunawan exists and has write access to the repository
-/datasets/csv   @kanggara75
-/datasets       @kanggara75
-/datasets/sql   @kanggara75
+/datasets/csv   @KAnggara75
+/datasets       @KAnggara75
+/datasets/sql   @KAnggara75
+
+/build          @call-vin
+/build/cli      @call-vin
+/build/deploy   @call-vin
+/build/package  @call-vin
