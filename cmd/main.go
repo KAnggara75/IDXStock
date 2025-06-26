@@ -16,8 +16,10 @@
 package main
 
 import (
+	"github.com/KAnggara75/IDXStock/internal/app"
 	"github.com/KAnggara75/IDXStock/internal/config"
 	"github.com/KAnggara75/IDXStock/internal/route"
+	"github.com/KAnggara75/IDXStock/internal/utils"
 	"github.com/KAnggara75/scc2go"
 	"log"
 	"os"
@@ -30,9 +32,23 @@ func init() {
 }
 
 func main() {
-	app := route.NewRouter()
+	db, err := app.NewDBConn()
+	if err != nil {
+		panic(err)
+	}
+
+	if config.IsAutoMigrate() {
+		log.Println("DB AutoMigrate is enabled. Running migration...")
+		if err := utils.AutoMigrate(db); err != nil {
+			log.Fatalf("Migration failed: %v", err)
+		}
+	} else {
+		log.Println("DB AutoMigrate is disabled. Skipping migration.")
+	}
+
+	server := route.NewRouter()
 	go func() {
-		if err := app.Listen(config.GetPort()); err != nil {
+		if err := server.Listen(config.GetPort()); err != nil {
 			log.Fatalf("server error: %v", err)
 		}
 	}()
