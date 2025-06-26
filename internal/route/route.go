@@ -21,7 +21,7 @@ import (
 )
 
 func NewRouter() *fiber.App {
-	app := fiber.New()
-	app.Post("/upload", handler.ConvertStocks)
-	return app
+	fiberApp := fiber.New()
+	fiberApp.Post("/upload", handler.ConvertStocks)
+	return fiberApp
 }

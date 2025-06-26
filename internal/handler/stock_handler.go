@@ -16,29 +16,17 @@
 package handler
 
 import (
-	"github.com/KAnggara75/IDXStock/internal/helper"
-	"os"
-	"path/filepath"
-	"strings"
-
 	"github.com/KAnggara75/IDXStock/internal/excel"
+	"github.com/KAnggara75/IDXStock/internal/helper"
 	"github.com/gofiber/fiber/v2"
 	"github.com/xuri/excelize/v2"
+	"os"
 )
 
 func ConvertStocks(c *fiber.Ctx) error {
-	fileHeader, err := c.FormFile("file")
+	tempPath, err := helper.SaveTempFile(c, "file")
 	if err != nil {
-		return helper.FiberErr(c, fiber.StatusBadRequest, "file not found")
-	}
-
-	if ext := strings.ToLower(filepath.Ext(fileHeader.Filename)); ext != ".xlsx" {
-		return helper.FiberErr(c, fiber.StatusBadRequest, "file harus .xlsx")
-	}
-
-	tempPath := filepath.Join(os.TempDir(), fileHeader.Filename)
-	if err := c.SaveFile(fileHeader, tempPath); err != nil {
-		return helper.FiberErr(c, fiber.StatusInternalServerError, "could not save temp file")
+		return helper.FiberErr(c, fiber.StatusBadRequest, err.Error())
 	}
 	defer func() { _ = os.Remove(tempPath) }()
 
@@ -52,5 +40,6 @@ func ConvertStocks(c *fiber.Ctx) error {
 	if err != nil {
 		return helper.FiberErr(c, fiber.StatusBadRequest, err.Error())
 	}
+
 	return c.JSON(stocks)
 }

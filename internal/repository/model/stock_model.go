@@ -10,7 +10,7 @@
  *
  * @author KAnggara75 on Sun 22/06/25 21.30
  * @project IDXStock model
- * https://github.com/KAnggara75/IDXStock/tree/main/internal/model
+ * https://github.com/KAnggara75/IDXStock/tree/main/internal/repository/model
  */
 
 package model
