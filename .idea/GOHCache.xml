@@ -1,0 +1,211 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="GoORMHelperCache">
+    <option name="schemaMapping">
+      <map>
+        <entry key="Stock">
+          <value>
+            <set>
+              <option value="file://$PROJECT_DIR$/internal/domain/stock_domain.go" />
+              <option value="file://$PROJECT_DIR$/internal/dto/stock_dto.go" />
+              <option value="file://$PROJECT_DIR$/internal/model/stock_model.go" />
+              <option value="file://$PROJECT_DIR$/internal/repository/model/stock_model.go" />
+            </set>
+          </value>
+        </entry>
+        <entry key="StockRepositoryImpl">
+          <value>
+            <set>
+              <option value="file://$PROJECT_DIR$/internal/repository/stock_repository_impl.go" />
+            </set>
+          </value>
+        </entry>
+        <entry key="stockRepository">
+          <value>
+            <set>
+              <option value="file://$PROJECT_DIR$/internal/repository/stock_repository.go" />
+              <option value="file://$PROJECT_DIR$/internal/repository/stock_repository_impl.go" />
+            </set>
+          </value>
+        </entry>
+      </map>
+    </option>
+    <option name="scannedPathMapping">
+      <map>
+        <entry key="file://$PROJECT_DIR$/cmd/main.go">
+          <value>
+            <ScannedPath>
+              <option name="lastModified" value="1750818655608" />
+            </ScannedPath>
+          </value>
+        </entry>
+        <entry key="file://$PROJECT_DIR$/internal/config/config.go">
+          <value>
+            <ScannedPath>
+              <option name="lastModified" value="1750954405150" />
+            </ScannedPath>
+          </value>
+        </entry>
+        <entry key="file://$PROJECT_DIR$/internal/db/migrate.go">
+          <value>
+            <ScannedPath>
+              <option name="lastModified" value="1750952457417" />
+            </ScannedPath>
+          </value>
+        </entry>
+        <entry key="file://$PROJECT_DIR$/internal/domain/stock_domain.go">
+          <value>
+            <ScannedPath>
+              <option name="lastModified" value="1750952697651" />
+              <option name="schema">
+                <list>
+                  <option value="Stock" />
+                </list>
+              </option>
+            </ScannedPath>
+          </value>
+        </entry>
+        <entry key="file://$PROJECT_DIR$/internal/dto/stock_dto.go">
+          <value>
+            <ScannedPath>
+              <option name="lastModified" value="1750862597449" />
+              <option name="schema">
+                <list>
+                  <option value="Stock" />
+                </list>
+              </option>
+            </ScannedPath>
+          </value>
+        </entry>
+        <entry key="file://$PROJECT_DIR$/internal/excel/stock_parser.go">
+          <value>
+            <ScannedPath>
+              <option name="lastModified" value="1750895956707" />
+            </ScannedPath>
+          </value>
+        </entry>
+        <entry key="file://$PROJECT_DIR$/internal/handler/stock_handler.go">
+          <value>
+            <ScannedPath>
+              <option name="lastModified" value="1750860689926" />
+            </ScannedPath>
+          </value>
+        </entry>
+        <entry key="file://$PROJECT_DIR$/internal/helper/stock_helper.go">
+          <value>
+            <ScannedPath>
+              <option name="lastModified" value="1750859811942" />
+            </ScannedPath>
+          </value>
+        </entry>
+        <entry key="file://$PROJECT_DIR$/internal/migration/migrate.go">
+          <value>
+            <ScannedPath>
+              <option name="lastModified" value="1750954389230" />
+            </ScannedPath>
+          </value>
+        </entry>
+        <entry key="file://$PROJECT_DIR$/internal/migrations/migrate.go">
+          <value>
+            <ScannedPath>
+              <option name="lastModified" value="1750952964223" />
+            </ScannedPath>
+          </value>
+        </entry>
+        <entry key="file://$PROJECT_DIR$/internal/model/stock_model.go">
+          <value>
+            <ScannedPath>
+              <option name="lastModified" value="1750889644462" />
+              <option name="schema">
+                <list>
+                  <option value="Stock" />
+                </list>
+              </option>
+            </ScannedPath>
+          </value>
+        </entry>
+        <entry key="file://$PROJECT_DIR$/internal/repository/model/stock_model.go">
+          <value>
+            <ScannedPath>
+              <option name="lastModified" value="1750952602112" />
+              <option name="schema">
+                <list>
+                  <option value="Stock" />
+                </list>
+              </option>
+            </ScannedPath>
+          </value>
+        </entry>
+        <entry key="file://$PROJECT_DIR$/internal/repository/stock_repository.go">
+          <value>
+            <ScannedPath>
+              <option name="lastModified" value="1750952457422" />
+            </ScannedPath>
+          </value>
+        </entry>
+        <entry key="file://$PROJECT_DIR$/internal/repository/stock_repository_impl.go">
+          <value>
+            <ScannedPath>
+              <option name="lastModified" value="1750952457428" />
+              <option name="schema">
+                <list>
+                  <option value="StockRepositoryImpl" />
+                </list>
+              </option>
+            </ScannedPath>
+          </value>
+        </entry>
+        <entry key="file://$PROJECT_DIR$/internal/route/route.go">
+          <value>
+            <ScannedPath>
+              <option name="lastModified" value="1750860708421" />
+            </ScannedPath>
+          </value>
+        </entry>
+        <entry key="file://$PROJECT_DIR$/internal/service/stock_service.go">
+          <value>
+            <ScannedPath>
+              <option name="lastModified" value="1750818616607" />
+            </ScannedPath>
+          </value>
+        </entry>
+        <entry key="file://$PROJECT_DIR$/internal/utils/date_util.go">
+          <value>
+            <ScannedPath>
+              <option name="lastModified" value="1750859682887" />
+            </ScannedPath>
+          </value>
+        </entry>
+        <entry key="file://$PROJECT_DIR$/internal/utils/migrate.go">
+          <value>
+            <ScannedPath>
+              <option name="lastModified" value="1750955393642" />
+            </ScannedPath>
+          </value>
+        </entry>
+        <entry key="file://$PROJECT_DIR$/internal/utils/number_util.go">
+          <value>
+            <ScannedPath>
+              <option name="lastModified" value="1750859615505" />
+            </ScannedPath>
+          </value>
+        </entry>
+        <entry key="file://$PROJECT_DIR$/internal/utils/string_util.go">
+          <value>
+            <ScannedPath>
+              <option name="lastModified" value="1750818580968" />
+            </ScannedPath>
+          </value>
+        </entry>
+      </map>
+    </option>
+    <option name="tableStructMapping">
+      <map>
+        <entry key="stock" value="Stock" />
+        <entry key="stock_repository" value="stockRepository" />
+        <entry key="stock_repository_impl" value="StockRepositoryImpl" />
+      </map>
+    </option>
+    <option name="lastTimeChecked" value="1750889909701" />
+  </component>
+</project>
