@@ -17,45 +17,37 @@ package config
 
 import (
 	"github.com/spf13/viper"
-	"strings"
+	"time"
+)
+
+const (
+	defaultDBMaxIdle     = 1
+	defaultDBMaxOpen     = 10
+	defaultDBMaxLifetime = 10 * time.Minute
 )
 
 func GetDBConn() string {
 	return viper.GetString("db.idxstock.host")
 }
 
-func GetStockListPrefix() string {
-	prefix := viper.GetString("app.stockListPrefix")
-	if prefix == "" {
-		prefix = "Daftar Saham"
-	}
-	return prefix
+func GetDBMaxIdle() int {
+	return getIntConfig("db.idxstock.maxIdle", defaultDBMaxIdle)
 }
 
-func GetGinMode() string {
-	mode := viper.GetString("gin.mode")
-	switch mode {
-	case "debug", "":
-		return "debug"
-	case "release":
-		return "release"
-	case "test":
-		return "test"
-	default:
-		return "debug"
-	}
+func GetDBMaxOpen() int {
+	return getIntConfig("db.idxstock.maxOpen", defaultDBMaxOpen)
 }
 
-func GetTrustedProxies() []string {
-	proxies := viper.GetString("gin.trusted_proxies")
-	if proxies == "" {
-		return []string{"127.0.0.1"}
-	}
-	return strings.Split(proxies, ",")
+func GetDBMaxLifetime() time.Duration {
+	return getDurationConfig("db.idxstock.maxLifetime", defaultDBMaxLifetime)
+}
+
+func IsAutoMigrate() bool {
+	return viper.GetBool("db.autoMigrate")
 }
 
 func GetPort() string {
-	port := viper.GetString("gin.port")
+	port := viper.GetString("app.port")
 	if port == "" {
 		port = "8080"
 	}
@@ -63,4 +55,24 @@ func GetPort() string {
 		port = ":" + port
 	}
 	return port
+}
+
+func getIntConfig(key string, def int) int {
+	if viper.IsSet(key) {
+		val := viper.GetInt(key)
+		if val > 0 {
+			return val
+		}
+	}
+	return def
+}
+
+func getDurationConfig(key string, def time.Duration) time.Duration {
+	if viper.IsSet(key) {
+		val := viper.GetDuration(key)
+		if val > 0 {
+			return val
+		}
+	}
+	return def
 }
