@@ -19,7 +19,10 @@ import (
 	"github.com/KAnggara75/IDXStock/internal/config"
 	"github.com/KAnggara75/IDXStock/internal/route"
 	"github.com/KAnggara75/scc2go"
+	"log"
 	"os"
+	"os/signal"
+	"syscall"
 )
 
 func init() {
@@ -28,7 +31,17 @@ func init() {
 
 func main() {
 	app := route.NewRouter()
-	if err := app.Listen(config.GetPort()); err != nil {
-		panic(err)
-	}
+	go func() {
+		if err := app.Listen(config.GetPort()); err != nil {
+			log.Fatalf("server error: %v", err)
+		}
+	}()
+
+	log.Printf("Server started at %s", config.GetPort())
+
+	quit := make(chan os.Signal, 1)
+	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
+	<-quit
+	log.Println("Shutting down server...")
+	log.Println("App stopped gracefully.")
 }
