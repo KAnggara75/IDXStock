@@ -9,14 +9,14 @@
  * See <https://www.gnu.org/licenses/gpl-3.0.html>.
  *
  * @author KAnggara75 on Sun 22/06/25 21.37
- * @project IDXStock db
+ * @project IDXStock migration
  * https://github.com/KAnggara75/IDXStock/tree/main/internal/db
  */
 
-package db
+package migration
 
 import (
-	"github.com/KAnggara75/IDXStock/internal/model"
+	"github.com/KAnggara75/IDXStock/internal/repository/model"
 	"gorm.io/gorm"
 )
 

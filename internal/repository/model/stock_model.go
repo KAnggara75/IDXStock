@@ -27,6 +27,6 @@ type Stock struct {
 	LastModified  time.Time  `gorm:"column:last_modified;type:timestamp with time zone;autoUpdateTime;not null"`
 }
 
-func (Stock) TableName() string {
+func (Stock) StockTable() string {
 	return "idxstock.stocks"
 }
