@@ -44,9 +44,11 @@ func main() {
 		log.Fatalf("failed to get *sql.DB: %v", err)
 	}
 	defer func() {
+		log.Println("Closing DB connection...")
 		if err := sqlDB.Close(); err != nil {
 			log.Printf("error closing DB: %v", err)
 		}
+		log.Println("DB connection closed.")
 	}()
 
 	if config.IsAutoMigrate() {

@@ -46,7 +46,7 @@ func ParseStock(f *excelize.File) ([]dto.Stock, error) {
 	sheetName := f.GetSheetName(0)
 	rows, err := f.GetRows(sheetName)
 	if err != nil || len(rows) < 2 {
-		return nil, errors.New("could not read rows or sheet kosong")
+		return nil, errors.New("could not read rows or empty sheet")
 	}
 
 	header := rows[0]
@@ -57,7 +57,7 @@ func ParseStock(f *excelize.File) ([]dto.Stock, error) {
 	case utils.FindIndex(header, headerIndo["code"]) != -1 && utils.FindIndex(header, headerIndo["company_name"]) != -1:
 		headerMap = headerIndo
 	default:
-		return nil, errors.New("header tidak dikenali (harus Inggris atau Indonesia)")
+		return nil, errors.New("header tidak found")
 	}
 
 	idxCode := utils.FindIndex(header, headerMap["code"])
@@ -67,7 +67,7 @@ func ParseStock(f *excelize.File) ([]dto.Stock, error) {
 	idxListingDate := utils.FindIndex(header, headerMap["listing_date"])
 
 	if idxCode == -1 || idxCompany == -1 || idxListingDate == -1 || idxShares == -1 || idxBoard == -1 {
-		return nil, errors.New("beberapa header kolom tidak ditemukan")
+		return nil, errors.New("header not enough or not found")
 	}
 
 	var stocks []dto.Stock

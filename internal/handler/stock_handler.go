@@ -16,7 +16,7 @@
 package handler
 
 import (
-	"fmt"
+	"github.com/KAnggara75/IDXStock/internal/helper"
 	"os"
 	"path/filepath"
 	"strings"
@@ -29,33 +29,28 @@ import (
 func ConvertStocks(c *fiber.Ctx) error {
 	fileHeader, err := c.FormFile("file")
 	if err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "file not found"})
-	}
-	filename := fileHeader.Filename
-
-	if !strings.HasSuffix(strings.ToLower(filename), ".xlsx") {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "file harus .xlsx"})
+		return helper.FiberErr(c, fiber.StatusBadRequest, "file not found")
 	}
 
-	tempPath := filepath.Join(os.TempDir(), filename)
+	if ext := strings.ToLower(filepath.Ext(fileHeader.Filename)); ext != ".xlsx" {
+		return helper.FiberErr(c, fiber.StatusBadRequest, "file harus .xlsx")
+	}
+
+	tempPath := filepath.Join(os.TempDir(), fileHeader.Filename)
 	if err := c.SaveFile(fileHeader, tempPath); err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "could not save temp file"})
+		return helper.FiberErr(c, fiber.StatusInternalServerError, "could not save temp file")
 	}
-	defer func() {
-		if err := os.Remove(tempPath); err != nil {
-			fmt.Printf("Warning: failed to remove %s: %v\n", tempPath, err)
-		}
-	}()
+	defer func() { _ = os.Remove(tempPath) }()
 
 	f, err := excelize.OpenFile(tempPath)
 	if err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "invalid Excel file"})
+		return helper.FiberErr(c, fiber.StatusBadRequest, "invalid Excel file")
 	}
 	defer func() { _ = f.Close() }()
 
 	stocks, err := excel.ParseStock(f)
 	if err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": err.Error()})
+		return helper.FiberErr(c, fiber.StatusBadRequest, err.Error())
 	}
 	return c.JSON(stocks)
 }

@@ -35,7 +35,7 @@
         <entry key="file://$PROJECT_DIR$/cmd/main.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1750959351806" />
+              <option name="lastModified" value="1750959951212" />
             </ScannedPath>
           </value>
         </entry>
@@ -94,7 +94,14 @@
         <entry key="file://$PROJECT_DIR$/internal/handler/stock_handler.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1750860689926" />
+              <option name="lastModified" value="1750960185869" />
+            </ScannedPath>
+          </value>
+        </entry>
+        <entry key="file://$PROJECT_DIR$/internal/helper/fiber_helper.go">
+          <value>
+            <ScannedPath>
+              <option name="lastModified" value="1750960159570" />
             </ScannedPath>
           </value>
         </entry>
@@ -165,7 +172,7 @@
         <entry key="file://$PROJECT_DIR$/internal/route/route.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1750860708421" />
+              <option name="lastModified" value="1750960001735" />
             </ScannedPath>
           </value>
         </entry>
@@ -201,6 +208,13 @@
           <value>
             <ScannedPath>
               <option name="lastModified" value="1750818580968" />
+            </ScannedPath>
+          </value>
+        </entry>
+        <entry key="file://$PROJECT_DIR$/internal/validation/excel_validation.go">
+          <value>
+            <ScannedPath>
+              <option name="lastModified" value="1750960075524" />
             </ScannedPath>
           </value>
         </entry>
