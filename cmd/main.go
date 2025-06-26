@@ -35,6 +35,8 @@ func main() {
 	db, err := app.NewDBConn()
 	if err != nil {
 		log.Fatalf("failed to connect DB: %v", err)
+	} else {
+		log.Println("DB connection established successfully.")
 	}
 
 	sqlDB, err := db.DB()

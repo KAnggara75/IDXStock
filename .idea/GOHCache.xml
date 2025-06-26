@@ -35,14 +35,21 @@
         <entry key="file://$PROJECT_DIR$/cmd/main.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1750818655608" />
+              <option name="lastModified" value="1750959351806" />
+            </ScannedPath>
+          </value>
+        </entry>
+        <entry key="file://$PROJECT_DIR$/internal/app/database.go">
+          <value>
+            <ScannedPath>
+              <option name="lastModified" value="1750959007996" />
             </ScannedPath>
           </value>
         </entry>
         <entry key="file://$PROJECT_DIR$/internal/config/config.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1750954405150" />
+              <option name="lastModified" value="1750957792857" />
             </ScannedPath>
           </value>
         </entry>

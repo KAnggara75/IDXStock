@@ -16,22 +16,44 @@
 package app
 
 import (
+	"fmt"
 	"github.com/KAnggara75/IDXStock/internal/config"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
+	"log"
 )
 
 func NewDBConn() (*gorm.DB, error) {
-	db, err := gorm.Open(postgres.Open(config.GetDBConn()), &gorm.Config{})
+	dsn := config.GetDBConn()
+	log.Printf("connecting to DB")
+	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to open database: %w", err)
 	}
+	log.Println("DB connection established successfully.")
+
+	// Set connection pool settings
+	log.Printf("setting connection pool parameters")
 	sqlDB, err := db.DB()
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to get sql.DB from GORM: %w", err)
 	}
-	sqlDB.SetMaxOpenConns(config.GetDBMaxOpen())
-	sqlDB.SetMaxIdleConns(config.GetDBMaxIdle())
-	sqlDB.SetConnMaxLifetime(config.GetDBMaxLifetime())
+	log.Println("SQL DB connection pool obtained successfully.")
+
+	maxOpen := config.GetDBMaxOpen()
+	maxIdle := config.GetDBMaxIdle()
+	maxLifetime := config.GetDBMaxLifetime()
+
+	sqlDB.SetMaxOpenConns(maxOpen)
+	sqlDB.SetMaxIdleConns(maxIdle)
+	sqlDB.SetConnMaxLifetime(maxLifetime)
+
+	// Optional: quick ping check (recommended on startup)
+	log.Printf("pinging database to ensure connection is alive")
+	if err := sqlDB.Ping(); err != nil {
+		return nil, fmt.Errorf("failed to ping database: %w", err)
+	}
+	log.Println("Database connection is alive and ready to use.")
+
 	return db, nil
 }
