@@ -34,8 +34,18 @@ func init() {
 func main() {
 	db, err := app.NewDBConn()
 	if err != nil {
-		panic(err)
+		log.Fatalf("failed to connect DB: %v", err)
 	}
+
+	sqlDB, err := db.DB()
+	if err != nil {
+		log.Fatalf("failed to get *sql.DB: %v", err)
+	}
+	defer func() {
+		if err := sqlDB.Close(); err != nil {
+			log.Printf("error closing DB: %v", err)
+		}
+	}()
 
 	if config.IsAutoMigrate() {
 		log.Println("DB AutoMigrate is enabled. Running migration...")
