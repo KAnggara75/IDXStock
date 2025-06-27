@@ -16,6 +16,7 @@
 package helper
 
 import (
+	"github.com/KAnggara75/IDXStock/internal/logx"
 	"github.com/KAnggara75/IDXStock/internal/validation"
 	"github.com/gofiber/fiber/v2"
 	"os"
@@ -23,6 +24,7 @@ import (
 )
 
 func SaveTempFile(c *fiber.Ctx, field string) (string, error) {
+	logx.Debug("Invoke SaveTempFile")
 	fileHeader, err := c.FormFile(field)
 	if err != nil {
 		return "", err

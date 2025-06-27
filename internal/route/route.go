@@ -18,10 +18,12 @@ package route
 import (
 	"github.com/KAnggara75/IDXStock/internal/handler"
 	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v2/middleware/logger"
 )
 
 func NewRouter() *fiber.App {
 	fiberApp := fiber.New()
+	fiberApp.Use(logger.New())
 	fiberApp.Post("/upload", handler.ConvertStocks)
 	return fiberApp
 }

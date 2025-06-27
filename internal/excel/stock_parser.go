@@ -17,10 +17,11 @@ package excel
 
 import (
 	"errors"
-	"github.com/KAnggara75/IDXStock/internal/dto"
+	"github.com/KAnggara75/IDXStock/internal/domain"
 	"github.com/KAnggara75/IDXStock/internal/helper"
 	"github.com/KAnggara75/IDXStock/internal/utils"
 	"github.com/xuri/excelize/v2"
+	"log"
 )
 
 var (
@@ -42,7 +43,8 @@ var (
 	}
 )
 
-func ParseStock(f *excelize.File) ([]dto.Stock, error) {
+func ParseStock(f *excelize.File) ([]domain.Stock, error) {
+	log.Printf("[WARN] ParseStock")
 	sheetName := f.GetSheetName(0)
 	rows, err := f.GetRows(sheetName)
 	if err != nil || len(rows) < 2 {
@@ -70,7 +72,7 @@ func ParseStock(f *excelize.File) ([]dto.Stock, error) {
 		return nil, errors.New("header not enough or not found")
 	}
 
-	var stocks []dto.Stock
+	var stocks []domain.Stock
 	for i, row := range rows {
 		if i == 0 {
 			continue
@@ -79,7 +81,7 @@ func ParseStock(f *excelize.File) ([]dto.Stock, error) {
 			continue
 		}
 
-		stocks = append(stocks, dto.Stock{
+		stocks = append(stocks, domain.Stock{
 			Code:         utils.GetOrEmpty(row, idxCode),
 			CompanyName:  utils.GetOrEmpty(row, idxCompany),
 			ListingDate:  utils.ParseDateFlexible(utils.GetOrEmpty(row, idxListingDate)),

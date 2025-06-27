@@ -17,6 +17,7 @@ package config
 
 import (
 	"github.com/spf13/viper"
+	"strings"
 	"time"
 )
 
@@ -44,6 +45,12 @@ func GetDBMaxLifetime() time.Duration {
 
 func IsAutoMigrate() bool {
 	return viper.GetBool("db.autoMigrate")
+}
+
+func GetLogLevel() string { return viper.GetString("log.level") }
+
+func Get40Space() string {
+	return strings.Repeat(" ", 40)
 }
 
 func GetPort() string {

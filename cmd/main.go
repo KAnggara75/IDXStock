@@ -18,6 +18,7 @@ package main
 import (
 	"github.com/KAnggara75/IDXStock/internal/app"
 	"github.com/KAnggara75/IDXStock/internal/config"
+	"github.com/KAnggara75/IDXStock/internal/logx"
 	"github.com/KAnggara75/IDXStock/internal/route"
 	"github.com/KAnggara75/IDXStock/internal/utils"
 	"github.com/KAnggara75/scc2go"
@@ -32,11 +33,12 @@ func init() {
 }
 
 func main() {
+	logx.Info("Starting IDXStock application...")
 	db, err := app.NewDBConn()
 	if err != nil {
-		log.Fatalf("failed to connect DB: %v", err)
+		logx.Fatalf("failed to connect DB: %v", err)
 	} else {
-		log.Println("DB connection established successfully.")
+		logx.Debug("DB connection established successfully.")
 	}
 
 	sqlDB, err := db.DB()

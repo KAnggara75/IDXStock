@@ -25,12 +25,12 @@ import (
 
 func NewDBConn() (*gorm.DB, error) {
 	dsn := config.GetDBConn()
-	log.Printf("connecting to DB")
+	NewLogger().Info().Str("trace_id", config.Get40Space()).Msgf("Connecting to database...")
 	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
 	if err != nil {
 		return nil, fmt.Errorf("failed to open database: %w", err)
 	}
-	log.Println("DB connection established successfully.")
+	NewLogger().Info().Str("trace_id", config.Get40Space()).Msgf("DB connection established successfully.")
 
 	// Set connection pool settings
 	log.Printf("setting connection pool parameters")

@@ -16,6 +16,7 @@
 package handler
 
 import (
+	"github.com/KAnggara75/IDXStock/internal/domain"
 	"github.com/KAnggara75/IDXStock/internal/excel"
 	"github.com/KAnggara75/IDXStock/internal/helper"
 	"github.com/gofiber/fiber/v2"
@@ -41,5 +42,11 @@ func ConvertStocks(c *fiber.Ctx) error {
 		return helper.FiberErr(c, fiber.StatusBadRequest, err.Error())
 	}
 
-	return c.JSON(stocks)
+	//go func(data []domain.Stock) {
+	//	if upsertErr := service.UpsertStocks(data); upsertErr != nil {
+	//		fmt.Printf("[WARN] Failed upsert stocks: %v\n", upsertErr)
+	//	}
+	//}(stocks)
+
+	return c.JSON(domain.SliceToDTO(stocks))
 }

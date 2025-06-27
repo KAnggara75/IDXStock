@@ -14,3 +14,18 @@
  */
 
 package service
+
+import (
+	"fmt"
+	"github.com/KAnggara75/IDXStock/internal/domain"
+)
+
+func UpsertStocks(stocks []domain.Stock) error {
+	//for _, s := range stocks {
+	fmt.Printf("[WARN] Upsert stock")
+	//if err := repository.UpsertStock(s); err != nil {
+	//	return err
+	//}
+	//}
+	return nil
+}

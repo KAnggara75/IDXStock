@@ -16,9 +16,10 @@
 package dto
 
 type Stock struct {
-	Code         string `json:"code"`
-	CompanyName  string `json:"company_name"`
-	ListingDate  string `json:"listing_date"`
-	Shares       int64  `json:"shares"`
-	ListingBoard string `json:"listing_board"`
+	Code          string `json:"code"`
+	CompanyName   string `json:"company_name"`
+	ListingDate   string `json:"listing_date"`
+	DelistingDate string `json:"delisting_date"`
+	Shares        int64  `json:"shares"`
+	ListingBoard  string `json:"listing_board"`
 }

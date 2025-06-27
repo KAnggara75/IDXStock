@@ -8,7 +8,6 @@
             <set>
               <option value="file://$PROJECT_DIR$/internal/domain/stock_domain.go" />
               <option value="file://$PROJECT_DIR$/internal/dto/stock_dto.go" />
-              <option value="file://$PROJECT_DIR$/internal/model/stock_model.go" />
               <option value="file://$PROJECT_DIR$/internal/repository/model/stock_model.go" />
             </set>
           </value>
@@ -20,14 +19,6 @@
             </set>
           </value>
         </entry>
-        <entry key="stockRepository">
-          <value>
-            <set>
-              <option value="file://$PROJECT_DIR$/internal/repository/stock_repository.go" />
-              <option value="file://$PROJECT_DIR$/internal/repository/stock_repository_impl.go" />
-            </set>
-          </value>
-        </entry>
       </map>
     </option>
     <option name="scannedPathMapping">
@@ -35,35 +26,35 @@
         <entry key="file://$PROJECT_DIR$/cmd/main.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1750959951212" />
+              <option name="lastModified" value="1750986065190" />
             </ScannedPath>
           </value>
         </entry>
         <entry key="file://$PROJECT_DIR$/internal/app/database.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1750959007996" />
+              <option name="lastModified" value="1750985680649" />
+            </ScannedPath>
+          </value>
+        </entry>
+        <entry key="file://$PROJECT_DIR$/internal/app/logger.go">
+          <value>
+            <ScannedPath>
+              <option name="lastModified" value="1750985946376" />
             </ScannedPath>
           </value>
         </entry>
         <entry key="file://$PROJECT_DIR$/internal/config/config.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1750957792857" />
-            </ScannedPath>
-          </value>
-        </entry>
-        <entry key="file://$PROJECT_DIR$/internal/db/migrate.go">
-          <value>
-            <ScannedPath>
-              <option name="lastModified" value="1750952457417" />
+              <option name="lastModified" value="1750984952512" />
             </ScannedPath>
           </value>
         </entry>
         <entry key="file://$PROJECT_DIR$/internal/domain/stock_domain.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1750952697651" />
+              <option name="lastModified" value="1750984479707" />
               <option name="schema">
                 <list>
                   <option value="Stock" />
@@ -75,7 +66,7 @@
         <entry key="file://$PROJECT_DIR$/internal/dto/stock_dto.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1750862597449" />
+              <option name="lastModified" value="1750984428313" />
               <option name="schema">
                 <list>
                   <option value="Stock" />
@@ -87,14 +78,14 @@
         <entry key="file://$PROJECT_DIR$/internal/excel/stock_parser.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1750895956707" />
+              <option name="lastModified" value="1750984662179" />
             </ScannedPath>
           </value>
         </entry>
         <entry key="file://$PROJECT_DIR$/internal/handler/stock_handler.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1750961220451" />
+              <option name="lastModified" value="1750984793404" />
             </ScannedPath>
           </value>
         </entry>
@@ -108,7 +99,7 @@
         <entry key="file://$PROJECT_DIR$/internal/helper/file_helper.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1750961150905" />
+              <option name="lastModified" value="1750985144766" />
             </ScannedPath>
           </value>
         </entry>
@@ -119,29 +110,10 @@
             </ScannedPath>
           </value>
         </entry>
-        <entry key="file://$PROJECT_DIR$/internal/migration/migrate.go">
+        <entry key="file://$PROJECT_DIR$/internal/logx/logx.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1750954389230" />
-            </ScannedPath>
-          </value>
-        </entry>
-        <entry key="file://$PROJECT_DIR$/internal/migrations/migrate.go">
-          <value>
-            <ScannedPath>
-              <option name="lastModified" value="1750952964223" />
-            </ScannedPath>
-          </value>
-        </entry>
-        <entry key="file://$PROJECT_DIR$/internal/model/stock_model.go">
-          <value>
-            <ScannedPath>
-              <option name="lastModified" value="1750889644462" />
-              <option name="schema">
-                <list>
-                  <option value="Stock" />
-                </list>
-              </option>
+              <option name="lastModified" value="1750985536261" />
             </ScannedPath>
           </value>
         </entry>
@@ -179,14 +151,14 @@
         <entry key="file://$PROJECT_DIR$/internal/route/route.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1750960001735" />
+              <option name="lastModified" value="1750984742720" />
             </ScannedPath>
           </value>
         </entry>
         <entry key="file://$PROJECT_DIR$/internal/service/stock_service.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1750818616607" />
+              <option name="lastModified" value="1750984605731" />
             </ScannedPath>
           </value>
         </entry>
@@ -218,13 +190,6 @@
             </ScannedPath>
           </value>
         </entry>
-        <entry key="file://$PROJECT_DIR$/internal/validation/excel_validation.go">
-          <value>
-            <ScannedPath>
-              <option name="lastModified" value="1750960075524" />
-            </ScannedPath>
-          </value>
-        </entry>
         <entry key="file://$PROJECT_DIR$/internal/validation/file_validation.go">
           <value>
             <ScannedPath>
@@ -237,10 +202,9 @@
     <option name="tableStructMapping">
       <map>
         <entry key="stock" value="Stock" />
-        <entry key="stock_repository" value="stockRepository" />
         <entry key="stock_repository_impl" value="StockRepositoryImpl" />
       </map>
     </option>
-    <option name="lastTimeChecked" value="1750889909701" />
+    <option name="lastTimeChecked" value="1750984272914" />
   </component>
 </project>
