@@ -29,8 +29,9 @@ import (
 )
 
 var (
-	once   sync.Once
-	logger zerolog.Logger
+	once            sync.Once
+	logger          zerolog.Logger
+	defaultLogLevel = zerolog.InfoLevel
 )
 
 func NewLogger() *zerolog.Logger {
@@ -40,6 +41,7 @@ func NewLogger() *zerolog.Logger {
 		var finalWriter io.Writer
 		var logFileWriter io.Writer
 		currentLevel := getLogLevel()
+		logger.Info().Str("trace_id", config.Get40Space()).Msgf("Logger initialization...")
 
 		// Logging to file
 		if err := os.MkdirAll(logDir, 0755); err != nil {
@@ -103,9 +105,12 @@ func NewLogger() *zerolog.Logger {
 }
 
 func getLogLevel() zerolog.Level {
-	level, err := zerolog.ParseLevel(strings.ToLower(config.GetLogLevel()))
-	if err != nil {
-		level = zerolog.InfoLevel
+	lvlStr := strings.ToLower(strings.TrimSpace(config.GetLogLevel()))
+	if lvlStr == "" {
+		return defaultLogLevel
 	}
-	return level
+	if level, err := zerolog.ParseLevel(lvlStr); err == nil {
+		return level
+	}
+	return defaultLogLevel
 }
