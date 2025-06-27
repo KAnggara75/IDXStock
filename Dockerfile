@@ -15,10 +15,6 @@ WORKDIR /app
 
 COPY --from=builder /app/idxstock .
 
-ENV AUTH=test
-ENV SCC_IDXSTOCK_URL=test
-
 EXPOSE 8080
 
-# Jalankan aplikasi
 ENTRYPOINT ["./idxstock"]
