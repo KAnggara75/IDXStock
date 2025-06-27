@@ -56,6 +56,7 @@ func ToStockModel(d Stock) (model.Stock, error) {
 	const layout = "2006-01-02"
 	listingDate, err := time.Parse(layout, d.ListingDate)
 	if err != nil {
+		logx.Errorf("Failed to parse listing date: %v", err)
 		return model.Stock{}, err
 	}
 	var delistingDate *time.Time
@@ -78,32 +79,14 @@ func ToStockModel(d Stock) (model.Stock, error) {
 }
 
 func ToStockModels(domains []Stock) ([]model.Stock, error) {
-	const layout = "2006-01-02"
 	result := make([]model.Stock, 0, len(domains))
-
 	for _, d := range domains {
-		listingDate, err := time.Parse(layout, d.ListingDate)
+		m, err := ToStockModel(d)
 		if err != nil {
+			logx.Errorf("Failed to convert Stock domain to model: %v", err)
 			return nil, err
 		}
-
-		var delistingDate *time.Time
-		if d.DelistingDate != "" {
-			dd, err := time.Parse(layout, d.DelistingDate)
-			if err != nil {
-				return nil, err
-			}
-			delistingDate = &dd
-		}
-
-		result = append(result, model.Stock{
-			Code:          d.Code,
-			Name:          d.CompanyName,
-			ListingDate:   listingDate,
-			DelistingDate: delistingDate,
-			Shares:        d.Shares,
-			Board:         d.ListingBoard,
-		})
+		result = append(result, m)
 	}
 	return result, nil
 }
