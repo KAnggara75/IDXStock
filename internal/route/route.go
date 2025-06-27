@@ -17,13 +17,13 @@ package route
 
 import (
 	"github.com/KAnggara75/IDXStock/internal/handler"
+	"github.com/KAnggara75/IDXStock/internal/logx"
 	"github.com/gofiber/fiber/v2"
-	"github.com/gofiber/fiber/v2/middleware/logger"
 )
 
 func NewRouter() *fiber.App {
+	logx.Debug("Initializing Fiber router...")
 	fiberApp := fiber.New()
-	fiberApp.Use(logger.New())
 	fiberApp.Post("/upload", handler.ConvertStocks)
 	return fiberApp
 }

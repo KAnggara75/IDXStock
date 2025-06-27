@@ -22,7 +22,6 @@ import (
 	"github.com/KAnggara75/IDXStock/internal/route"
 	"github.com/KAnggara75/IDXStock/internal/utils"
 	"github.com/KAnggara75/scc2go"
-	"log"
 	"os"
 	"os/signal"
 	"syscall"
@@ -43,37 +42,37 @@ func main() {
 
 	sqlDB, err := db.DB()
 	if err != nil {
-		log.Fatalf("failed to get *sql.DB: %v", err)
+		logx.Fatalf("failed to get *sql.DB: %v", err)
 	}
 	defer func() {
-		log.Println("Closing DB connection...")
+		logx.Info("Closing DB connection...")
 		if err := sqlDB.Close(); err != nil {
-			log.Printf("error closing DB: %v", err)
+			logx.Errorf("error closing DB: %v", err)
 		}
-		log.Println("DB connection closed.")
+		logx.Info("DB connection closed.")
 	}()
 
 	if config.IsAutoMigrate() {
-		log.Println("DB AutoMigrate is enabled. Running migration...")
+		logx.Info("DB AutoMigrate is enabled. Running migration...")
 		if err := utils.AutoMigrate(db); err != nil {
-			log.Fatalf("Migration failed: %v", err)
+			logx.Fatalf("Migration failed: %v", err)
 		}
 	} else {
-		log.Println("DB AutoMigrate is disabled. Skipping migration.")
+		logx.Info("DB AutoMigrate is disabled. Skipping migration.")
 	}
 
 	server := route.NewRouter()
 	go func() {
 		if err := server.Listen(config.GetPort()); err != nil {
-			log.Fatalf("server error: %v", err)
+			logx.Fatalf("server error: %v", err)
 		}
 	}()
 
-	log.Printf("Server started at %s", config.GetPort())
+	logx.Infof("Server started at %s", config.GetPort())
 
 	quit := make(chan os.Signal, 1)
 	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
 	<-quit
-	log.Println("Shutting down server...")
-	log.Println("App stopped gracefully.")
+	logx.Warn("Shutting down server...")
+	logx.Warn("App stopped gracefully.")
 }

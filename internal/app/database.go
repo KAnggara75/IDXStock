@@ -20,25 +20,24 @@ import (
 	"github.com/KAnggara75/IDXStock/internal/config"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
-	"log"
 )
 
 func NewDBConn() (*gorm.DB, error) {
 	dsn := config.GetDBConn()
-	NewLogger().Info().Str("trace_id", config.Get40Space()).Msgf("Connecting to database...")
+	NewLogger().Debug().Str("trace_id", config.Get40Space()).Msgf("Connecting to database...")
 	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
 	if err != nil {
 		return nil, fmt.Errorf("failed to open database: %w", err)
 	}
-	NewLogger().Info().Str("trace_id", config.Get40Space()).Msgf("DB connection established successfully.")
+	NewLogger().Debug().Str("trace_id", config.Get40Space()).Msgf("DB connection established successfully.")
 
 	// Set connection pool settings
-	log.Printf("setting connection pool parameters")
+	NewLogger().Debug().Str("trace_id", config.Get40Space()).Msgf("Setting connection pool parameters")
 	sqlDB, err := db.DB()
 	if err != nil {
 		return nil, fmt.Errorf("failed to get sql.DB from GORM: %w", err)
 	}
-	log.Println("SQL DB connection pool obtained successfully.")
+	NewLogger().Debug().Str("trace_id", config.Get40Space()).Msgf("SQL DB connection pool obtained successfully.")
 
 	maxOpen := config.GetDBMaxOpen()
 	maxIdle := config.GetDBMaxIdle()
@@ -48,12 +47,11 @@ func NewDBConn() (*gorm.DB, error) {
 	sqlDB.SetMaxIdleConns(maxIdle)
 	sqlDB.SetConnMaxLifetime(maxLifetime)
 
-	// Optional: quick ping check (recommended on startup)
-	log.Printf("pinging database to ensure connection is alive")
+	NewLogger().Debug().Str("trace_id", config.Get40Space()).Msgf("Pinging database to ensure connection is alive")
 	if err := sqlDB.Ping(); err != nil {
 		return nil, fmt.Errorf("failed to ping database: %w", err)
 	}
-	log.Println("Database connection is alive and ready to use.")
+	NewLogger().Debug().Str("trace_id", config.Get40Space()).Msgf("Database connection is alive and ready to use.")
 
 	return db, nil
 }
