@@ -32,9 +32,19 @@ func ParseDateFlexible(s string) string {
 	}
 
 	idToEnMonth := map[string]string{
-		"Jan": "Jan", "Feb": "Feb", "Mar": "Mar", "Apr": "Apr", "Mei": "May",
-		"Jun": "Jun", "Jul": "Jul", "Agu": "Aug", "Sep": "Sep", "Okt": "Oct",
-		"Nov": "Nov", "Des": "Dec",
+		"Jan": "Jan",
+		"Feb": "Feb",
+		"Mar": "Mar",
+		"Apr": "Apr",
+		"Mei": "May",
+		"Jun": "Jun",
+		"Jul": "Jul",
+		"Agt": "Aug",
+		"Agu": "Aug",
+		"Sep": "Sep",
+		"Okt": "Oct",
+		"Nov": "Nov",
+		"Des": "Dec",
 	}
 
 	parts := strings.Split(s, " ")

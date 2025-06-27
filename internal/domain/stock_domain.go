@@ -52,7 +52,6 @@ func ToStockDTOs(stocks []Stock) []dto.Stock {
 }
 
 func ToStockModel(d Stock) (model.Stock, error) {
-	logx.Debug("Invoke ToStockModel function for Stock domain")
 	const layout = "2006-01-02"
 	listingDate, err := time.Parse(layout, d.ListingDate)
 	if err != nil {
@@ -78,17 +77,17 @@ func ToStockModel(d Stock) (model.Stock, error) {
 	}, nil
 }
 
-func ToStockModels(domains []Stock) ([]model.Stock, []error) {
-	result := make([]model.Stock, 0, len(domains))
+func ToStockModels(domains []Stock) ([]*model.Stock, []error) {
+	result := make([]*model.Stock, 0, len(domains))
 	var errs []error
 	for _, d := range domains {
 		m, err := ToStockModel(d)
 		if err != nil {
-			logx.Errorf("Failed to convert Stock domain to model, SKIPING: %v", err)
+			logx.Errorf("Failed to convert Stock domain to model, SKIPPING: %v", err)
 			errs = append(errs, err)
 			continue
 		}
-		result = append(result, m)
+		result = append(result, &m)
 	}
 	return result, errs
 }

@@ -3,6 +3,13 @@
   <component name="GoORMHelperCache">
     <option name="schemaMapping">
       <map>
+        <entry key="GormLogger">
+          <value>
+            <set>
+              <option value="file://$PROJECT_DIR$/internal/logx/gorm.go" />
+            </set>
+          </value>
+        </entry>
         <entry key="HandlerSet">
           <value>
             <set>
@@ -68,7 +75,7 @@
         <entry key="file://$PROJECT_DIR$/internal/app/database.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1750987894193" />
+              <option name="lastModified" value="1750997978420" />
             </ScannedPath>
           </value>
         </entry>
@@ -89,7 +96,7 @@
         <entry key="file://$PROJECT_DIR$/internal/domain/stock_domain.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1750992014616" />
+              <option name="lastModified" value="1750994234043" />
               <option name="schema">
                 <list>
                   <option value="Stock" />
@@ -120,7 +127,7 @@
         <entry key="file://$PROJECT_DIR$/internal/handler/stock_handler.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1750993342203" />
+              <option name="lastModified" value="1750994039653" />
               <option name="schema">
                 <list>
                   <option value="StockHandler" />
@@ -150,6 +157,18 @@
             </ScannedPath>
           </value>
         </entry>
+        <entry key="file://$PROJECT_DIR$/internal/logx/gorm.go">
+          <value>
+            <ScannedPath>
+              <option name="lastModified" value="1750997827486" />
+              <option name="schema">
+                <list>
+                  <option value="GormLogger" />
+                </list>
+              </option>
+            </ScannedPath>
+          </value>
+        </entry>
         <entry key="file://$PROJECT_DIR$/internal/logx/logx.go">
           <value>
             <ScannedPath>
@@ -160,7 +179,7 @@
         <entry key="file://$PROJECT_DIR$/internal/repository/model/stock_model.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1750952602112" />
+              <option name="lastModified" value="1750995000770" />
               <option name="schema">
                 <list>
                   <option value="Stock" />
@@ -179,7 +198,7 @@
         <entry key="file://$PROJECT_DIR$/internal/repository/stock_repo_impl.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1750992467734" />
+              <option name="lastModified" value="1750995268896" />
               <option name="schema">
                 <list>
                   <option value="stockRepository" />
@@ -222,7 +241,7 @@
         <entry key="file://$PROJECT_DIR$/internal/service/stock_service.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1750993061852" />
+              <option name="lastModified" value="1750994059808" />
               <option name="schema">
                 <list>
                   <option value="StockService" />
@@ -234,7 +253,7 @@
         <entry key="file://$PROJECT_DIR$/internal/utils/date_util.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1750859682887" />
+              <option name="lastModified" value="1750994199550" />
             </ScannedPath>
           </value>
         </entry>
@@ -270,6 +289,7 @@
     </option>
     <option name="tableStructMapping">
       <map>
+        <entry key="gorm_logger" value="GormLogger" />
         <entry key="handler_set" value="HandlerSet" />
         <entry key="stock" value="Stock" />
         <entry key="stock_handler" value="StockHandler" />

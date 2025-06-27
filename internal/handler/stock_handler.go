@@ -56,12 +56,17 @@ func (h *StockHandler) ConvertStocks(c *fiber.Ctx) error {
 		return helper.FiberErr(c, fiber.StatusBadRequest, err.Error())
 	}
 
-	//go func(data []domain.Stock) {
-	//stockModels, _ := domain.ToStockModels(data)
-	//if upsertErr := h.service.UpsertStocks(stockModels); upsertErr != nil {
-	//	logx.Warnf("Failed to upsert stocks: %v", upsertErr)
-	//}
-	//}(stocks)
+	go func(data []domain.Stock) {
+		stockModels, errs := domain.ToStockModels(data)
+		if len(errs) > 0 {
+			for _, err := range errs {
+				logx.Warnf("Skipping invalid record: %v", err)
+			}
+		}
+		if upsertErr := h.service.UpsertStocks(stockModels); upsertErr != nil {
+			logx.Warnf("Failed to upsert stocks: %v", upsertErr)
+		}
+	}(stocks)
 
 	response := domain.ToStockDTOs(stocks)
 	return c.JSON(response)
