@@ -26,21 +26,21 @@
         <entry key="file://$PROJECT_DIR$/cmd/main.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1750986065190" />
+              <option name="lastModified" value="1750988136046" />
             </ScannedPath>
           </value>
         </entry>
         <entry key="file://$PROJECT_DIR$/internal/app/database.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1750985680649" />
+              <option name="lastModified" value="1750987894193" />
             </ScannedPath>
           </value>
         </entry>
         <entry key="file://$PROJECT_DIR$/internal/app/logger.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1750985946376" />
+              <option name="lastModified" value="1750987635292" />
             </ScannedPath>
           </value>
         </entry>
@@ -78,14 +78,14 @@
         <entry key="file://$PROJECT_DIR$/internal/excel/stock_parser.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1750984662179" />
+              <option name="lastModified" value="1750989387628" />
             </ScannedPath>
           </value>
         </entry>
         <entry key="file://$PROJECT_DIR$/internal/handler/stock_handler.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1750984793404" />
+              <option name="lastModified" value="1750989270189" />
             </ScannedPath>
           </value>
         </entry>
@@ -99,7 +99,7 @@
         <entry key="file://$PROJECT_DIR$/internal/helper/file_helper.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1750985144766" />
+              <option name="lastModified" value="1750988720060" />
             </ScannedPath>
           </value>
         </entry>
@@ -151,7 +151,7 @@
         <entry key="file://$PROJECT_DIR$/internal/route/route.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1750984742720" />
+              <option name="lastModified" value="1750988215977" />
             </ScannedPath>
           </value>
         </entry>

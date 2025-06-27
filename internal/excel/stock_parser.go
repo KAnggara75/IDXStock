@@ -19,9 +19,9 @@ import (
 	"errors"
 	"github.com/KAnggara75/IDXStock/internal/domain"
 	"github.com/KAnggara75/IDXStock/internal/helper"
+	"github.com/KAnggara75/IDXStock/internal/logx"
 	"github.com/KAnggara75/IDXStock/internal/utils"
 	"github.com/xuri/excelize/v2"
-	"log"
 )
 
 var (
@@ -44,10 +44,11 @@ var (
 )
 
 func ParseStock(f *excelize.File) ([]domain.Stock, error) {
-	log.Printf("[WARN] ParseStock")
+	logx.Debug("Invoke ParseStock excel")
 	sheetName := f.GetSheetName(0)
 	rows, err := f.GetRows(sheetName)
 	if err != nil || len(rows) < 2 {
+		logx.Errorf("Failed to read rows from sheet %s: %v", sheetName, err)
 		return nil, errors.New("could not read rows or empty sheet")
 	}
 
@@ -59,6 +60,7 @@ func ParseStock(f *excelize.File) ([]domain.Stock, error) {
 	case utils.FindIndex(header, headerIndo["code"]) != -1 && utils.FindIndex(header, headerIndo["company_name"]) != -1:
 		headerMap = headerIndo
 	default:
+		logx.Errorf("Invalid or unsupported header: %v", header)
 		return nil, errors.New("header tidak found")
 	}
 
@@ -69,6 +71,7 @@ func ParseStock(f *excelize.File) ([]domain.Stock, error) {
 	idxListingDate := utils.FindIndex(header, headerMap["listing_date"])
 
 	if idxCode == -1 || idxCompany == -1 || idxListingDate == -1 || idxShares == -1 || idxBoard == -1 {
+		logx.Errorf("Invalid excel header: %v", header)
 		return nil, errors.New("header not enough or not found")
 	}
 

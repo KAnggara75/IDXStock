@@ -23,19 +23,22 @@ import (
 	"path/filepath"
 )
 
-func SaveTempFile(c *fiber.Ctx, field string) (string, error) {
-	logx.Debug("Invoke SaveTempFile")
-	fileHeader, err := c.FormFile(field)
+func SaveTempFile(c *fiber.Ctx) (string, error) {
+	logx.Debug("Invoke SaveTempFile helper")
+	fileHeader, err := c.FormFile("file")
 	if err != nil {
+		logx.Errorf("Failed to get form file: %v", err)
 		return "", err
 	}
 
 	if err := validation.ValidExt(fileHeader.Filename, ".xlsx"); err != nil {
+		logx.Errorf("Invalid file extension: %v", err)
 		return "", err
 	}
 
 	tempPath := filepath.Join(os.TempDir(), fileHeader.Filename)
 	if err := c.SaveFile(fileHeader, tempPath); err != nil {
+		logx.Errorf("Failed to save file to temp path %s: %v", tempPath, err)
 		return "", err
 	}
 	return tempPath, nil

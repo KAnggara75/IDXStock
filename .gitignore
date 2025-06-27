@@ -33,3 +33,5 @@ go.work.sum
 
 tmp/
 temp/
+logs/
+*.log
