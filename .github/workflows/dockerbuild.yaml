@@ -1,0 +1,23 @@
+name: Build Docker Image and Push to Registry
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  dockerbuild:
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+      packages: write
+      attestations: write
+      id-token: write
+    name: Build and Push to GHCR
+    steps:
+      - uses: actions/checkout@v4.2.2
+      - uses: KAnggara/DevOps/dockerbuild@v0.1.4
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
