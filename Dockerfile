@@ -1,10 +1,24 @@
-FROM golang:1.22-alpine as build
-WORKDIR /src
-COPY . .
-RUN go build -o app ./cmd/yourapp
+FROM golang:1.24.4-alpine3.22 AS builder
 
-FROM alpine:latest
 WORKDIR /app
-COPY --from=build /src/app .
-EXPOSE 3000
-CMD ["./app"]
+
+COPY go.mod go.sum ./
+RUN go mod download
+
+COPY . .
+
+RUN CGO_ENABLED=0 GOOS=linux go build -o idxstock ./cmd/main.go
+
+FROM alpine:3.22
+
+WORKDIR /app
+
+COPY --from=builder /app/idxstock .
+
+ENV AUTH=test
+ENV SCC_IDXSTOCK_URL=test
+
+EXPOSE 8080
+
+# Jalankan aplikasi
+ENTRYPOINT ["./idxstock"]
