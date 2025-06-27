@@ -61,7 +61,7 @@
         <entry key="file://$PROJECT_DIR$/cmd/main.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1750993102911" />
+              <option name="lastModified" value="1750993761678" />
             </ScannedPath>
           </value>
         </entry>
@@ -210,7 +210,12 @@
         <entry key="file://$PROJECT_DIR$/internal/route/route.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1750993123131" />
+              <option name="lastModified" value="1750993491875" />
+              <option name="schema">
+                <list>
+                  <option value="HandlerSet" />
+                </list>
+              </option>
             </ScannedPath>
           </value>
         </entry>

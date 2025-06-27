@@ -25,6 +25,7 @@ import (
 	"github.com/KAnggara75/IDXStock/internal/service"
 	"github.com/KAnggara75/IDXStock/internal/utils"
 	"github.com/KAnggara75/scc2go"
+	"gorm.io/gorm"
 	"os"
 	"os/signal"
 	"syscall"
@@ -64,11 +65,7 @@ func main() {
 		logx.Info("DB AutoMigrate is disabled. Skipping migration.")
 	}
 
-	stockRepo := repository.NewStockRepository(db)
-	stockService := service.NewStockService(stockRepo)
-	stockHandler := handler.NewStockHandler(stockService)
-
-	server := route.NewRouter(stockHandler)
+	server := route.NewRouter(registerHandlers(db))
 	go func() {
 		if err := server.Listen(config.GetPort()); err != nil {
 			logx.Fatalf("server error: %v", err)
@@ -82,4 +79,14 @@ func main() {
 	<-quit
 	logx.Warn("Shutting down server...")
 	logx.Warn("App stopped gracefully.")
+}
+
+func registerHandlers(db *gorm.DB) *route.HandlerSet {
+	stockRepo := repository.NewStockRepository(db)
+	stockService := service.NewStockService(stockRepo)
+	stockHandler := handler.NewStockHandler(stockService)
+
+	return &route.HandlerSet{
+		Stock: stockHandler,
+	}
 }
