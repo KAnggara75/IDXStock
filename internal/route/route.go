@@ -21,9 +21,9 @@ import (
 	"github.com/gofiber/fiber/v2"
 )
 
-func NewRouter() *fiber.App {
+func NewRouter(stockHandler *handler.StockHandler) *fiber.App {
 	logx.Debug("Initializing Fiber router...")
 	fiberApp := fiber.New()
-	fiberApp.Post("/upload", handler.ConvertStocks)
+	fiberApp.Post("/upload", stockHandler.ConvertStocks)
 	return fiberApp
 }

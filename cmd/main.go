@@ -18,8 +18,11 @@ package main
 import (
 	"github.com/KAnggara75/IDXStock/internal/app"
 	"github.com/KAnggara75/IDXStock/internal/config"
+	"github.com/KAnggara75/IDXStock/internal/handler"
 	"github.com/KAnggara75/IDXStock/internal/logx"
+	"github.com/KAnggara75/IDXStock/internal/repository"
 	"github.com/KAnggara75/IDXStock/internal/route"
+	"github.com/KAnggara75/IDXStock/internal/service"
 	"github.com/KAnggara75/IDXStock/internal/utils"
 	"github.com/KAnggara75/scc2go"
 	"os"
@@ -61,7 +64,11 @@ func main() {
 		logx.Info("DB AutoMigrate is disabled. Skipping migration.")
 	}
 
-	server := route.NewRouter()
+	stockRepo := repository.NewStockRepository(db)
+	stockService := service.NewStockService(stockRepo)
+	stockHandler := handler.NewStockHandler(stockService)
+
+	server := route.NewRouter(stockHandler)
 	go func() {
 		if err := server.Listen(config.GetPort()); err != nil {
 			logx.Fatalf("server error: %v", err)

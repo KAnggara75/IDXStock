@@ -26,7 +26,15 @@ import (
 	"os"
 )
 
-func ConvertStocks(c *fiber.Ctx) error {
+type StockHandler struct {
+	service *service.StockService
+}
+
+func NewStockHandler(s *service.StockService) *StockHandler {
+	return &StockHandler{service: s}
+}
+
+func (h *StockHandler) ConvertStocks(c *fiber.Ctx) error {
 	logx.Debug("Invoke ConvertStocks handler")
 	tempPath, err := helper.SaveTempFile(c)
 	if err != nil {
@@ -48,11 +56,12 @@ func ConvertStocks(c *fiber.Ctx) error {
 		return helper.FiberErr(c, fiber.StatusBadRequest, err.Error())
 	}
 
-	go func(data []domain.Stock) {
-		if upsertErr := service.UpsertStocks(data); upsertErr != nil {
-			logx.Warnf("Failed to upsert stocks: %v", upsertErr)
-		}
-	}(stocks)
+	//go func(data []domain.Stock) {
+	//stockModels, _ := domain.ToStockModels(data)
+	//if upsertErr := h.service.UpsertStocks(stockModels); upsertErr != nil {
+	//	logx.Warnf("Failed to upsert stocks: %v", upsertErr)
+	//}
+	//}(stocks)
 
 	response := domain.ToStockDTOs(stocks)
 	return c.JSON(response)

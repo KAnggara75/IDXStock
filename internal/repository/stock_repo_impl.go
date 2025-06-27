@@ -16,24 +16,35 @@
 package repository
 
 import (
+	"github.com/KAnggara75/IDXStock/internal/logx"
 	"github.com/KAnggara75/IDXStock/internal/repository/model"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 )
 
-type StockRepositoryImpl struct {
+type stockRepository struct {
 	db *gorm.DB
 }
 
 func NewStockRepository(db *gorm.DB) StockRepository {
-	return &StockRepositoryImpl{db: db}
+	return &stockRepository{db: db}
 }
 
-func (r *StockRepositoryImpl) UpsertStock(stock *model.Stock) error {
-	return r.db.Clauses(
-		clause.OnConflict{ /*
+func (r *stockRepository) UpsertStock(stock *model.Stock) error {
+	return r.db.Clauses(clause.OnConflict{
+		Columns: []clause.Column{{Name: "code"}},
+		DoUpdates: clause.AssignmentColumns([]string{
+			"name", "listing_date", "delisting_date", "shares", "board", "last_modified",
+		}),
+	}).Create(&stock).Error
+}
 
-
-			 */},
-	).Create(stock).Error
+func (r *stockRepository) UpsertStocks(stocks []*model.Stock) error {
+	for _, stock := range stocks {
+		if err := r.UpsertStock(stock); err != nil {
+			logx.Errorf("Failed to upsert stocks: %v", err)
+			return err
+		}
+	}
+	return nil
 }

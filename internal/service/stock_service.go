@@ -16,16 +16,18 @@
 package service
 
 import (
-	"github.com/KAnggara75/IDXStock/internal/domain"
-	"github.com/KAnggara75/IDXStock/internal/logx"
+	"github.com/KAnggara75/IDXStock/internal/repository"
+	"github.com/KAnggara75/IDXStock/internal/repository/model"
 )
 
-func UpsertStocks(stocks []domain.Stock) error {
-	logx.Debug("Invoke UpsertStocks service")
-	//for _, s := range stocks {
-	//if err := repository.UpsertStock(s); err != nil {
-	//	return err
-	//}
-	//}
-	return nil
+type StockService struct {
+	repo repository.StockRepository
+}
+
+func NewStockService(r repository.StockRepository) *StockService {
+	return &StockService{repo: r}
+}
+
+func (s *StockService) UpsertStocks(stocks []*model.Stock) error {
+	return s.repo.UpsertStocks(stocks)
 }

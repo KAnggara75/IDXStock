@@ -21,4 +21,5 @@ import (
 
 type StockRepository interface {
 	UpsertStock(stock *model.Stock) error
+	UpsertStocks(stocks []*model.Stock) error
 }

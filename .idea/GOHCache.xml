@@ -3,12 +3,26 @@
   <component name="GoORMHelperCache">
     <option name="schemaMapping">
       <map>
+        <entry key="HandlerSet">
+          <value>
+            <set>
+              <option value="file://$PROJECT_DIR$/internal/route/route.go" />
+            </set>
+          </value>
+        </entry>
         <entry key="Stock">
           <value>
             <set>
               <option value="file://$PROJECT_DIR$/internal/domain/stock_domain.go" />
               <option value="file://$PROJECT_DIR$/internal/dto/stock_dto.go" />
               <option value="file://$PROJECT_DIR$/internal/repository/model/stock_model.go" />
+            </set>
+          </value>
+        </entry>
+        <entry key="StockHandler">
+          <value>
+            <set>
+              <option value="file://$PROJECT_DIR$/internal/handler/stock_handler.go" />
             </set>
           </value>
         </entry>
@@ -19,6 +33,27 @@
             </set>
           </value>
         </entry>
+        <entry key="StockService">
+          <value>
+            <set>
+              <option value="file://$PROJECT_DIR$/internal/service/stock_service.go" />
+            </set>
+          </value>
+        </entry>
+        <entry key="stockRepository">
+          <value>
+            <set>
+              <option value="file://$PROJECT_DIR$/internal/repository/stock_repo_impl.go" />
+            </set>
+          </value>
+        </entry>
+        <entry key="stockRepositoryImpl">
+          <value>
+            <set>
+              <option value="file://$PROJECT_DIR$/internal/repository/stock_repo_impl.go" />
+            </set>
+          </value>
+        </entry>
       </map>
     </option>
     <option name="scannedPathMapping">
@@ -26,7 +61,7 @@
         <entry key="file://$PROJECT_DIR$/cmd/main.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1750988136046" />
+              <option name="lastModified" value="1750993102911" />
             </ScannedPath>
           </value>
         </entry>
@@ -85,7 +120,12 @@
         <entry key="file://$PROJECT_DIR$/internal/handler/stock_handler.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1750991519433" />
+              <option name="lastModified" value="1750993342203" />
+              <option name="schema">
+                <list>
+                  <option value="StockHandler" />
+                </list>
+              </option>
             </ScannedPath>
           </value>
         </entry>
@@ -129,6 +169,25 @@
             </ScannedPath>
           </value>
         </entry>
+        <entry key="file://$PROJECT_DIR$/internal/repository/stock_repo.go">
+          <value>
+            <ScannedPath>
+              <option name="lastModified" value="1750992412178" />
+            </ScannedPath>
+          </value>
+        </entry>
+        <entry key="file://$PROJECT_DIR$/internal/repository/stock_repo_impl.go">
+          <value>
+            <ScannedPath>
+              <option name="lastModified" value="1750992467734" />
+              <option name="schema">
+                <list>
+                  <option value="stockRepository" />
+                </list>
+              </option>
+            </ScannedPath>
+          </value>
+        </entry>
         <entry key="file://$PROJECT_DIR$/internal/repository/stock_repository.go">
           <value>
             <ScannedPath>
@@ -151,14 +210,19 @@
         <entry key="file://$PROJECT_DIR$/internal/route/route.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1750988215977" />
+              <option name="lastModified" value="1750993123131" />
             </ScannedPath>
           </value>
         </entry>
         <entry key="file://$PROJECT_DIR$/internal/service/stock_service.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1750991001779" />
+              <option name="lastModified" value="1750993061852" />
+              <option name="schema">
+                <list>
+                  <option value="StockService" />
+                </list>
+              </option>
             </ScannedPath>
           </value>
         </entry>
@@ -201,8 +265,12 @@
     </option>
     <option name="tableStructMapping">
       <map>
+        <entry key="handler_set" value="HandlerSet" />
         <entry key="stock" value="Stock" />
-        <entry key="stock_repository_impl" value="StockRepositoryImpl" />
+        <entry key="stock_handler" value="StockHandler" />
+        <entry key="stock_repository" value="stockRepository" />
+        <entry key="stock_repository_impl" value="stockRepositoryImpl" />
+        <entry key="stock_service" value="StockService" />
       </map>
     </option>
     <option name="lastTimeChecked" value="1750984272914" />
