@@ -16,13 +16,13 @@
 package service
 
 import (
-	"fmt"
 	"github.com/KAnggara75/IDXStock/internal/domain"
+	"github.com/KAnggara75/IDXStock/internal/logx"
 )
 
 func UpsertStocks(stocks []domain.Stock) error {
+	logx.Debug("Invoke UpsertStocks service")
 	//for _, s := range stocks {
-	fmt.Printf("[WARN] Upsert stock")
 	//if err := repository.UpsertStock(s); err != nil {
 	//	return err
 	//}

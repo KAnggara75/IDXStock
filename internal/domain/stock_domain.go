@@ -15,7 +15,12 @@
 
 package domain
 
-import "github.com/KAnggara75/IDXStock/internal/dto"
+import (
+	"github.com/KAnggara75/IDXStock/internal/dto"
+	"github.com/KAnggara75/IDXStock/internal/logx"
+	"github.com/KAnggara75/IDXStock/internal/repository/model"
+	"time"
+)
 
 type Stock struct {
 	Code          string
@@ -26,7 +31,7 @@ type Stock struct {
 	Shares        int64
 }
 
-func ToDTO(stock Stock) dto.Stock {
+func ToStockDTO(stock Stock) dto.Stock {
 	return dto.Stock{
 		Code:          stock.Code,
 		CompanyName:   stock.CompanyName,
@@ -37,10 +42,68 @@ func ToDTO(stock Stock) dto.Stock {
 	}
 }
 
-func SliceToDTO(stocks []Stock) []dto.Stock {
+func ToStockDTOs(stocks []Stock) []dto.Stock {
+	logx.Debug("Invoke ToStockDTOs function for Stock domain")
 	result := make([]dto.Stock, len(stocks))
 	for i, s := range stocks {
-		result[i] = ToDTO(s)
+		result[i] = ToStockDTO(s)
 	}
 	return result
+}
+
+func ToStockModel(d Stock) (model.Stock, error) {
+	logx.Debug("Invoke ToStockModel function for Stock domain")
+	const layout = "2006-01-02"
+	listingDate, err := time.Parse(layout, d.ListingDate)
+	if err != nil {
+		return model.Stock{}, err
+	}
+	var delistingDate *time.Time
+	if d.DelistingDate != "" {
+		dd, err := time.Parse(layout, d.DelistingDate)
+		if err != nil {
+			logx.Errorf("Failed to parse delisting date: %v", err)
+			return model.Stock{}, err
+		}
+		delistingDate = &dd
+	}
+	return model.Stock{
+		Code:          d.Code,
+		Name:          d.CompanyName,
+		ListingDate:   listingDate,
+		DelistingDate: delistingDate,
+		Shares:        d.Shares,
+		Board:         d.ListingBoard,
+	}, nil
+}
+
+func ToStockModels(domains []Stock) ([]model.Stock, error) {
+	const layout = "2006-01-02"
+	result := make([]model.Stock, 0, len(domains))
+
+	for _, d := range domains {
+		listingDate, err := time.Parse(layout, d.ListingDate)
+		if err != nil {
+			return nil, err
+		}
+
+		var delistingDate *time.Time
+		if d.DelistingDate != "" {
+			dd, err := time.Parse(layout, d.DelistingDate)
+			if err != nil {
+				return nil, err
+			}
+			delistingDate = &dd
+		}
+
+		result = append(result, model.Stock{
+			Code:          d.Code,
+			Name:          d.CompanyName,
+			ListingDate:   listingDate,
+			DelistingDate: delistingDate,
+			Shares:        d.Shares,
+			Board:         d.ListingBoard,
+		})
+	}
+	return result, nil
 }

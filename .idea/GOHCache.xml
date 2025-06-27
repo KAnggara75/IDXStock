@@ -54,7 +54,7 @@
         <entry key="file://$PROJECT_DIR$/internal/domain/stock_domain.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1750984479707" />
+              <option name="lastModified" value="1750991786840" />
               <option name="schema">
                 <list>
                   <option value="Stock" />
@@ -85,7 +85,7 @@
         <entry key="file://$PROJECT_DIR$/internal/handler/stock_handler.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1750989270189" />
+              <option name="lastModified" value="1750991519433" />
             </ScannedPath>
           </value>
         </entry>
@@ -158,7 +158,7 @@
         <entry key="file://$PROJECT_DIR$/internal/service/stock_service.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1750984605731" />
+              <option name="lastModified" value="1750991001779" />
             </ScannedPath>
           </value>
         </entry>

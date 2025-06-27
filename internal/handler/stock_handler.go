@@ -20,6 +20,7 @@ import (
 	"github.com/KAnggara75/IDXStock/internal/excel"
 	"github.com/KAnggara75/IDXStock/internal/helper"
 	"github.com/KAnggara75/IDXStock/internal/logx"
+	"github.com/KAnggara75/IDXStock/internal/service"
 	"github.com/gofiber/fiber/v2"
 	"github.com/xuri/excelize/v2"
 	"os"
@@ -29,6 +30,7 @@ func ConvertStocks(c *fiber.Ctx) error {
 	logx.Debug("Invoke ConvertStocks handler")
 	tempPath, err := helper.SaveTempFile(c)
 	if err != nil {
+		logx.Errorf("SaveTempFile Failed: %v", err)
 		return helper.FiberErr(c, fiber.StatusBadRequest, err.Error())
 	}
 	defer func() { _ = os.Remove(tempPath) }()
@@ -46,12 +48,12 @@ func ConvertStocks(c *fiber.Ctx) error {
 		return helper.FiberErr(c, fiber.StatusBadRequest, err.Error())
 	}
 
-	//go func(data []domain.Stock) {
-	//	if upsertErr := service.UpsertStocks(data); upsertErr != nil {
-	//		fmt.Printf("[WARN] Failed upsert stocks: %v\n", upsertErr)
-	//	}
-	//}(stocks)
+	go func(data []domain.Stock) {
+		if upsertErr := service.UpsertStocks(data); upsertErr != nil {
+			logx.Warnf("Failed to upsert stocks: %v", upsertErr)
+		}
+	}(stocks)
 
-	response := domain.SliceToDTO(stocks)
+	response := domain.ToStockDTOs(stocks)
 	return c.JSON(response)
 }
