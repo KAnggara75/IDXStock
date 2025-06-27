@@ -26,6 +26,7 @@ import (
 )
 
 func ConvertStocks(c *fiber.Ctx) error {
+	logx.Debug("Invoke ConvertStocks handler")
 	tempPath, err := helper.SaveTempFile(c, "file")
 	if err != nil {
 		return helper.FiberErr(c, fiber.StatusBadRequest, err.Error())
