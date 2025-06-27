@@ -19,6 +19,7 @@ import (
 	"github.com/KAnggara75/IDXStock/internal/domain"
 	"github.com/KAnggara75/IDXStock/internal/excel"
 	"github.com/KAnggara75/IDXStock/internal/helper"
+	"github.com/KAnggara75/IDXStock/internal/logx"
 	"github.com/gofiber/fiber/v2"
 	"github.com/xuri/excelize/v2"
 	"os"
@@ -33,12 +34,14 @@ func ConvertStocks(c *fiber.Ctx) error {
 
 	f, err := excelize.OpenFile(tempPath)
 	if err != nil {
+		logx.Errorf("OpenFile Failed %s: %v", tempPath, err)
 		return helper.FiberErr(c, fiber.StatusBadRequest, "invalid Excel file")
 	}
 	defer func() { _ = f.Close() }()
 
 	stocks, err := excel.ParseStock(f)
 	if err != nil {
+		logx.Errorf("ParseStock Failed: %v", err)
 		return helper.FiberErr(c, fiber.StatusBadRequest, err.Error())
 	}
 
@@ -48,5 +51,6 @@ func ConvertStocks(c *fiber.Ctx) error {
 	//	}
 	//}(stocks)
 
-	return c.JSON(domain.SliceToDTO(stocks))
+	response := domain.SliceToDTO(stocks)
+	return c.JSON(response)
 }
