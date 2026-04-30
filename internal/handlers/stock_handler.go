@@ -113,7 +113,7 @@ func (h *StockHandler) SyncDelistingStocksHandler(c fiber.Ctx) error {
 		})
 	}
 
-	stocks, err := h.usecase.SyncDelistingStocks(c.Context(), req.Year, req.Month)
+	stocks, err := h.usecase.SyncDelistingStocks(c.Context(), req.Year, req.Month, c.Get("Cookie"))
 	if err != nil {
 		logrus.Errorf("Failed to sync delisting stocks: %v", err)
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{

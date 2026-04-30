@@ -1,6 +1,7 @@
 package services
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -14,8 +15,8 @@ import (
 )
 
 type IdxService interface {
-	FetchDelistedStocks(year, month int) ([]models.IdxDelistedStock, error)
-	FetchStockSummary(year, month, day int) ([]models.IdxSummaryData, error)
+	FetchDelistedStocks(ctx context.Context, year, month int, cookie string) ([]models.IdxDelistedStock, error)
+	FetchStockSummary(ctx context.Context, year, month, day int, cookie string) ([]models.IdxSummaryData, error)
 	ParseIdxDate(dateStr string) (string, error)
 }
 
@@ -34,15 +35,15 @@ func NewIdxService(client *http.Client) IdxService {
 	}
 }
 
-func (s *idxService) FetchDelistedStocks(year, month int) ([]models.IdxDelistedStock, error) {
+func (s *idxService) FetchDelistedStocks(ctx context.Context, year, month int, cookie string) ([]models.IdxDelistedStock, error) {
 	url := fmt.Sprintf("https://idx.co.id/primary/DigitalStatistic/GetApiDataPaginated?urlName=LINK_DELISTING&periodYear=%d&periodMonth=%d", year, month)
 
-	req, err := http.NewRequest("GET", url, nil)
+	req, err := http.NewRequestWithContext(ctx, "GET", url, nil)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create request: %w", err)
 	}
 
-	s.setHeaders(req)
+	s.setHeaders(req, cookie)
 
 	// Log request URL only
 	logrus.Infof("Requesting IDX: %s", url)
@@ -75,15 +76,15 @@ func (s *idxService) FetchDelistedStocks(year, month int) ([]models.IdxDelistedS
 	return idxResp.Data, nil
 }
 
-func (s *idxService) FetchStockSummary(year, month, day int) ([]models.IdxSummaryData, error) {
+func (s *idxService) FetchStockSummary(ctx context.Context, year, month, day int, cookie string) ([]models.IdxSummaryData, error) {
 	url := fmt.Sprintf("https://idx.co.id/primary/TradingSummary/GetStockSummary?date=%04d%02d%02d", year, month, day)
 
-	req, err := http.NewRequest("GET", url, nil)
+	req, err := http.NewRequestWithContext(ctx, "GET", url, nil)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create request: %w", err)
 	}
 
-	s.setHeaders(req)
+	s.setHeaders(req, cookie)
 
 	logrus.Infof("Requesting IDX Summary: %s", url)
 
@@ -116,7 +117,7 @@ func (s *idxService) ParseIdxDate(dateStr string) (string, error) {
 	return t.Format("2006-01-02"), nil
 }
 
-func (s *idxService) setHeaders(req *http.Request) {
+func (s *idxService) setHeaders(req *http.Request, userCookie string) {
 	req.Header.Set("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36")
 	req.Header.Set("Accept", "application/json, text/plain, */*")
 	req.Header.Set("Accept-Language", "en-US,en;q=0.9,id;q=0.8")
@@ -127,8 +128,11 @@ func (s *idxService) setHeaders(req *http.Request) {
 	req.Header.Set("sec-ch-ua-mobile", "?0")
 	req.Header.Set("sec-ch-ua-platform", `"Windows"`)
 
-	// Use cookie from environment variable if available, otherwise use default
-	cookie := os.Getenv("IDX_COOKIE")
+	// Priority: 1. Cookie from user request, 2. Env variable, 3. Default hardcoded
+	cookie := userCookie
+	if cookie == "" {
+		cookie = os.Getenv("IDX_COOKIE")
+	}
 	if cookie == "" {
 		cookie = "EGRUM_BTM=756eff19-92e1-4e3e-9701-4f7ddc93fe4e#~#1.B.11||0; __cf_bm=1vj162Z37dpo3zNyPnpz8CrDvs4BcdN7_WlqjpYvWQ8-1777555066.174328-1.0.1.1-dVrYohKm.aRGa.HmUqjoxYlQ4A.YGp9LGfZ72YZTd4YxNm5D39cgPysiOdveXNbN7DQcFgMBbRKQPsnXc97frTbYoUHoOFUN7YDosFxjTLlq5Y8IUuX2Pz14jGEvtFqz; _cfuvid=BN3x.yGYjO.L0DeEfqo68wDJ09E0gSS0.paXQ2oQCL8-1777555066.174328-1.0.1.1-4XH2ZsWQxqvI9APck5pm5saXAXL1RYJq2XZcJePq89k"
 	}

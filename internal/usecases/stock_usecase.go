@@ -17,7 +17,7 @@ type StockUsecase interface {
 	PreviewStocks(ctx context.Context, file io.Reader) ([]models.Stock, error)
 	UploadStocks(ctx context.Context, file io.Reader) ([]models.Stock, error)
 	SyncStockDetail(ctx context.Context) ([]models.StockResponse, error)
-	SyncDelistingStocks(ctx context.Context, year, month int) ([]models.StockResponse, error)
+	SyncDelistingStocks(ctx context.Context, year, month int, cookie string) ([]models.StockResponse, error)
 }
 
 type stockUsecase struct {
@@ -145,9 +145,9 @@ func (u *stockUsecase) SyncStockDetail(ctx context.Context) ([]models.StockRespo
 	return allUpdated, nil
 }
 
-func (u *stockUsecase) SyncDelistingStocks(ctx context.Context, year, month int) ([]models.StockResponse, error) {
+func (u *stockUsecase) SyncDelistingStocks(ctx context.Context, year, month int, cookie string) ([]models.StockResponse, error) {
 	// 1. Fetch from IDX
-	idxStocks, err := u.idxService.FetchDelistedStocks(year, month)
+	idxStocks, err := u.idxService.FetchDelistedStocks(ctx, year, month, cookie)
 	if err != nil {
 		return nil, err
 	}

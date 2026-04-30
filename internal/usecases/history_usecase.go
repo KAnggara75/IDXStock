@@ -14,7 +14,7 @@ import (
 )
 
 type HistoryUsecase interface {
-	SyncStockHistory(ctx context.Context, req models.SyncHistoryRequest, source string) error
+	SyncStockHistory(ctx context.Context, req models.SyncHistoryRequest, source string, cookie string) error
 	GetStockHistory(ctx context.Context, code string, startDate, endDate *time.Time) ([]models.StockHistory, error)
 }
 
@@ -39,7 +39,7 @@ func NewHistoryUsecase(
 	}
 }
 
-func (u *historyUsecase) SyncStockHistory(ctx context.Context, req models.SyncHistoryRequest, source string) error {
+func (u *historyUsecase) SyncStockHistory(ctx context.Context, req models.SyncHistoryRequest, source string, cookie string) error {
 	var records []models.StockHistory
 	targetDate := time.Date(req.Year, time.Month(req.Month), req.Day, 0, 0, 0, 0, time.UTC)
 
@@ -86,7 +86,7 @@ func (u *historyUsecase) SyncStockHistory(ctx context.Context, req models.SyncHi
 		}
 
 	case "idx":
-		data, err := u.idxService.FetchStockSummary(req.Year, req.Month, req.Day)
+		data, err := u.idxService.FetchStockSummary(ctx, req.Year, req.Month, req.Day, cookie)
 		if err != nil {
 			return err
 		}

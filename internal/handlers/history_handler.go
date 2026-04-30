@@ -25,6 +25,7 @@ func NewHistoryHandler(usecase usecases.HistoryUsecase) *HistoryHandler {
 
 func (h *HistoryHandler) SyncStockHistoryHandler(c fiber.Ctx) error {
 	source := c.Query("source")
+	cookie := c.Get("Cookie")
 
 	if source == "" {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
@@ -61,7 +62,7 @@ func (h *HistoryHandler) SyncStockHistoryHandler(c fiber.Ctx) error {
 		ctx, cancel := context.WithTimeout(c.Context(), 10*time.Minute)
 		defer cancel()
 
-		err := h.usecase.SyncStockHistory(ctx, req, source)
+		err := h.usecase.SyncStockHistory(ctx, req, source, cookie)
 		if err != nil {
 			logrus.Errorf("Stock history sync failed for %02d/%02d/%04d from %s: %v", req.Month, req.Day, req.Year, source, err)
 			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
@@ -82,7 +83,7 @@ func (h *HistoryHandler) SyncStockHistoryHandler(c fiber.Ctx) error {
 		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Minute)
 		defer cancel()
 
-		err := h.usecase.SyncStockHistory(ctx, req, source)
+		err := h.usecase.SyncStockHistory(ctx, req, source, cookie)
 		if err != nil {
 			logrus.Errorf("Background stock history sync failed for %02d/%02d/%04d from %s: %v", req.Month, req.Day, req.Year, source, err)
 			return
