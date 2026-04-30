@@ -127,6 +127,10 @@ func (h *HistoryHandler) GetStockHistoryHandler(c fiber.Ctx) error {
 			})
 		}
 		endDate = &t
+	} else {
+		// Default to today if end_date is missing
+		now := time.Now().UTC()
+		endDate = &now
 	}
 
 	if startDate != nil && endDate != nil && !endDate.After(*startDate) {
