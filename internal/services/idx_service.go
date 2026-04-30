@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"os"
 	"strings"
 	"time"
 
@@ -41,16 +42,7 @@ func (s *idxService) FetchDelistedStocks(year, month int) ([]models.IdxDelistedS
 		return nil, fmt.Errorf("failed to create request: %w", err)
 	}
 
-	// Add realistic browser headers to avoid WAF/Cloudflare blocking
-	req.Header.Set("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36")
-	req.Header.Set("Accept", "application/json, text/plain, */*")
-	req.Header.Set("Accept-Language", "en-US,en;q=0.9,id;q=0.8")
-	req.Header.Set("Origin", "https://idx.co.id")
-	req.Header.Set("Referer", "https://idx.co.id/")
-	req.Header.Set("Connection", "keep-alive")
-	req.Header.Set("sec-ch-ua", `"Not A(Brand";v="99", "Google Chrome";v="121", "Chromium";v="121"`)
-	req.Header.Set("sec-ch-ua-mobile", "?0")
-	req.Header.Set("sec-ch-ua-platform", `"Windows"`)
+	s.setHeaders(req)
 
 	// Log request URL only
 	logrus.Infof("Requesting IDX: %s", url)
@@ -91,13 +83,7 @@ func (s *idxService) FetchStockSummary(year, month, day int) ([]models.IdxSummar
 		return nil, fmt.Errorf("failed to create request: %w", err)
 	}
 
-	// Add realistic browser headers
-	req.Header.Set("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36")
-	req.Header.Set("Accept", "application/json, text/plain, */*")
-	req.Header.Set("Accept-Language", "en-US,en;q=0.9,id;q=0.8")
-	req.Header.Set("Origin", "https://idx.co.id")
-	req.Header.Set("Referer", "https://idx.co.id/")
-	req.Header.Set("Connection", "keep-alive")
+	s.setHeaders(req)
 
 	logrus.Infof("Requesting IDX Summary: %s", url)
 
@@ -128,4 +114,23 @@ func (s *idxService) ParseIdxDate(dateStr string) (string, error) {
 		return "", fmt.Errorf("failed to parse date '%s': %w", dateStr, err)
 	}
 	return t.Format("2006-01-02"), nil
+}
+
+func (s *idxService) setHeaders(req *http.Request) {
+	req.Header.Set("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36")
+	req.Header.Set("Accept", "application/json, text/plain, */*")
+	req.Header.Set("Accept-Language", "en-US,en;q=0.9,id;q=0.8")
+	req.Header.Set("Origin", "https://idx.co.id")
+	req.Header.Set("Referer", "https://idx.co.id/")
+	req.Header.Set("Connection", "keep-alive")
+	req.Header.Set("sec-ch-ua", `"Not A(Brand";v="99", "Google Chrome";v="121", "Chromium";v="121"`)
+	req.Header.Set("sec-ch-ua-mobile", "?0")
+	req.Header.Set("sec-ch-ua-platform", `"Windows"`)
+
+	// Use cookie from environment variable if available, otherwise use default
+	cookie := os.Getenv("IDX_COOKIE")
+	if cookie == "" {
+		cookie = "EGRUM_BTM=756eff19-92e1-4e3e-9701-4f7ddc93fe4e#~#1.B.11||0; __cf_bm=1vj162Z37dpo3zNyPnpz8CrDvs4BcdN7_WlqjpYvWQ8-1777555066.174328-1.0.1.1-dVrYohKm.aRGa.HmUqjoxYlQ4A.YGp9LGfZ72YZTd4YxNm5D39cgPysiOdveXNbN7DQcFgMBbRKQPsnXc97frTbYoUHoOFUN7YDosFxjTLlq5Y8IUuX2Pz14jGEvtFqz; _cfuvid=BN3x.yGYjO.L0DeEfqo68wDJ09E0gSS0.paXQ2oQCL8-1777555066.174328-1.0.1.1-4XH2ZsWQxqvI9APck5pm5saXAXL1RYJq2XZcJePq89k"
+	}
+	req.Header.Set("Cookie", cookie)
 }
