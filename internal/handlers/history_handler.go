@@ -100,8 +100,8 @@ func (h *HistoryHandler) GetStockHistoryHandler(c fiber.Ctx) error {
 	code := c.Params("code")
 	output := c.Query("output", "json")
 	fieldsRaw := c.Query("fields")
-	startDateRaw := c.Query("start_date")
 	endDateRaw := c.Query("end_date")
+	startDateRaw := c.Query("start_date")
 
 	if code == "" {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
@@ -112,19 +112,27 @@ func (h *HistoryHandler) GetStockHistoryHandler(c fiber.Ctx) error {
 	var startDate, endDate *time.Time
 	if startDateRaw != "" {
 		t, err := time.Parse("2006-01-02", startDateRaw)
-		if err == nil {
-			startDate = &t
-		} else {
-			logrus.Warnf("Invalid start_date format: %s, expected YYYY-MM-DD", startDateRaw)
+		if err != nil {
+			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+				"error": "Invalid start_date format, expected YYYY-MM-DD",
+			})
 		}
+		startDate = &t
 	}
 	if endDateRaw != "" {
 		t, err := time.Parse("2006-01-02", endDateRaw)
-		if err == nil {
-			endDate = &t
-		} else {
-			logrus.Warnf("Invalid end_date format: %s, expected YYYY-MM-DD", endDateRaw)
+		if err != nil {
+			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+				"error": "Invalid end_date format, expected YYYY-MM-DD",
+			})
 		}
+		endDate = &t
+	}
+
+	if startDate != nil && endDate != nil && !endDate.After(*startDate) {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"error": "End date must be greater than start date",
+		})
 	}
 
 	data, err := h.usecase.GetStockHistory(c.Context(), code, startDate, endDate)
