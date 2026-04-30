@@ -47,7 +47,8 @@ func (h *HistoryHandler) SyncStockHistoryHandler(c fiber.Ctx) error {
 	}
 
 	// Constraint: Pasardana source is not allowed for dates after 2019-07-28
-	if source == "pasardana" {
+	switch source {
+	case "pasardana":
 		reqDate := time.Date(req.Year, time.Month(req.Month), req.Day, 0, 0, 0, 0, time.UTC)
 		threshold := time.Date(2019, 7, 28, 0, 0, 0, 0, time.UTC)
 		if reqDate.After(threshold) {
@@ -55,9 +56,26 @@ func (h *HistoryHandler) SyncStockHistoryHandler(c fiber.Ctx) error {
 				"error": "Sync from Pasardana is restricted for dates after 2019-07-28",
 			})
 		}
+	case "idx":
+		// For IDX source, we wait for the response as requested
+		ctx, cancel := context.WithTimeout(c.Context(), 10*time.Minute)
+		defer cancel()
+
+		err := h.usecase.SyncStockHistory(ctx, req, source)
+		if err != nil {
+			logrus.Errorf("Stock history sync failed for %02d/%02d/%04d from %s: %v", req.Month, req.Day, req.Year, source, err)
+			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+				"error": err.Error(),
+			})
+		}
+		return c.Status(fiber.StatusOK).JSON(fiber.Map{
+			"message": "Stock history synchronization completed",
+			"date":    req,
+			"source":  source,
+		})
 	}
 
-	// Run sync in background
+	// For other sources (like pasardana), run sync in background
 	// #nosec G118
 	go func() {
 		// Use a background context as the request context will be cancelled
