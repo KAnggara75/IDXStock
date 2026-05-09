@@ -56,6 +56,7 @@ func Setup(app *fiber.App) {
 	v1.Put("/stocks/delisting/sync", stockHandler.SyncDelistingStocksHandler)
 	v1.Put("/stocks/history/sync", historyHandler.SyncStockHistoryHandler)
 	v1.Get("/stocks/:code/history", historyHandler.GetStockHistoryHandler)
+	v1.Put("/stocks/split", historyHandler.ApplyStockSplitHandler)
 	v1.Put("/sectors/sync", sectorHandler.SyncNewSectorsHandler)
 	v1.Put("/industries/sync", industryHandler.IndustrySyncHandler)
 	v1.Get("/broker/sync", brokerHandler.SyncBrokerActivityHandler)
