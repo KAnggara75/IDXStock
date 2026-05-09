@@ -14,6 +14,7 @@ import (
 type HistoryRepository interface {
 	BatchUpsertStockHistory(ctx context.Context, records []models.StockHistory) error
 	GetHistoryByCode(ctx context.Context, code string, startDate, endDate *time.Time) ([]models.StockHistory, error)
+	ApplyStockSplit(ctx context.Context, code string, startDate, endDate time.Time, multiplier float64) error
 }
 
 type historyRepository struct {
@@ -185,4 +186,39 @@ func (r *historyRepository) GetHistoryByCode(ctx context.Context, code string, s
 	}
 
 	return records, nil
+}
+
+func (r *historyRepository) ApplyStockSplit(ctx context.Context, code string, startDate, endDate time.Time, multiplier float64) error {
+	query := `
+		UPDATE idxstock.history
+		SET
+			previous = previous / $2,
+			open_price = open_price / $2,
+			first_trade = first_trade / $2,
+			high = high / $2,
+			low = low / $2,
+			close = close / $2,
+			offer = offer / $2,
+			bid = bid / $2,
+			volume = volume * $2,
+			offer_volume = offer_volume * $2,
+			bid_volume = bid_volume * $2,
+			listed_shares = listed_shares * $2,
+			tradeble_shares = tradeble_shares * $2,
+			foreign_sell = foreign_sell * $2,
+			foreign_buy = foreign_buy * $2,
+			non_regular_volume = non_regular_volume * $2,
+			change = (close / $2) - (previous / $2),
+			last_modified = now()
+		WHERE code = $1
+		  AND date >= $3
+		  AND date <= $4
+	`
+
+	_, err := r.pool.Exec(ctx, query, code, multiplier, startDate, endDate)
+	if err != nil {
+		return fmt.Errorf("failed to apply stock split for %s: %w", code, err)
+	}
+
+	return nil
 }

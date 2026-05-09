@@ -16,6 +16,7 @@ import (
 type HistoryUsecase interface {
 	SyncStockHistory(ctx context.Context, req models.SyncHistoryRequest, source string, cookie string) error
 	GetStockHistory(ctx context.Context, code string, startDate, endDate *time.Time) ([]models.StockHistory, error)
+	ApplyStockSplit(ctx context.Context, req models.StockSplitRequest) error
 }
 
 type historyUsecase struct {
@@ -209,4 +210,53 @@ func (u *historyUsecase) SyncStockHistory(ctx context.Context, req models.SyncHi
 func (u *historyUsecase) GetStockHistory(ctx context.Context, code string, startDate, endDate *time.Time) ([]models.StockHistory, error) {
 	code = strings.ToUpper(code)
 	return u.repo.GetHistoryByCode(ctx, code, startDate, endDate)
+}
+
+func (u *historyUsecase) ApplyStockSplit(ctx context.Context, req models.StockSplitRequest) error {
+	startDate, err := time.Parse("2006-01-02", req.StartDate)
+	if err != nil {
+		return fmt.Errorf("invalid start_date: %w", err)
+	}
+
+	endDate, err := time.Parse("2006-01-02", req.EndDate)
+	if err != nil {
+		return fmt.Errorf("invalid end_date: %w", err)
+	}
+
+	if endDate.Before(startDate) {
+		return fmt.Errorf("end_date cannot be before start_date")
+	}
+
+	multiplier, err := u.parseRatio(req.Ratio)
+	if err != nil {
+		return fmt.Errorf("invalid ratio: %w", err)
+	}
+
+	req.StockCode = strings.ToUpper(req.StockCode)
+
+	return u.repo.ApplyStockSplit(ctx, req.StockCode, startDate, endDate, multiplier)
+}
+
+func (u *historyUsecase) parseRatio(ratio string) (float64, error) {
+	parts := strings.Split(ratio, ":")
+	if len(parts) != 2 {
+		return 0, fmt.Errorf("ratio must be in format A:B")
+	}
+
+	// Clean up spaces
+	aStr := strings.TrimSpace(parts[0])
+	bStr := strings.TrimSpace(parts[1])
+
+	var a, b float64
+	_, err := fmt.Sscanf(aStr, "%f", &a)
+	if err != nil || a == 0 {
+		return 0, fmt.Errorf("invalid ratio numerator")
+	}
+
+	_, err = fmt.Sscanf(bStr, "%f", &b)
+	if err != nil || b == 0 {
+		return 0, fmt.Errorf("invalid ratio denominator")
+	}
+
+	return b / a, nil
 }

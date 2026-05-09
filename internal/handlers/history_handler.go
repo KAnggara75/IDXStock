@@ -208,6 +208,34 @@ func (h *HistoryHandler) GetStockHistoryHandler(c fiber.Ctx) error {
 	return c.JSON(results)
 }
 
+func (h *HistoryHandler) ApplyStockSplitHandler(c fiber.Ctx) error {
+	var req models.StockSplitRequest
+	if err := c.Bind().JSON(&req); err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"error": "Invalid request body",
+		})
+	}
+
+	if req.StockCode == "" || req.StartDate == "" || req.EndDate == "" || req.Ratio == "" {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"error": "Stock code, start date, end date, and ratio are required",
+		})
+	}
+
+	err := h.usecase.ApplyStockSplit(c.Context(), req)
+	if err != nil {
+		logrus.Errorf("Failed to apply stock split for %s: %v", req.StockCode, err)
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": err.Error(),
+		})
+	}
+
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{
+		"message": "Stock split applied successfully",
+		"data":    req,
+	})
+}
+
 func getFieldAsString(row models.StockHistory, field string) string {
 	switch field {
 	case "code":

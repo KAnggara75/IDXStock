@@ -83,3 +83,10 @@ type IdxSummaryData struct {
 type IdxSummaryResponse struct {
 	Data []IdxSummaryData `json:"data"`
 }
+
+type StockSplitRequest struct {
+	StockCode string `json:"stock_code"`
+	StartDate string `json:"start_date"`
+	EndDate   string `json:"end_date"`
+	Ratio     string `json:"ratio"`
+}
