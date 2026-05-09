@@ -18,7 +18,7 @@ This application leverages data from the following reliable sources:
 
 ## 🛠 Tech Stack
 
-- **Go**: 1.26.2
+- **Go**: 1.26.3
 - **Framework**: Fiber v3
 - **Database**: PostgreSQL (pgx)
 - **Logging**: Logrus

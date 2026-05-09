@@ -44,7 +44,6 @@ repos:
 
   - repo: local
     hooks:
-      # ===== PRE-PUSH (lebih berat) =====
       - id: gotest
         name: go test (unit tests)
         entry: go test ./...
