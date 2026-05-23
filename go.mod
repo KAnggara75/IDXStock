@@ -4,7 +4,7 @@ go 1.26.3
 
 require (
 	github.com/KAnggara75/scc2go v0.1.10
-	github.com/gofiber/fiber/v3 v3.2.0
+	github.com/gofiber/fiber/v3 v3.3.0
 	github.com/jackc/pgx/v5 v5.9.2
 	github.com/pashagolub/pgxmock/v4 v4.9.0
 	github.com/sirupsen/logrus v1.9.4
@@ -19,7 +19,7 @@ require (
 	github.com/fsnotify/fsnotify v1.10.1 // indirect
 	github.com/go-viper/mapstructure/v2 v2.5.0 // indirect
 	github.com/gofiber/schema v1.7.1 // indirect
-	github.com/gofiber/utils/v2 v2.0.4 // indirect
+	github.com/gofiber/utils/v2 v2.0.6 // indirect
 	github.com/google/uuid v1.6.0 // indirect
 	github.com/jackc/pgpassfile v1.0.0 // indirect
 	github.com/jackc/pgservicefile v0.0.0-20240606120523-5a60cdf6a761 // indirect
