@@ -5,7 +5,7 @@ go 1.26.3
 require (
 	github.com/KAnggara75/scc2go v0.1.10
 	github.com/gofiber/fiber/v3 v3.2.0
-	github.com/jackc/pgx/v5 v5.9.2
+	github.com/jackc/pgx/v5 v5.10.0
 	github.com/pashagolub/pgxmock/v4 v4.9.0
 	github.com/sirupsen/logrus v1.9.4
 	github.com/spf13/viper v1.21.0
