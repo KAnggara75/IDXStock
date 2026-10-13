@@ -10,8 +10,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/KAnggara75/IDXStock/internal/models"
 	"github.com/sirupsen/logrus"
+
+	"github.com/KAnggara75/IDXStock/internal/models"
 )
 
 type IdxService interface {
