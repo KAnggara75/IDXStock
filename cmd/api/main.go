@@ -9,12 +9,13 @@ import (
 	"github.com/gofiber/fiber/v3/middleware/recover"
 	"github.com/sirupsen/logrus"
 
+	"github.com/KAnggara75/scc2go"
+
 	"github.com/KAnggara75/IDXStock/internal/config"
 	"github.com/KAnggara75/IDXStock/internal/database"
 	"github.com/KAnggara75/IDXStock/internal/repositories"
 	"github.com/KAnggara75/IDXStock/internal/routes"
 	"github.com/KAnggara75/IDXStock/internal/services"
-	"github.com/KAnggara75/scc2go"
 )
 
 func init() {
