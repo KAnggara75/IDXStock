@@ -6,11 +6,12 @@ import (
 	"strings"
 	"time"
 
+	"github.com/sirupsen/logrus"
+
 	"github.com/KAnggara75/IDXStock/internal/models"
 	"github.com/KAnggara75/IDXStock/internal/repositories"
 	"github.com/KAnggara75/IDXStock/internal/services"
 	"github.com/KAnggara75/IDXStock/internal/utils"
-	"github.com/sirupsen/logrus"
 )
 
 type HistoryUsecase interface {
