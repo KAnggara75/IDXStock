@@ -5,9 +5,10 @@ import (
 	"testing"
 	"time"
 
-	"github.com/KAnggara75/IDXStock/internal/models"
 	"github.com/pashagolub/pgxmock/v4"
 	"github.com/stretchr/testify/assert"
+
+	"github.com/KAnggara75/IDXStock/internal/models"
 )
 
 func TestInsertBrokerActivity(t *testing.T) {
