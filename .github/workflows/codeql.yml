@@ -5,8 +5,10 @@ on:
     branches: [ "main" ]
   pull_request:
     branches: [ "main" ]
+  workflow_dispatch:
   schedule:
-    - cron: '33 9 * * 0'
+    # 22:30 WIB (UTC+7) setiap Sabtu = 15:30 UTC setiap Sabtu (day 6)
+    - cron: '30 15 * * 6'
 
 permissions:
   security-events: write
