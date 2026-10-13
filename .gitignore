@@ -16,6 +16,5 @@
 
 # Environment variables
 .env
-/tmp
-api
+/api
 issue.md
