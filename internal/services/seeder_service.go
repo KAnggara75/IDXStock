@@ -7,9 +7,10 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/sirupsen/logrus"
+
 	"github.com/KAnggara75/IDXStock/internal/models"
 	"github.com/KAnggara75/IDXStock/internal/repositories"
-	"github.com/sirupsen/logrus"
 )
 
 type SeederService interface {
