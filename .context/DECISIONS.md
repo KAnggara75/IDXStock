@@ -36,3 +36,19 @@
 - **Consequences**:
   - Centralizes credential and environment management across microservices.
   - Requires the Spring Cloud Config service to be reachable at boot time.
+
+---
+
+## ADR-004: Standardize Local Quality Gates & Pre-Commit Hook Architecture
+
+- **Status**: Accepted
+- **Date**: 2026-10-13
+- **Source**: Codebase evidence (`.pre-commit-config.yaml`, git hooks setup)
+- **Context**: The repository needs automated pre-commit and pre-push quality gates that enforce local import ordering, code cleanliness, build sanity, and vulnerability scanning without introducing irrelevant tool overhead or build failures.
+- **Decision**: 
+  - Standardize pre-commit with `pre-commit-hooks` (whitespace, EOF, yaml, large files, merge conflicts) and `tekwizely/pre-commit-golang` configured specifically with `-local github.com/KAnggara75/IDXStock`.
+  - Shift heavier validation checks (`gotest`, `gobuild`, `govulncheck`) to the `pre-push` stage using native system executables.
+  - Eliminate dead framework hooks (e.g. `zerolog-use-stringer`) since the project standardizes on `logrus`.
+- **Consequences**:
+  - Ensures clean, consistent import grouping across the entire codebase prior to commit.
+  - Prevents broken builds and known vulnerabilities from reaching remote branches while keeping commit latency near-instant.
