@@ -1,12 +1,13 @@
 package routes
 
 import (
+	"github.com/gofiber/fiber/v3"
+
 	"github.com/KAnggara75/IDXStock/internal/database"
 	"github.com/KAnggara75/IDXStock/internal/handlers"
 	"github.com/KAnggara75/IDXStock/internal/repositories"
 	"github.com/KAnggara75/IDXStock/internal/services"
 	"github.com/KAnggara75/IDXStock/internal/usecases"
-	"github.com/gofiber/fiber/v3"
 )
 
 func Setup(app *fiber.App) {
