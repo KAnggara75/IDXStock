@@ -5,7 +5,6 @@ import (
 	"fmt"
 
 	"github.com/jackc/pgx/v5"
-	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/sirupsen/logrus"
 
 	"github.com/KAnggara75/IDXStock/internal/models"
@@ -16,10 +15,10 @@ type BrokerRepository interface {
 }
 
 type brokerRepository struct {
-	pool *pgxpool.Pool
+	pool DBExecutor
 }
 
-func NewBrokerRepository(pool *pgxpool.Pool) BrokerRepository {
+func NewBrokerRepository(pool DBExecutor) BrokerRepository {
 	return &brokerRepository{
 		pool: pool,
 	}

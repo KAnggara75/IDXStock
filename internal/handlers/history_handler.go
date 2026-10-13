@@ -25,8 +25,8 @@ func NewHistoryHandler(usecase usecases.HistoryUsecase) *HistoryHandler {
 }
 
 func (h *HistoryHandler) SyncStockHistoryHandler(c fiber.Ctx) error {
-	source := c.Query("source")
-	cookie := c.Get("Cookie")
+	source := strings.Clone(c.Query("source"))
+	cookie := strings.Clone(c.Get("Cookie"))
 
 	if source == "" {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{

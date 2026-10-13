@@ -10,13 +10,20 @@ import (
 	"github.com/KAnggara75/IDXStock/internal/usecases"
 )
 
-func Setup(app *fiber.App) {
+func Setup(app *fiber.App, db ...repositories.DBExecutor) {
+	var pool repositories.DBExecutor
+	if len(db) > 0 {
+		pool = db[0]
+	} else if database.Pool != nil {
+		pool = database.Pool
+	}
+
 	// Dependency Injection
-	stockRepo := repositories.NewStockRepository(database.Pool)
-	sectorSearchRepo := repositories.NewSectorSearchRepository(database.Pool)
-	industryRepo := repositories.NewIndustryRepository(database.Pool)
-	historyRepo := repositories.NewHistoryRepository(database.Pool)
-	brokerActRepo := repositories.NewBrokerActivityRepository(database.Pool)
+	stockRepo := repositories.NewStockRepository(pool)
+	sectorSearchRepo := repositories.NewSectorSearchRepository(pool)
+	industryRepo := repositories.NewIndustryRepository(pool)
+	historyRepo := repositories.NewHistoryRepository(pool)
+	brokerActRepo := repositories.NewBrokerActivityRepository(pool)
 
 	stockService := services.NewStockService()
 	pasardanaService := services.NewPasardanaService(nil)
@@ -37,7 +44,13 @@ func Setup(app *fiber.App) {
 	assetHandler := handlers.NewAssetHandler()
 
 	app.Get("/health", func(c fiber.Ctx) error {
-		err := database.Pool.Ping(c.Context())
+		if pool == nil {
+			return c.Status(500).JSON(fiber.Map{
+				"status":  "error",
+				"message": "database connection failed",
+			})
+		}
+		err := pool.Ping(c.Context())
 		if err != nil {
 			return c.Status(500).JSON(fiber.Map{
 				"status":  "error",

@@ -10,10 +10,22 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-type AssetHandler struct{}
+type HTTPClient interface {
+	Do(req *http.Request) (*http.Response, error)
+}
+
+type AssetHandler struct {
+	client  HTTPClient
+	baseURL string
+}
 
 func NewAssetHandler() *AssetHandler {
-	return &AssetHandler{}
+	return &AssetHandler{
+		client: &http.Client{
+			Timeout: 15 * time.Second,
+		},
+		baseURL: "https://assets.stockbit.com/logos/companies",
+	}
 }
 
 func (h *AssetHandler) GetCompanyLogo(c fiber.Ctx) error {
@@ -27,11 +39,7 @@ func (h *AssetHandler) GetCompanyLogo(c fiber.Ctx) error {
 	// Remove .png suffix if present (case insensitive) and normalize to uppercase
 	code = strings.TrimSuffix(strings.ToUpper(code), ".PNG")
 
-	targetURL := fmt.Sprintf("https://assets.stockbit.com/logos/companies/%s.png", code)
-
-	client := &http.Client{
-		Timeout: 15 * time.Second,
-	}
+	targetURL := fmt.Sprintf("%s/%s.png", h.baseURL, code)
 
 	req, err := http.NewRequestWithContext(c.Context(), "GET", targetURL, nil)
 	if err != nil {
@@ -43,7 +51,7 @@ func (h *AssetHandler) GetCompanyLogo(c fiber.Ctx) error {
 	// Add realistic user agent
 	req.Header.Set("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36")
 
-	resp, err := client.Do(req)
+	resp, err := h.client.Do(req)
 	if err != nil {
 		logrus.Errorf("Failed to proxy logo for %s: %v", code, err)
 		return c.Status(fiber.StatusServiceUnavailable).JSON(fiber.Map{

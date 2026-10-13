@@ -6,7 +6,6 @@ import (
 	"time"
 
 	"github.com/jackc/pgx/v5"
-	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/sirupsen/logrus"
 
 	"github.com/KAnggara75/IDXStock/internal/models"
@@ -19,10 +18,10 @@ type HistoryRepository interface {
 }
 
 type historyRepository struct {
-	pool *pgxpool.Pool
+	pool DBExecutor
 }
 
-func NewHistoryRepository(pool *pgxpool.Pool) HistoryRepository {
+func NewHistoryRepository(pool DBExecutor) HistoryRepository {
 	return &historyRepository{
 		pool: pool,
 	}

@@ -108,3 +108,71 @@ func TestCheckPartitionExists(t *testing.T) {
 		assert.NoError(t, mock.ExpectationsWereMet())
 	})
 }
+
+func TestCreatePartition(t *testing.T) {
+	ctx := context.Background()
+	tableName := "broker_activity_p_2024_w16"
+	startDate := "2024-04-15"
+	endDate := "2024-04-22"
+
+	t.Run("success", func(t *testing.T) {
+		mock, err := pgxmock.NewPool()
+		assert.NoError(t, err)
+		defer mock.Close()
+		repo := NewBrokerActivityRepository(mock)
+
+		mock.ExpectExec("CREATE TABLE idxstock." + tableName).WillReturnResult(pgxmock.NewResult("CREATE", 0))
+
+		err = repo.CreatePartition(ctx, tableName, startDate, endDate)
+		assert.NoError(t, err)
+		assert.NoError(t, mock.ExpectationsWereMet())
+	})
+
+	t.Run("error", func(t *testing.T) {
+		mock, err := pgxmock.NewPool()
+		assert.NoError(t, err)
+		defer mock.Close()
+		repo := NewBrokerActivityRepository(mock)
+
+		mock.ExpectExec("CREATE TABLE idxstock." + tableName).WillReturnError(assert.AnError)
+
+		err = repo.CreatePartition(ctx, tableName, startDate, endDate)
+		assert.Error(t, err)
+		assert.NoError(t, mock.ExpectationsWereMet())
+	})
+}
+
+func TestBatchInsertBrokerActivity(t *testing.T) {
+	ctx := context.Background()
+
+	t.Run("empty", func(t *testing.T) {
+		mock, err := pgxmock.NewPool()
+		assert.NoError(t, err)
+		defer mock.Close()
+		repo := NewBrokerActivityRepository(mock)
+
+		err = repo.BatchInsertBrokerActivity(ctx, nil)
+		assert.NoError(t, err)
+	})
+
+	t.Run("success", func(t *testing.T) {
+		mock, err := pgxmock.NewPool()
+		assert.NoError(t, err)
+		defer mock.Close()
+		repo := NewBrokerActivityRepository(mock)
+
+		date := time.Date(2024, 4, 17, 0, 0, 0, 0, time.UTC)
+		mock.ExpectBegin()
+		batch := mock.ExpectBatch()
+		batch.ExpectExec("INSERT INTO idxstock.broker_activity").
+			WithArgs("CC", "BBCA", date, "BUY", int64(100), int64(1000), 10.0, int64(1)).
+			WillReturnResult(pgxmock.NewResult("INSERT", 1))
+		mock.ExpectCommit()
+
+		err = repo.BatchInsertBrokerActivity(ctx, []models.BrokerActivity{
+			{BrokerCode: "CC", StockCode: "BBCA", Date: date, Side: "BUY", Lot: 100, Value: 1000, AvgPrice: 10.0, Freq: 1},
+		})
+		assert.NoError(t, err)
+		assert.NoError(t, mock.ExpectationsWereMet())
+	})
+}

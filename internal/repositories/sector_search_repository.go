@@ -5,7 +5,6 @@ import (
 	"fmt"
 
 	"github.com/jackc/pgx/v5"
-	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/sirupsen/logrus"
 
 	"github.com/KAnggara75/IDXStock/internal/models"
@@ -17,10 +16,10 @@ type SectorSearchRepository interface {
 }
 
 type sectorSearchRepository struct {
-	pool *pgxpool.Pool
+	pool DBExecutor
 }
 
-func NewSectorSearchRepository(pool *pgxpool.Pool) SectorSearchRepository {
+func NewSectorSearchRepository(pool DBExecutor) SectorSearchRepository {
 	return &sectorSearchRepository{
 		pool: pool,
 	}

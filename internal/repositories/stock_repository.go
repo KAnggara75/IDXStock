@@ -5,7 +5,6 @@ import (
 	"fmt"
 
 	"github.com/jackc/pgx/v5"
-	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/sirupsen/logrus"
 
 	"github.com/KAnggara75/IDXStock/internal/models"
@@ -19,10 +18,10 @@ type StockRepository interface {
 }
 
 type stockRepository struct {
-	pool *pgxpool.Pool
+	pool DBExecutor
 }
 
-func NewStockRepository(pool *pgxpool.Pool) StockRepository {
+func NewStockRepository(pool DBExecutor) StockRepository {
 	return &stockRepository{
 		pool: pool,
 	}

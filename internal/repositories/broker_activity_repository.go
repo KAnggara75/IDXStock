@@ -25,6 +25,7 @@ type DBExecutor interface {
 	QueryRow(ctx context.Context, sql string, args ...any) pgx.Row
 	Begin(ctx context.Context) (pgx.Tx, error)
 	SendBatch(ctx context.Context, b *pgx.Batch) pgx.BatchResults
+	Ping(ctx context.Context) error
 }
 
 type brokerActivityRepository struct {

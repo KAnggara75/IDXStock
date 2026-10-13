@@ -50,4 +50,67 @@ func TestSyncBrokerActivityHandler(t *testing.T) {
 		assert.Equal(t, fiber.StatusOK, resp.StatusCode)
 		mockUsecase.AssertExpectations(t)
 	})
+
+	t.Run("usecase_error", func(t *testing.T) {
+		mockUsecase.On("SyncBrokerActivity", mock.Anything, "Bearer test-token-err", mock.Anything).
+			Return([]models.BrokerActivity{}, assert.AnError)
+
+		req := httptest.NewRequest("GET", "/broker/sync", nil)
+		req.Header.Set("Authorization", "Bearer test-token-err")
+		resp, _ := app.Test(req)
+
+		assert.Equal(t, fiber.StatusInternalServerError, resp.StatusCode)
+		mockUsecase.AssertExpectations(t)
+	})
+}
+
+func TestManagePartitionsHandler(t *testing.T) {
+	app := fiber.New()
+	mockUsecase := new(mockBrokerUsecase)
+	handler := NewBrokerHandler(mockUsecase)
+
+	app.Post("/broker/partitions", handler.ManagePartitionsHandler)
+
+	t.Run("success_created", func(t *testing.T) {
+		respData := &models.PartitionManagementResponse{
+			PartitionsCreated: 2,
+			Details: []models.PartitionDetail{
+				{Name: "p1", Status: "created"},
+				{Name: "p2", Status: "created"},
+			},
+		}
+		mockUsecase.On("ManagePartitions", mock.Anything).Return(respData, nil).Once()
+
+		req := httptest.NewRequest("POST", "/broker/partitions", nil)
+		resp, _ := app.Test(req)
+
+		assert.Equal(t, fiber.StatusCreated, resp.StatusCode)
+		mockUsecase.AssertExpectations(t)
+	})
+
+	t.Run("success_ok_no_partitions_created", func(t *testing.T) {
+		respData := &models.PartitionManagementResponse{
+			PartitionsCreated: 0,
+			Details: []models.PartitionDetail{
+				{Name: "p1", Status: "exists"},
+			},
+		}
+		mockUsecase.On("ManagePartitions", mock.Anything).Return(respData, nil).Once()
+
+		req := httptest.NewRequest("POST", "/broker/partitions", nil)
+		resp, _ := app.Test(req)
+
+		assert.Equal(t, fiber.StatusOK, resp.StatusCode)
+		mockUsecase.AssertExpectations(t)
+	})
+
+	t.Run("error_usecase", func(t *testing.T) {
+		mockUsecase.On("ManagePartitions", mock.Anything).Return((*models.PartitionManagementResponse)(nil), assert.AnError).Once()
+
+		req := httptest.NewRequest("POST", "/broker/partitions", nil)
+		resp, _ := app.Test(req)
+
+		assert.Equal(t, fiber.StatusInternalServerError, resp.StatusCode)
+		mockUsecase.AssertExpectations(t)
+	})
 }

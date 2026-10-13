@@ -86,4 +86,81 @@ func TestSyncBrokerActivity(t *testing.T) {
 		mockSvc.AssertExpectations(t)
 		mockRepo.AssertExpectations(t)
 	})
+
+	t.Run("fetch_error", func(t *testing.T) {
+		mockSvc.On("FetchBrokerActivity", ctx, "err-token", mock.Anything).
+			Return((*models.ExodusBrokerActivityResponse)(nil), assert.AnError).Once()
+
+		results, err := usecase.SyncBrokerActivity(ctx, "err-token", models.SyncBrokerActivityParams{})
+		assert.Error(t, err)
+		assert.Empty(t, results)
+	})
+
+	t.Run("insert_error_and_sell_side", func(t *testing.T) {
+		token := "token2"
+		params := models.SyncBrokerActivityParams{}
+		resp := &models.ExodusBrokerActivityResponse{
+			Data: struct {
+				BrokerActivityTransaction struct {
+					BrokersBuy  []models.ExodusBrokerActivityItem `json:"brokers_buy"`
+					BrokersSell []models.ExodusBrokerActivityItem `json:"brokers_sell"`
+				} `json:"broker_activity_transaction"`
+			}{
+				BrokerActivityTransaction: struct {
+					BrokersBuy  []models.ExodusBrokerActivityItem `json:"brokers_buy"`
+					BrokersSell []models.ExodusBrokerActivityItem `json:"brokers_sell"`
+				}{
+					BrokersBuy: []models.ExodusBrokerActivityItem{},
+					BrokersSell: []models.ExodusBrokerActivityItem{
+						{BrokerCode: "YP", StockCode: "BBRI", Date: "2024-04-17", Lot: 5, Value: 50},
+					},
+				},
+			},
+		}
+
+		mockSvc.On("FetchBrokerActivity", ctx, token, params).Return(resp, nil).Once()
+		mockRepo.On("InsertBrokerActivity", ctx, mock.Anything).Return(false, assert.AnError).Once()
+
+		results, err := usecase.SyncBrokerActivity(ctx, token, params)
+		assert.Error(t, err)
+		assert.Empty(t, results)
+	})
+}
+
+func TestManagePartitions(t *testing.T) {
+	mockRepo := new(mockBrokerRepo)
+	mockSvc := new(mockBrokerService)
+	usecase := NewBrokerUsecase(mockRepo, mockSvc)
+	ctx := context.Background()
+
+	t.Run("success_create_and_exists", func(t *testing.T) {
+		mockRepo.On("CheckPartitionExists", ctx, mock.Anything).Return(false, nil).Once()
+		mockRepo.On("CreatePartition", ctx, mock.Anything, mock.Anything, mock.Anything).Return(nil).Once()
+		mockRepo.On("CheckPartitionExists", ctx, mock.Anything).Return(true, nil).Once()
+
+		resp, err := usecase.ManagePartitions(ctx)
+		assert.NoError(t, err)
+		assert.NotNil(t, resp)
+		assert.Equal(t, 1, resp.PartitionsCreated)
+		assert.Len(t, resp.Details, 2)
+		assert.Equal(t, "created", resp.Details[0].Status)
+		assert.Equal(t, "exists", resp.Details[1].Status)
+	})
+
+	t.Run("check_partition_error", func(t *testing.T) {
+		mockRepo.On("CheckPartitionExists", ctx, mock.Anything).Return(false, assert.AnError).Once()
+
+		resp, err := usecase.ManagePartitions(ctx)
+		assert.Error(t, err)
+		assert.Nil(t, resp)
+	})
+
+	t.Run("create_partition_error", func(t *testing.T) {
+		mockRepo.On("CheckPartitionExists", ctx, mock.Anything).Return(false, nil).Once()
+		mockRepo.On("CreatePartition", ctx, mock.Anything, mock.Anything, mock.Anything).Return(assert.AnError).Once()
+
+		resp, err := usecase.ManagePartitions(ctx)
+		assert.Error(t, err)
+		assert.Nil(t, resp)
+	})
 }
