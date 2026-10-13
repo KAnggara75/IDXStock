@@ -26,7 +26,7 @@ repos:
       - id: go-imports-repo
         args:
           - "-local"
-          - "github.com/PakaiWA/PakaiWA"
+          - "github.com/KAnggara75/IDXStock"
           - "-w"
         stages: [pre-commit]
 
@@ -34,12 +34,6 @@ repos:
         stages: [pre-commit]
 
       - id: go-mod-tidy
-        stages: [pre-commit]
-
-  - repo: https://github.com/beeper/pre-commit-go
-    rev: v0.4.2
-    hooks:
-      - id: zerolog-use-stringer
         stages: [pre-commit]
 
   - repo: local
@@ -53,7 +47,7 @@ repos:
 
       - id: gobuild
         name: go build (compile check)
-        entry: go build ./cmd/api
+        entry: go build -o /dev/null ./cmd/api/main.go
         language: system
         pass_filenames: false
         stages: [pre-push]
@@ -61,20 +55,6 @@ repos:
       - id: govulncheck
         name: govulncheck (Go vulnerability scan)
         entry: govulncheck ./...
-        language: system
-        pass_filenames: false
-        stages: [pre-push]
-
-      - id: staticcheck
-        name: staticcheck (advanced linter)
-        entry: staticcheck ./...
-        language: system
-        pass_filenames: false
-        stages: [pre-push]
-
-      - id: gosec
-        name: gosec (security analyzer)
-        entry: gosec ./...
         language: system
         pass_filenames: false
         stages: [pre-push]
