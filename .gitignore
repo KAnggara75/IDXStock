@@ -17,4 +17,6 @@
 # Environment variables
 .env
 /api
+/tmp
+build-errors.log
 issue.md
