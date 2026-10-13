@@ -3,8 +3,12 @@ name: "CodeQL Analysis (Go)"
 on:
   push:
     branches: [ "main" ]
+    paths:
+      - '**.go'
   pull_request:
     branches: [ "main" ]
+    paths:
+      - '**.go'
   workflow_dispatch:
   schedule:
     # 22:30 WIB (UTC+7) setiap Sabtu = 15:30 UTC setiap Sabtu (day 6)
