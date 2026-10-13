@@ -1,10 +1,11 @@
 package handlers
 
 import (
-	"github.com/KAnggara75/IDXStock/internal/models"
-	"github.com/KAnggara75/IDXStock/internal/usecases"
 	"github.com/gofiber/fiber/v3"
 	"github.com/sirupsen/logrus"
+
+	"github.com/KAnggara75/IDXStock/internal/models"
+	"github.com/KAnggara75/IDXStock/internal/usecases"
 )
 
 type BrokerHandler struct {

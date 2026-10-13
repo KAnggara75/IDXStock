@@ -5,10 +5,11 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/KAnggara75/IDXStock/internal/models"
 	"github.com/gofiber/fiber/v3"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
+
+	"github.com/KAnggara75/IDXStock/internal/models"
 )
 
 type mockBrokerUsecase struct {
