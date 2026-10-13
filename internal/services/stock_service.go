@@ -6,9 +6,10 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/xuri/excelize/v2"
+
 	"github.com/KAnggara75/IDXStock/internal/models"
 	"github.com/KAnggara75/IDXStock/internal/utils"
-	"github.com/xuri/excelize/v2"
 )
 
 type StockService interface {
