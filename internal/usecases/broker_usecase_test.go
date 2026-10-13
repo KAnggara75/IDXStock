@@ -4,9 +4,10 @@ import (
 	"context"
 	"testing"
 
-	"github.com/KAnggara75/IDXStock/internal/models"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
+
+	"github.com/KAnggara75/IDXStock/internal/models"
 )
 
 type mockBrokerRepo struct {
