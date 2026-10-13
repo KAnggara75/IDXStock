@@ -4,10 +4,11 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/KAnggara75/IDXStock/internal/models"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/sirupsen/logrus"
+
+	"github.com/KAnggara75/IDXStock/internal/models"
 )
 
 type SectorSearchRepository interface {
