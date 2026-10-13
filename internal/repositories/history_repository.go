@@ -5,10 +5,11 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/KAnggara75/IDXStock/internal/models"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/sirupsen/logrus"
+
+	"github.com/KAnggara75/IDXStock/internal/models"
 )
 
 type HistoryRepository interface {
