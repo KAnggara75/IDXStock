@@ -4,6 +4,7 @@
 [![Fiber Framework](https://img.shields.io/badge/Fiber-v3-00ACD7?style=flat&logo=go)](https://gofiber.io)
 [![PostgreSQL](https://img.shields.io/badge/PostgreSQL-15+-336791?style=flat&logo=postgresql)](https://www.postgresql.org)
 [![Code Coverage](https://img.shields.io/badge/Coverage-7.4%25-red?style=flat)](https://github.com/KAnggara75/IDXStock)
+[![codecov](https://codecov.io/gh/KAnggara75/IDXStock/branch/main/graph/badge.svg)](https://codecov.io/gh/KAnggara75/IDXStock)
 
 A high-performance Golang backend microservice engineered to ingest, normalize, persist, and serve Indonesian financial market data (Indonesia Stock Exchange / IDX).
 
