@@ -163,4 +163,82 @@ func TestPasardanaService(t *testing.T) {
 		_, err := svc.FetchStockIDs()
 		assert.Error(t, err)
 	})
+
+	t.Run("http_client_do_error", func(t *testing.T) {
+		client := &http.Client{
+			Transport: &roundTripperFunc{
+				roundTrip: func(req *http.Request) (*http.Response, error) {
+					return nil, assert.AnError
+				},
+			},
+		}
+		svc := NewPasardanaService(client)
+
+		_, err := svc.FetchStockIDs()
+		assert.Error(t, err)
+
+		_, err = svc.FetchStockSearchResult()
+		assert.Error(t, err)
+
+		_, err = svc.FetchNewSectors()
+		assert.Error(t, err)
+
+		_, err = svc.FetchNewSubSectors()
+		assert.Error(t, err)
+
+		_, err = svc.FetchStockDetailByCode("BBCA")
+		assert.Error(t, err)
+
+		_, err = svc.FetchStockHistory(2024, 1, 1)
+		assert.Error(t, err)
+	})
+
+	t.Run("invalid_gzip_encoding", func(t *testing.T) {
+		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			w.Header().Set("Content-Type", "application/json")
+			w.Header().Set("Content-Encoding", "gzip")
+			w.WriteHeader(http.StatusOK)
+			_, _ = w.Write([]byte("not gzip bytes"))
+		}))
+		defer server.Close()
+
+		client := &http.Client{
+			Transport: &roundTripperFunc{
+				roundTrip: func(req *http.Request) (*http.Response, error) {
+					req.URL.Scheme = "http"
+					req.URL.Host = server.Listener.Addr().String()
+					return http.DefaultTransport.RoundTrip(req)
+				},
+			},
+		}
+		svc := NewPasardanaService(client)
+
+		_, err := svc.FetchStockIDs()
+		assert.Error(t, err)
+		assert.Contains(t, err.Error(), "failed to create gzip reader")
+	})
+
+	t.Run("invalid_json_decode", func(t *testing.T) {
+		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			w.Header().Set("Content-Type", "application/json")
+			w.WriteHeader(http.StatusOK)
+			_, _ = w.Write([]byte("{invalid-json"))
+		}))
+		defer server.Close()
+
+		client := &http.Client{
+			Transport: &roundTripperFunc{
+				roundTrip: func(req *http.Request) (*http.Response, error) {
+					req.URL.Scheme = "http"
+					req.URL.Host = server.Listener.Addr().String()
+					return http.DefaultTransport.RoundTrip(req)
+				},
+			},
+		}
+		svc := NewPasardanaService(client)
+
+		_, err := svc.FetchStockIDs()
+		assert.Error(t, err)
+		assert.Contains(t, err.Error(), "failed to decode response")
+	})
 }

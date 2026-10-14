@@ -5,9 +5,9 @@ import (
 	"fmt"
 
 	"github.com/jackc/pgx/v5"
-	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/sirupsen/logrus"
 
+	"github.com/KAnggara75/IDXStock/internal/database"
 	"github.com/KAnggara75/IDXStock/internal/models"
 )
 
@@ -18,15 +18,8 @@ type BrokerActivityRepository interface {
 	CreatePartition(ctx context.Context, tableName, startDate, endDate string) error
 }
 
-// DBExecutor is an interface that matches the methods we use from pgxpool.Pool
-type DBExecutor interface {
-	Exec(ctx context.Context, sql string, arguments ...any) (pgconn.CommandTag, error)
-	Query(ctx context.Context, sql string, args ...any) (pgx.Rows, error)
-	QueryRow(ctx context.Context, sql string, args ...any) pgx.Row
-	Begin(ctx context.Context) (pgx.Tx, error)
-	SendBatch(ctx context.Context, b *pgx.Batch) pgx.BatchResults
-	Ping(ctx context.Context) error
-}
+// DBExecutor is an alias to database.DBExecutor
+type DBExecutor = database.DBExecutor
 
 type brokerActivityRepository struct {
 	pool DBExecutor

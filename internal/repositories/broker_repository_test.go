@@ -13,7 +13,15 @@ import (
 func TestBrokerRepository(t *testing.T) {
 	ctx := context.Background()
 
+	t.Run("nil_pool", func(t *testing.T) {
+		repo := NewBrokerRepository(nil)
+		err := repo.BatchInsertBrokers(ctx, []models.Broker{{Code: "CC"}})
+		assert.Error(t, err)
+		assert.Equal(t, "database pool is not initialized", err.Error())
+	})
+
 	t.Run("empty_brokers", func(t *testing.T) {
+
 		mock, err := pgxmock.NewPool()
 		assert.NoError(t, err)
 		defer mock.Close()

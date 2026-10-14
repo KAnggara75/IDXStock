@@ -29,7 +29,12 @@ func (r *brokerRepository) BatchInsertBrokers(ctx context.Context, brokers []mod
 		return nil
 	}
 
+	if r.pool == nil {
+		return fmt.Errorf("database pool is not initialized")
+	}
+
 	tx, err := r.pool.Begin(ctx)
+
 	if err != nil {
 		return fmt.Errorf("failed to begin transaction: %w", err)
 	}
