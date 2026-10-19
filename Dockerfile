@@ -28,8 +28,8 @@ WORKDIR /root/
 # Copy the binary from the builder stage
 COPY --from=builder /app/idxstock .
 
-# Copy migrations folder
-COPY --from=builder /app/migrations ./migrations
+# Copy database folder
+COPY --from=builder /app/database ./database
 
 # Expose the application port
 EXPOSE 3000

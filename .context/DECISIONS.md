@@ -104,3 +104,20 @@
 - **Consequences**:
   - Dramatically reduces storage requirements and bandwidth consumption for consumer distribution.
   - Keeps the core repository lightweight while providing versioned monthly release assets for historical backtesting and analysis.
+
+---
+
+## ADR-008: Deprecate and Remove Schema Migrations in Favor of Pre-Packaged Master Database
+
+- **Status**: Accepted
+- **Date**: 2026-10-19
+- **Source**: Developer request & Codebase refactor
+- **Context**: With the adoption of SQLite and the distribution of pre-populated master and historical databases (`database/master_stocks.db`), runtime SQL migrations (`migrations/*.sql`) became obsolete, redundant, and introduced unnecessary startup file inspection and execution overhead.
+- **Decision**: 
+  - Delete `migrations/*.sql` and remove the `migrations/` directory entirely.
+  - Remove `Migrate()` and migration table tracking logic (`schema_migrations`) from `internal/database/database.go`.
+  - Clean up build and container configurations (`.air.toml`, `Dockerfile`, `.github/workflows/pipeline.yaml`, `.github/CODEOWNERS`) to eliminate references to migrations.
+- **Consequences**:
+  - Faster, cleaner application bootstrap without filesystem scanning for SQL files.
+  - Reduced codebase footprint and simplified operational maintenance.
+  - Future schema evolution will be handled directly in the master database schema or through explicit database update tools.

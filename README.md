@@ -25,8 +25,7 @@ This application interfaces with reliable financial and exchange data sources:
 - **Corporate Action Adjustments**: Dynamic stock split calculation endpoint (`PUT /api/v1/stocks/split`) that adjusts historical open, high, low, close prices and recalculates trading volume.
 - **Listing & Delisting Synchronization**: Ingest and track active listing profiles, sector mapping, and delisted stocks.
 - **High-Volume Broker Activities**: Automated weekly ISO partition management (`broker_activity_YYYY_WW`) for scalable broker summary transaction ingestion.
-- **Media Asset Streaming**: In-memory proxy and caching for company logo assets (`/api/v1/assets/logos/companies/:code`).
-- **Decoupled Architecture**: Spring Cloud Config remote configuration, zero-downtime database auto-migrations, and structured JSON telemetry.
+- **Decoupled Architecture**: Spring Cloud Config remote configuration, standalone pure-Go SQLite persistence, and structured JSON telemetry.
 
 ---
 

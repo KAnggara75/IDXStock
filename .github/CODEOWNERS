@@ -8,9 +8,6 @@
 /cmd/               @KAnggara75
 /internal/          @KAnggara75
 
-# Database Migrations & Schemas
-/migrations/        @KAnggara75
-
 # CI/CD, Containerization & Build Manifests
 /.github/           @KAnggara75
 /build/             @KAnggara75

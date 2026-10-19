@@ -41,21 +41,10 @@ func TestConnectWithConfig(t *testing.T) {
 	ctx := context.Background()
 
 	t.Run("success_in_memory", func(t *testing.T) {
-		pool, err := connectWithConfig(ctx, ":memory:", nil)
+		pool, err := connectWithConfig(ctx, ":memory:")
 		assert.NoError(t, err)
 		assert.NotNil(t, pool)
 		assert.NoError(t, pool.Ping(ctx))
-		assert.NoError(t, pool.Close())
-	})
-
-	t.Run("with_migrate_fn", func(t *testing.T) {
-		var migrated bool
-		pool, err := connectWithConfig(ctx, ":memory:", func(executor ...DBExecutor) {
-			migrated = true
-		})
-		assert.NoError(t, err)
-		assert.True(t, migrated)
-		assert.NotNil(t, pool)
 		assert.NoError(t, pool.Close())
 	})
 
@@ -65,7 +54,7 @@ func TestConnectWithConfig(t *testing.T) {
 		defer os.RemoveAll(tempDir)
 
 		dbPath := filepath.Join(tempDir, "subdir", "test.db")
-		pool, err := connectWithConfig(ctx, dbPath, nil)
+		pool, err := connectWithConfig(ctx, dbPath)
 		assert.NoError(t, err)
 		assert.NotNil(t, pool)
 		assert.NoError(t, pool.Ping(ctx))
@@ -85,7 +74,7 @@ func TestConnectDB(t *testing.T) {
 	t.Run("connector_error", func(t *testing.T) {
 		pool, err := connectDB(func() (string, error) {
 			return "idxstock.db", nil
-		}, func(ctx context.Context, dsn string, migrateFn func(executor ...DBExecutor)) (DBExecutor, error) {
+		}, func(ctx context.Context, dsn string) (DBExecutor, error) {
 			return nil, assert.AnError
 		})
 		assert.Error(t, err)
@@ -93,7 +82,6 @@ func TestConnectDB(t *testing.T) {
 	})
 
 	t.Run("connector_success", func(t *testing.T) {
-		var migrated bool
 		db, _, err := sqlmock.New()
 		assert.NoError(t, err)
 		defer db.Close()
@@ -101,174 +89,89 @@ func TestConnectDB(t *testing.T) {
 
 		pool, err := connectDB(func() (string, error) {
 			return "idxstock.db", nil
-		}, func(ctx context.Context, dsn string, migrateFn func(executor ...DBExecutor)) (DBExecutor, error) {
-			if migrateFn != nil {
-				migrated = true
-			}
+		}, func(ctx context.Context, dsn string) (DBExecutor, error) {
 			return mockExec, nil
 		})
 		assert.NoError(t, err)
 		assert.Equal(t, mockExec, pool)
-		assert.True(t, migrated)
 	})
 }
 
-func TestMigrate(t *testing.T) {
-	t.Run("nil_executor_and_nil_pool", func(t *testing.T) {
-		oldPool := Pool
-		Pool = nil
-		defer func() { Pool = oldPool }()
+func TestDBExecutorAndTx(t *testing.T) {
+	ctx := context.Background()
 
-		assert.NotPanics(t, func() {
-			Migrate()
-		})
-	})
-
-	t.Run("migration_table_creation_error", func(t *testing.T) {
-		db, mock, err := sqlmock.New()
+	t.Run("sqlDB_methods", func(t *testing.T) {
+		db, mock, err := sqlmock.New(sqlmock.MonitorPingsOption(true))
 		assert.NoError(t, err)
 		defer db.Close()
+
 		exec := NewDBExecutor(db)
 
-		mock.ExpectExec("CREATE TABLE IF NOT EXISTS schema_migrations").
-			WillReturnError(assert.AnError)
-
-		Migrate(exec)
-		assert.NoError(t, mock.ExpectationsWereMet())
-	})
-
-	t.Run("stocks_table_exists_query_error", func(t *testing.T) {
-		db, mock, err := sqlmock.New()
+		// Exec
+		mock.ExpectExec("UPDATE test").WillReturnResult(sqlmock.NewResult(1, 2))
+		res, err := exec.Exec(ctx, "UPDATE test")
 		assert.NoError(t, err)
-		defer db.Close()
-		exec := NewDBExecutor(db)
+		assert.Equal(t, int64(2), res.RowsAffected())
 
-		mock.ExpectExec("CREATE TABLE IF NOT EXISTS schema_migrations").
-			WillReturnResult(sqlmock.NewResult(1, 1))
-
-		mock.ExpectQuery("SELECT EXISTS").
-			WillReturnError(assert.AnError)
-
-		for i := 0; i < 7; i++ {
-			mock.ExpectQuery("SELECT EXISTS \\(SELECT 1 FROM schema_migrations WHERE filename = \\?1\\)").
-				WithArgs(sqlmock.AnyArg()).
-				WillReturnRows(sqlmock.NewRows([]string{"exists"}).AddRow(true))
-		}
-
-		Migrate(exec)
-		assert.NoError(t, mock.ExpectationsWereMet())
-	})
-
-	t.Run("stocks_table_exists_seeds_migrations_and_initial_insert_error", func(t *testing.T) {
-		db, mock, err := sqlmock.New()
+		// Query
+		mock.ExpectQuery("SELECT 1").WillReturnRows(sqlmock.NewRows([]string{"val"}).AddRow(1))
+		rows, err := exec.Query(ctx, "SELECT 1")
 		assert.NoError(t, err)
-		defer db.Close()
-		exec := NewDBExecutor(db)
+		assert.True(t, rows.Next())
+		rows.Close()
 
-		mock.ExpectExec("CREATE TABLE IF NOT EXISTS schema_migrations").
-			WillReturnResult(sqlmock.NewResult(1, 1))
-
-		mock.ExpectQuery("SELECT EXISTS").
-			WillReturnRows(sqlmock.NewRows([]string{"exists"}).AddRow(true))
-
-		mock.ExpectExec("INSERT OR IGNORE INTO schema_migrations").
-			WillReturnError(assert.AnError)
-
-		for i := 0; i < 7; i++ {
-			mock.ExpectQuery("SELECT EXISTS \\(SELECT 1 FROM schema_migrations WHERE filename = \\?1\\)").
-				WithArgs(sqlmock.AnyArg()).
-				WillReturnRows(sqlmock.NewRows([]string{"exists"}).AddRow(true))
-		}
-
-		Migrate(exec)
-		assert.NoError(t, mock.ExpectationsWereMet())
-	})
-
-	t.Run("applies_all_migrations_successfully", func(t *testing.T) {
-		db, mock, err := sqlmock.New()
+		// QueryRow
+		mock.ExpectQuery("SELECT 2").WillReturnRows(sqlmock.NewRows([]string{"val"}).AddRow(2))
+		var val int
+		err = exec.QueryRow(ctx, "SELECT 2").Scan(&val)
 		assert.NoError(t, err)
-		defer db.Close()
-		exec := NewDBExecutor(db)
+		assert.Equal(t, 2, val)
 
-		mock.ExpectExec("CREATE TABLE IF NOT EXISTS schema_migrations").
-			WillReturnResult(sqlmock.NewResult(1, 1))
+		// Ping
+		mock.ExpectPing()
+		assert.NoError(t, exec.Ping(ctx))
 
-		mock.ExpectQuery("SELECT EXISTS").
-			WillReturnRows(sqlmock.NewRows([]string{"exists"}).AddRow(false))
+		// Begin error
+		mock.ExpectBegin().WillReturnError(assert.AnError)
+		_, err = exec.Begin(ctx)
+		assert.Error(t, err)
 
-		// 7 migration files with their respective statement counts:
-		// 000: 1 stmt
-		// 001: 2 stmts
-		// 002: 2 stmts
-		// 003: 4 stmts
-		// 004: 4 stmts
-		// 005: 1 stmt
-		// 006: 3 stmts
-		stmtCounts := []int{1, 2, 2, 4, 4, 1, 3}
-
-		for _, count := range stmtCounts {
-			mock.ExpectQuery("SELECT EXISTS \\(SELECT 1 FROM schema_migrations WHERE filename = \\?1\\)").
-				WithArgs(sqlmock.AnyArg()).
-				WillReturnRows(sqlmock.NewRows([]string{"exists"}).AddRow(false))
-
-			for s := 0; s < count; s++ {
-				mock.ExpectExec(".*").
-					WillReturnResult(sqlmock.NewResult(1, 1))
-			}
-
-			mock.ExpectExec("INSERT INTO schema_migrations").
-				WithArgs(sqlmock.AnyArg()).
-				WillReturnResult(sqlmock.NewResult(1, 1))
-		}
-
-		Migrate(exec)
-		assert.NoError(t, mock.ExpectationsWereMet())
-	})
-
-	t.Run("migration_exec_error_and_record_error_handled", func(t *testing.T) {
-		db, mock, err := sqlmock.New()
+		// Begin success
+		mock.ExpectBegin()
+		tx, err := exec.Begin(ctx)
 		assert.NoError(t, err)
-		defer db.Close()
-		exec := NewDBExecutor(db)
+		assert.NotNil(t, tx)
 
-		mock.ExpectExec("CREATE TABLE IF NOT EXISTS schema_migrations").
-			WillReturnResult(sqlmock.NewResult(1, 1))
+		// Tx Exec
+		mock.ExpectExec("INSERT INTO test").WillReturnResult(sqlmock.NewResult(1, 1))
+		txRes, err := tx.Exec(ctx, "INSERT INTO test")
+		assert.NoError(t, err)
+		assert.Equal(t, int64(1), txRes.RowsAffected())
 
-		mock.ExpectQuery("SELECT EXISTS").
-			WillReturnRows(sqlmock.NewRows([]string{"exists"}).AddRow(false))
+		// Tx Query
+		mock.ExpectQuery("SELECT 3").WillReturnRows(sqlmock.NewRows([]string{"val"}).AddRow(3))
+		txRows, err := tx.Query(ctx, "SELECT 3")
+		assert.NoError(t, err)
+		assert.True(t, txRows.Next())
+		txRows.Close()
 
-		// 1st file (000): check status error
-		mock.ExpectQuery("SELECT EXISTS \\(SELECT 1 FROM schema_migrations WHERE filename = \\?1\\)").
-			WithArgs(sqlmock.AnyArg()).
-			WillReturnError(assert.AnError)
+		// Tx QueryRow
+		mock.ExpectQuery("SELECT 4").WillReturnRows(sqlmock.NewRows([]string{"val"}).AddRow(4))
+		var txVal int
+		err = tx.QueryRow(ctx, "SELECT 4").Scan(&txVal)
+		assert.NoError(t, err)
+		assert.Equal(t, 4, txVal)
 
-		// 2nd file (001): exec error on 1st statement
-		mock.ExpectQuery("SELECT EXISTS \\(SELECT 1 FROM schema_migrations WHERE filename = \\?1\\)").
-			WithArgs(sqlmock.AnyArg()).
-			WillReturnRows(sqlmock.NewRows([]string{"exists"}).AddRow(false))
-		mock.ExpectExec(".*").
-			WillReturnError(assert.AnError)
+		// Tx Commit
+		mock.ExpectCommit()
+		assert.NoError(t, tx.Commit(ctx))
 
-		// 3rd file (002): 2 statements success, record error
-		mock.ExpectQuery("SELECT EXISTS \\(SELECT 1 FROM schema_migrations WHERE filename = \\?1\\)").
-			WithArgs(sqlmock.AnyArg()).
-			WillReturnRows(sqlmock.NewRows([]string{"exists"}).AddRow(false))
-		mock.ExpectExec(".*").
-			WillReturnResult(sqlmock.NewResult(1, 1))
-		mock.ExpectExec(".*").
-			WillReturnResult(sqlmock.NewResult(1, 1))
-		mock.ExpectExec("INSERT INTO schema_migrations").
-			WithArgs(sqlmock.AnyArg()).
-			WillReturnError(assert.AnError)
+		// Tx Rollback when already committed
+		assert.NoError(t, tx.Rollback(ctx))
 
-		// Remaining 4 files (003, 004, 005, 006): already applied
-		for i := 0; i < 4; i++ {
-			mock.ExpectQuery("SELECT EXISTS \\(SELECT 1 FROM schema_migrations WHERE filename = \\?1\\)").
-				WithArgs(sqlmock.AnyArg()).
-				WillReturnRows(sqlmock.NewRows([]string{"exists"}).AddRow(true))
-		}
-
-		Migrate(exec)
+		// Close
+		mock.ExpectClose()
+		assert.NoError(t, exec.Close())
 		assert.NoError(t, mock.ExpectationsWereMet())
 	})
 }

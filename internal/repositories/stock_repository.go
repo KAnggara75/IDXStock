@@ -17,6 +17,8 @@ type StockRepository interface {
 	UpdateDelistingDate(ctx context.Context, code, delistingDate string) (*models.StockResponse, error)
 	FindMissingCodes(ctx context.Context, codes []string) ([]string, error)
 	GetAllStocks(ctx context.Context, filter models.GetAllStocksFilter) ([]models.StockDetailResponse, error)
+	GetStockByCode(ctx context.Context, code string) (*models.StockDetailResponse, error)
+	GetDistinctBoards(ctx context.Context) ([]string, error)
 }
 
 type stockRepository struct {
@@ -298,4 +300,93 @@ func (r *stockRepository) GetAllStocks(ctx context.Context, filter models.GetAll
 	}
 
 	return stocks, nil
+}
+
+func (r *stockRepository) GetStockByCode(ctx context.Context, code string) (*models.StockDetailResponse, error) {
+	query := `
+		SELECT
+			code, name, listing_date, delisting_date, shares, board,
+			total_employees, annual_dividend, general_information, founding_date,
+			sector_id, sub_sector_id, industry_id, sub_industry_id, last_modified
+		FROM stocks
+		WHERE UPPER(code) = UPPER(?1)
+		LIMIT 1
+	`
+
+	var s models.StockDetailResponse
+	var delistingDate, totalEmployees, generalInfo, foundingDate sql.NullString
+	var annualDividend sql.NullFloat64
+	var sectorId, subSectorId, industryId, subIndustryId sql.NullInt64
+
+	err := r.pool.QueryRow(ctx, query, strings.TrimSpace(code)).Scan(
+		&s.Code, &s.Name, &s.ListingDate, &delistingDate, &s.Shares, &s.Board,
+		&totalEmployees, &annualDividend, &generalInfo, &foundingDate,
+		&sectorId, &subSectorId, &industryId, &subIndustryId, &s.LastModified,
+	)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, nil
+		}
+		return nil, fmt.Errorf("failed to get stock by code: %w", err)
+	}
+
+	if delistingDate.Valid {
+		s.DelistingDate = &delistingDate.String
+	}
+	if totalEmployees.Valid {
+		s.TotalEmployees = &totalEmployees.String
+	}
+	if annualDividend.Valid {
+		s.AnnualDividend = &annualDividend.Float64
+	}
+	if generalInfo.Valid {
+		s.GeneralInformation = &generalInfo.String
+	}
+	if foundingDate.Valid {
+		s.FoundingDate = &foundingDate.String
+	}
+	if sectorId.Valid {
+		v := int(sectorId.Int64)
+		s.SectorId = &v
+	}
+	if subSectorId.Valid {
+		v := int(subSectorId.Int64)
+		s.SubSectorId = &v
+	}
+	if industryId.Valid {
+		v := int(industryId.Int64)
+		s.IndustryId = &v
+	}
+	if subIndustryId.Valid {
+		v := int(subIndustryId.Int64)
+		s.SubIndustryId = &v
+	}
+
+	return &s, nil
+}
+
+func (r *stockRepository) GetDistinctBoards(ctx context.Context) ([]string, error) {
+	query := `
+		SELECT DISTINCT board
+		FROM stocks
+		WHERE board IS NOT NULL AND TRIM(board) != ''
+		ORDER BY board ASC
+	`
+
+	rows, err := r.pool.Query(ctx, query)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get distinct boards: %w", err)
+	}
+	defer rows.Close()
+
+	boards := make([]string, 0)
+	for rows.Next() {
+		var board string
+		if err := rows.Scan(&board); err != nil {
+			return nil, fmt.Errorf("failed to scan board: %w", err)
+		}
+		boards = append(boards, board)
+	}
+
+	return boards, nil
 }

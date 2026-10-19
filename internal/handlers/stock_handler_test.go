@@ -61,6 +61,30 @@ func (m *mockStockUsecase) GetAllStocks(ctx context.Context, filter models.GetAl
 	return args.Get(0).([]models.StockDetailResponse), args.Error(1)
 }
 
+func (m *mockStockUsecase) GetStockByCode(ctx context.Context, code string) (*models.StockDetailResponse, error) {
+	args := m.Called(ctx, code)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*models.StockDetailResponse), args.Error(1)
+}
+
+func (m *mockStockUsecase) GetDistinctBoards(ctx context.Context) ([]string, error) {
+	args := m.Called(ctx)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).([]string), args.Error(1)
+}
+
+func (m *mockStockUsecase) GetStocksByBoard(ctx context.Context, board string) ([]models.StockDetailResponse, error) {
+	args := m.Called(ctx, board)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).([]models.StockDetailResponse), args.Error(1)
+}
+
 func createMultipartRequest(url, fieldName, fileName string, fileContent []byte) (*http.Request, error) {
 	body := &bytes.Buffer{}
 	writer := multipart.NewWriter(body)
@@ -248,6 +272,109 @@ func TestStockHandler_GetAllStocksHandler(t *testing.T) {
 			Return(nil, fmt.Errorf("db error")).Once()
 
 		req := httptest.NewRequest("GET", "/stocks", nil)
+		resp, err := app.Test(req)
+		assert.NoError(t, err)
+		assert.Equal(t, fiber.StatusInternalServerError, resp.StatusCode)
+		mockUsecase.AssertExpectations(t)
+	})
+}
+
+func TestStockHandler_GetStockByCodeHandler(t *testing.T) {
+	mockUsecase := new(mockStockUsecase)
+	handler := NewStockHandler(mockUsecase)
+
+	app := fiber.New()
+	app.Get("/stocks/:code", handler.GetStockByCodeHandler)
+
+	t.Run("success", func(t *testing.T) {
+		expected := &models.StockDetailResponse{
+			Code:  "BBCA",
+			Name:  "Bank Central Asia Tbk",
+			Board: "UTAMA",
+		}
+		mockUsecase.On("GetStockByCode", mock.Anything, "BBCA").Return(expected, nil).Once()
+
+		req := httptest.NewRequest("GET", "/stocks/BBCA", nil)
+		resp, err := app.Test(req)
+		assert.NoError(t, err)
+		assert.Equal(t, fiber.StatusOK, resp.StatusCode)
+		mockUsecase.AssertExpectations(t)
+	})
+
+	t.Run("not_found", func(t *testing.T) {
+		mockUsecase.On("GetStockByCode", mock.Anything, "UNKN").Return((*models.StockDetailResponse)(nil), nil).Once()
+
+		req := httptest.NewRequest("GET", "/stocks/UNKN", nil)
+		resp, err := app.Test(req)
+		assert.NoError(t, err)
+		assert.Equal(t, fiber.StatusNotFound, resp.StatusCode)
+		mockUsecase.AssertExpectations(t)
+	})
+
+	t.Run("usecase_error", func(t *testing.T) {
+		mockUsecase.On("GetStockByCode", mock.Anything, "BBCA").Return((*models.StockDetailResponse)(nil), fmt.Errorf("db error")).Once()
+
+		req := httptest.NewRequest("GET", "/stocks/BBCA", nil)
+		resp, err := app.Test(req)
+		assert.NoError(t, err)
+		assert.Equal(t, fiber.StatusInternalServerError, resp.StatusCode)
+		mockUsecase.AssertExpectations(t)
+	})
+}
+
+func TestStockHandler_GetBoardsHandler(t *testing.T) {
+	mockUsecase := new(mockStockUsecase)
+	handler := NewStockHandler(mockUsecase)
+
+	app := fiber.New()
+	app.Get("/stocks/boards", handler.GetBoardsHandler)
+
+	t.Run("success", func(t *testing.T) {
+		expected := []string{"Acceleration", "Development", "Main"}
+		mockUsecase.On("GetDistinctBoards", mock.Anything).Return(expected, nil).Once()
+
+		req := httptest.NewRequest("GET", "/stocks/boards", nil)
+		resp, err := app.Test(req)
+		assert.NoError(t, err)
+		assert.Equal(t, fiber.StatusOK, resp.StatusCode)
+		mockUsecase.AssertExpectations(t)
+	})
+
+	t.Run("usecase_error", func(t *testing.T) {
+		mockUsecase.On("GetDistinctBoards", mock.Anything).Return(nil, fmt.Errorf("db error")).Once()
+
+		req := httptest.NewRequest("GET", "/stocks/boards", nil)
+		resp, err := app.Test(req)
+		assert.NoError(t, err)
+		assert.Equal(t, fiber.StatusInternalServerError, resp.StatusCode)
+		mockUsecase.AssertExpectations(t)
+	})
+}
+
+func TestStockHandler_GetStocksByBoardHandler(t *testing.T) {
+	mockUsecase := new(mockStockUsecase)
+	handler := NewStockHandler(mockUsecase)
+
+	app := fiber.New()
+	app.Get("/stocks/boards/:board", handler.GetStocksByBoardHandler)
+
+	t.Run("success", func(t *testing.T) {
+		expected := []models.StockDetailResponse{
+			{Code: "BBCA", Name: "Bank Central Asia Tbk", Board: "Main"},
+		}
+		mockUsecase.On("GetStocksByBoard", mock.Anything, "Main").Return(expected, nil).Once()
+
+		req := httptest.NewRequest("GET", "/stocks/boards/Main", nil)
+		resp, err := app.Test(req)
+		assert.NoError(t, err)
+		assert.Equal(t, fiber.StatusOK, resp.StatusCode)
+		mockUsecase.AssertExpectations(t)
+	})
+
+	t.Run("usecase_error", func(t *testing.T) {
+		mockUsecase.On("GetStocksByBoard", mock.Anything, "Main").Return(nil, fmt.Errorf("db error")).Once()
+
+		req := httptest.NewRequest("GET", "/stocks/boards/Main", nil)
 		resp, err := app.Test(req)
 		assert.NoError(t, err)
 		assert.Equal(t, fiber.StatusInternalServerError, resp.StatusCode)

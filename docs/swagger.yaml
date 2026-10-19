@@ -368,6 +368,38 @@ paths:
       summary: Get all stocks / emiten
       tags:
       - stocks
+  /stocks/{code}:
+    get:
+      description: Retrieves detailed information for a specific stock/emiten by ticker
+        code
+      parameters:
+      - description: Stock Ticker Code (e.g. BBCA)
+        in: path
+        name: code
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.StockDetailResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+      summary: Get stock / emiten by code
+      tags:
+      - stocks
   /stocks/{code}/history:
     get:
       description: Queries historical trading data for a specific stock code with
@@ -416,6 +448,56 @@ paths:
       summary: Get stock history records
       tags:
       - history
+  /stocks/boards:
+    get:
+      description: Retrieves list of all distinct trading boards available in IDX
+        (e.g. Main, Development, Acceleration, Watchlist, Ekonomi Baru)
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              type: string
+            type: array
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+      summary: Get distinct trading boards
+      tags:
+      - stocks
+  /stocks/boards/{board}:
+    get:
+      description: Retrieves list of stocks/emiten filtered by specific trading board
+      parameters:
+      - description: Trading Board (e.g. Main, Development, Acceleration, Watchlist,
+          Ekonomi Baru, or Indonesian name UTAMA, PENGEMBANGAN, etc.)
+        in: path
+        name: board
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.StockDetailResponse'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+      summary: Get stocks / emiten by board
+      tags:
+      - stocks
   /stocks/delisting/sync:
     put:
       consumes:

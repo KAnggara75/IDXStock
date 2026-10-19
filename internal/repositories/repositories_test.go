@@ -528,4 +528,128 @@ func TestHistoryRepository(t *testing.T) {
 		assert.NoError(t, err)
 		assert.NoError(t, mock.ExpectationsWereMet())
 	})
+
+	t.Run("GetStockByCode_Success", func(t *testing.T) {
+		db, mock, err := sqlmock.New()
+		assert.NoError(t, err)
+		defer db.Close()
+		mockExec := database.NewDBExecutor(db)
+
+		repo := NewStockRepository(mockExec)
+
+		columns := []string{
+			"code", "name", "listing_date", "delisting_date", "shares", "board",
+			"total_employees", "annual_dividend", "general_information", "founding_date",
+			"sector_id", "sub_sector_id", "industry_id", "sub_industry_id", "last_modified",
+		}
+		rows := sqlmock.NewRows(columns).AddRow(
+			"BBCA", "Bank Central Asia Tbk", "1982-01-01", "2024-01-01", int64(1000000), "UTAMA",
+			"25000", 150.5, "Banking and finance", "1957-02-21",
+			1, 2, 3, 4, "2024-01-01 00:00:00",
+		)
+
+		mock.ExpectQuery("SELECT (.+) FROM stocks WHERE UPPER\\(code\\) = UPPER\\(\\?1\\) LIMIT 1").
+			WithArgs("BBCA").
+			WillReturnRows(rows)
+
+		stock, err := repo.GetStockByCode(ctx, "BBCA")
+		assert.NoError(t, err)
+		assert.NotNil(t, stock)
+		assert.Equal(t, "BBCA", stock.Code)
+		assert.Equal(t, "Bank Central Asia Tbk", stock.Name)
+		assert.NotNil(t, stock.DelistingDate)
+		assert.Equal(t, "2024-01-01", *stock.DelistingDate)
+		assert.NotNil(t, stock.TotalEmployees)
+		assert.Equal(t, "25000", *stock.TotalEmployees)
+		assert.NotNil(t, stock.AnnualDividend)
+		assert.Equal(t, 150.5, *stock.AnnualDividend)
+		assert.NotNil(t, stock.GeneralInformation)
+		assert.Equal(t, "Banking and finance", *stock.GeneralInformation)
+		assert.NotNil(t, stock.FoundingDate)
+		assert.Equal(t, "1957-02-21", *stock.FoundingDate)
+		assert.NotNil(t, stock.SectorId)
+		assert.Equal(t, 1, *stock.SectorId)
+		assert.NotNil(t, stock.SubSectorId)
+		assert.Equal(t, 2, *stock.SubSectorId)
+		assert.NotNil(t, stock.IndustryId)
+		assert.Equal(t, 3, *stock.IndustryId)
+		assert.NotNil(t, stock.SubIndustryId)
+		assert.Equal(t, 4, *stock.SubIndustryId)
+		assert.NoError(t, mock.ExpectationsWereMet())
+	})
+
+	t.Run("GetStockByCode_NotFound", func(t *testing.T) {
+		db, mock, err := sqlmock.New()
+		assert.NoError(t, err)
+		defer db.Close()
+		mockExec := database.NewDBExecutor(db)
+
+		repo := NewStockRepository(mockExec)
+
+		mock.ExpectQuery("SELECT (.+) FROM stocks WHERE UPPER\\(code\\) = UPPER\\(\\?1\\) LIMIT 1").
+			WithArgs("UNKN").
+			WillReturnError(sql.ErrNoRows)
+
+		stock, err := repo.GetStockByCode(ctx, "UNKN")
+		assert.NoError(t, err)
+		assert.Nil(t, stock)
+		assert.NoError(t, mock.ExpectationsWereMet())
+	})
+
+	t.Run("GetStockByCode_Error", func(t *testing.T) {
+		db, mock, err := sqlmock.New()
+		assert.NoError(t, err)
+		defer db.Close()
+		mockExec := database.NewDBExecutor(db)
+
+		repo := NewStockRepository(mockExec)
+
+		mock.ExpectQuery("SELECT (.+) FROM stocks WHERE UPPER\\(code\\) = UPPER\\(\\?1\\) LIMIT 1").
+			WithArgs("BBCA").
+			WillReturnError(assert.AnError)
+
+		stock, err := repo.GetStockByCode(ctx, "BBCA")
+		assert.Error(t, err)
+		assert.Nil(t, stock)
+		assert.NoError(t, mock.ExpectationsWereMet())
+	})
+
+	t.Run("GetDistinctBoards_Success", func(t *testing.T) {
+		db, mock, err := sqlmock.New()
+		assert.NoError(t, err)
+		defer db.Close()
+		mockExec := database.NewDBExecutor(db)
+
+		repo := NewStockRepository(mockExec)
+
+		rows := sqlmock.NewRows([]string{"board"}).
+			AddRow("Acceleration").
+			AddRow("Development").
+			AddRow("Main")
+
+		mock.ExpectQuery("SELECT DISTINCT board FROM stocks WHERE board IS NOT NULL AND TRIM\\(board\\) != '' ORDER BY board ASC").
+			WillReturnRows(rows)
+
+		boards, err := repo.GetDistinctBoards(ctx)
+		assert.NoError(t, err)
+		assert.Equal(t, []string{"Acceleration", "Development", "Main"}, boards)
+		assert.NoError(t, mock.ExpectationsWereMet())
+	})
+
+	t.Run("GetDistinctBoards_Error", func(t *testing.T) {
+		db, mock, err := sqlmock.New()
+		assert.NoError(t, err)
+		defer db.Close()
+		mockExec := database.NewDBExecutor(db)
+
+		repo := NewStockRepository(mockExec)
+
+		mock.ExpectQuery("SELECT DISTINCT board FROM stocks WHERE board IS NOT NULL AND TRIM\\(board\\) != '' ORDER BY board ASC").
+			WillReturnError(assert.AnError)
+
+		boards, err := repo.GetDistinctBoards(ctx)
+		assert.Error(t, err)
+		assert.Nil(t, boards)
+		assert.NoError(t, mock.ExpectationsWereMet())
+	})
 }

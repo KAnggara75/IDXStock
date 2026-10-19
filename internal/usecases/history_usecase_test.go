@@ -74,6 +74,22 @@ func (m *mockStockRepo) GetAllStocks(ctx context.Context, filter models.GetAllSt
 	return args.Get(0).([]models.StockDetailResponse), args.Error(1)
 }
 
+func (m *mockStockRepo) GetStockByCode(ctx context.Context, code string) (*models.StockDetailResponse, error) {
+	args := m.Called(ctx, code)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*models.StockDetailResponse), args.Error(1)
+}
+
+func (m *mockStockRepo) GetDistinctBoards(ctx context.Context) ([]string, error) {
+	args := m.Called(ctx)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).([]string), args.Error(1)
+}
+
 type mockPasardanaService struct {
 	mock.Mock
 }

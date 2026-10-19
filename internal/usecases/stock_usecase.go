@@ -20,6 +20,9 @@ type StockUsecase interface {
 	SyncStockDetail(ctx context.Context) ([]models.StockResponse, error)
 	SyncDelistingStocks(ctx context.Context, year, month int, cookie string) ([]models.StockResponse, error)
 	GetAllStocks(ctx context.Context, filter models.GetAllStocksFilter) ([]models.StockDetailResponse, error)
+	GetStockByCode(ctx context.Context, code string) (*models.StockDetailResponse, error)
+	GetDistinctBoards(ctx context.Context) ([]string, error)
+	GetStocksByBoard(ctx context.Context, board string) ([]models.StockDetailResponse, error)
 }
 
 type stockUsecase struct {
@@ -233,4 +236,18 @@ func (u *stockUsecase) SyncDelistingStocks(ctx context.Context, year, month int,
 
 func (u *stockUsecase) GetAllStocks(ctx context.Context, filter models.GetAllStocksFilter) ([]models.StockDetailResponse, error) {
 	return u.repo.GetAllStocks(ctx, filter)
+}
+
+func (u *stockUsecase) GetStockByCode(ctx context.Context, code string) (*models.StockDetailResponse, error) {
+	return u.repo.GetStockByCode(ctx, code)
+}
+
+func (u *stockUsecase) GetDistinctBoards(ctx context.Context) ([]string, error) {
+	return u.repo.GetDistinctBoards(ctx)
+}
+
+func (u *stockUsecase) GetStocksByBoard(ctx context.Context, board string) ([]models.StockDetailResponse, error) {
+	return u.repo.GetAllStocks(ctx, models.GetAllStocksFilter{
+		Board: board,
+	})
 }

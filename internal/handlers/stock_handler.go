@@ -196,3 +196,88 @@ func (h *StockHandler) GetAllStocksHandler(c fiber.Ctx) error {
 
 	return c.JSON(stocks)
 }
+
+// GetStockByCodeHandler godoc
+// @Summary      Get stock / emiten by code
+// @Description  Retrieves detailed information for a specific stock/emiten by ticker code
+// @Tags         stocks
+// @Produce      json
+// @Param        code   path      string  true  "Stock Ticker Code (e.g. BBCA)"
+// @Success      200    {object}  models.StockDetailResponse
+// @Failure      400    {object}  models.ErrorResponse
+// @Failure      404    {object}  models.ErrorResponse
+// @Failure      500    {object}  models.ErrorResponse
+// @Router       /stocks/{code} [get]
+func (h *StockHandler) GetStockByCodeHandler(c fiber.Ctx) error {
+	code := strings.TrimSpace(c.Params("code"))
+	if code == "" {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"error": "Stock code is required",
+		})
+	}
+
+	stock, err := h.usecase.GetStockByCode(c.Context(), code)
+	if err != nil {
+		logrus.Errorf("Failed to retrieve stock %s: %v", code, err)
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": err.Error(),
+		})
+	}
+
+	if stock == nil {
+		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{
+			"error": "Stock not found",
+		})
+	}
+
+	return c.JSON(stock)
+}
+
+// GetBoardsHandler godoc
+// @Summary      Get distinct trading boards
+// @Description  Retrieves list of all distinct trading boards available in IDX (e.g. Main, Development, Acceleration, Watchlist, Ekonomi Baru)
+// @Tags         stocks
+// @Produce      json
+// @Success      200     {array}   string
+// @Failure      500     {object}  models.ErrorResponse
+// @Router       /stocks/boards [get]
+func (h *StockHandler) GetBoardsHandler(c fiber.Ctx) error {
+	boards, err := h.usecase.GetDistinctBoards(c.Context())
+	if err != nil {
+		logrus.Errorf("Failed to retrieve boards: %v", err)
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": err.Error(),
+		})
+	}
+
+	return c.JSON(boards)
+}
+
+// GetStocksByBoardHandler godoc
+// @Summary      Get stocks / emiten by board
+// @Description  Retrieves list of stocks/emiten filtered by specific trading board
+// @Tags         stocks
+// @Produce      json
+// @Param        board   path      string  true  "Trading Board (e.g. Main, Development, Acceleration, Watchlist, Ekonomi Baru, or Indonesian name UTAMA, PENGEMBANGAN, etc.)"
+// @Success      200     {array}   models.StockDetailResponse
+// @Failure      400     {object}  models.ErrorResponse
+// @Failure      500     {object}  models.ErrorResponse
+// @Router       /stocks/boards/{board} [get]
+func (h *StockHandler) GetStocksByBoardHandler(c fiber.Ctx) error {
+	board := strings.TrimSpace(c.Params("board"))
+	if board == "" {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"error": "Board is required",
+		})
+	}
+
+	stocks, err := h.usecase.GetStocksByBoard(c.Context(), board)
+	if err != nil {
+		logrus.Errorf("Failed to retrieve stocks for board %s: %v", board, err)
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": err.Error(),
+		})
+	}
+
+	return c.JSON(stocks)
+}

@@ -8,7 +8,7 @@
   - Persistence Layer: `internal/repositories` encapsulating SQL queries and transaction management via pure Go SQLite (`database.DBExecutor`).
   - Cross-cutting Configuration: `internal/config`, `internal/database`, `internal/utils`.
 - **Pure-Go SQLite Persistence (`CONFIRMED`)**:
-  - Embedded, CGO-free SQLite database engine (`modernc.org/sqlite`) utilizing file storage at `database/master_stocks.db` with automated embedded migrations (`migrations/*.sql`).
+  - Embedded, CGO-free SQLite database engine (`modernc.org/sqlite`) utilizing file storage at `database/master_stocks.db`.
 - **Distributed Configuration Management (`CONFIRMED`)**:
   - Bootstrap integration with Spring Cloud Config server via `scc2go` during `init()` (`cmd/api/main.go#L31-L33`).
 - **Automated OpenAPI / Swagger Integration (`CONFIRMED`)**:
@@ -112,7 +112,6 @@ graph TD
 - **Panic Recovery**: `recover.New()` middleware mounted globally in Fiber (`cmd/api/main.go#L42`) protects against thread panics.
 - **HTTP Status Codes**: Structured JSON error payloads (`fiber.Map{"error": err.Error()}`) returned across handlers.
 - **Database Resilience**: Parameterized SQLite queries avoid SQL injection; connection health verified at boot and via `/health` endpoint ping (`internal/routes/routes.go#L48-L65`).
-- **Resilient Migration System**: Migration executor runs inside an isolated transaction (`internal/database/database.go#L56-L134`) tracking applied scripts in `schema_migrations`.
 
 ---
 
@@ -135,5 +134,4 @@ graph TD
   - `broker_activity`
   - `sector`, `sub_sector`
   - `industry`, `sub_industry`
-  - `schema_migrations`
 - **Models vs Entities**: Models defined in `internal/models/` serve dual purposes as DTOs, API schema annotations, and database mapping entities.

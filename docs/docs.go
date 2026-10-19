@@ -286,6 +286,79 @@ const docTemplate = `{
                 }
             }
         },
+        "/stocks/boards": {
+            "get": {
+                "description": "Retrieves list of all distinct trading boards available in IDX (e.g. Main, Development, Acceleration, Watchlist, Ekonomi Baru)",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "stocks"
+                ],
+                "summary": "Get distinct trading boards",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/models.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/stocks/boards/{board}": {
+            "get": {
+                "description": "Retrieves list of stocks/emiten filtered by specific trading board",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "stocks"
+                ],
+                "summary": "Get stocks / emiten by board",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Trading Board (e.g. Main, Development, Acceleration, Watchlist, Ekonomi Baru, or Indonesian name UTAMA, PENGEMBANGAN, etc.)",
+                        "name": "board",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/models.StockDetailResponse"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/models.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/models.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/stocks/delisting/sync": {
             "put": {
                 "description": "Fetches delisted stocks for specific year/month from IDX and updates the database",
@@ -560,6 +633,53 @@ const docTemplate = `{
                     },
                     "400": {
                         "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/models.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/models.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/stocks/{code}": {
+            "get": {
+                "description": "Retrieves detailed information for a specific stock/emiten by ticker code",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "stocks"
+                ],
+                "summary": "Get stock / emiten by code",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Stock Ticker Code (e.g. BBCA)",
+                        "name": "code",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.StockDetailResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/models.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
                         "schema": {
                             "$ref": "#/definitions/models.ErrorResponse"
                         }

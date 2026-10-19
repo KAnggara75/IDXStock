@@ -278,3 +278,130 @@ func TestStockUsecase_GetAllStocks(t *testing.T) {
 		repo.AssertExpectations(t)
 	})
 }
+
+func TestStockUsecase_GetStockByCode(t *testing.T) {
+	ctx := context.Background()
+
+	t.Run("success", func(t *testing.T) {
+		repo := new(mockStockRepo)
+		svc := new(mockStockService)
+		pSvc := new(mockPasardanaService)
+		idxSvc := new(mockIdxService)
+		u := NewStockUsecase(repo, svc, pSvc, idxSvc)
+
+		expected := &models.StockDetailResponse{
+			Code:  "BBCA",
+			Name:  "Bank Central Asia Tbk",
+			Board: "UTAMA",
+		}
+
+		repo.On("GetStockByCode", ctx, "BBCA").Return(expected, nil).Once()
+
+		result, err := u.GetStockByCode(ctx, "BBCA")
+		assert.NoError(t, err)
+		assert.Equal(t, expected, result)
+		repo.AssertExpectations(t)
+	})
+
+	t.Run("not_found", func(t *testing.T) {
+		repo := new(mockStockRepo)
+		svc := new(mockStockService)
+		pSvc := new(mockPasardanaService)
+		idxSvc := new(mockIdxService)
+		u := NewStockUsecase(repo, svc, pSvc, idxSvc)
+
+		repo.On("GetStockByCode", ctx, "UNKN").Return((*models.StockDetailResponse)(nil), nil).Once()
+
+		result, err := u.GetStockByCode(ctx, "UNKN")
+		assert.NoError(t, err)
+		assert.Nil(t, result)
+		repo.AssertExpectations(t)
+	})
+
+	t.Run("error", func(t *testing.T) {
+		repo := new(mockStockRepo)
+		svc := new(mockStockService)
+		pSvc := new(mockPasardanaService)
+		idxSvc := new(mockIdxService)
+		u := NewStockUsecase(repo, svc, pSvc, idxSvc)
+
+		repo.On("GetStockByCode", ctx, "BBCA").Return((*models.StockDetailResponse)(nil), assert.AnError).Once()
+
+		result, err := u.GetStockByCode(ctx, "BBCA")
+		assert.Error(t, err)
+		assert.Nil(t, result)
+		repo.AssertExpectations(t)
+	})
+}
+
+func TestStockUsecase_GetDistinctBoards(t *testing.T) {
+	ctx := context.Background()
+
+	t.Run("success", func(t *testing.T) {
+		repo := new(mockStockRepo)
+		svc := new(mockStockService)
+		pSvc := new(mockPasardanaService)
+		idxSvc := new(mockIdxService)
+		u := NewStockUsecase(repo, svc, pSvc, idxSvc)
+
+		expected := []string{"Acceleration", "Development", "Main"}
+		repo.On("GetDistinctBoards", ctx).Return(expected, nil).Once()
+
+		result, err := u.GetDistinctBoards(ctx)
+		assert.NoError(t, err)
+		assert.Equal(t, expected, result)
+		repo.AssertExpectations(t)
+	})
+
+	t.Run("error", func(t *testing.T) {
+		repo := new(mockStockRepo)
+		svc := new(mockStockService)
+		pSvc := new(mockPasardanaService)
+		idxSvc := new(mockIdxService)
+		u := NewStockUsecase(repo, svc, pSvc, idxSvc)
+
+		repo.On("GetDistinctBoards", ctx).Return(nil, assert.AnError).Once()
+
+		result, err := u.GetDistinctBoards(ctx)
+		assert.Error(t, err)
+		assert.Nil(t, result)
+		repo.AssertExpectations(t)
+	})
+}
+
+func TestStockUsecase_GetStocksByBoard(t *testing.T) {
+	ctx := context.Background()
+
+	t.Run("success", func(t *testing.T) {
+		repo := new(mockStockRepo)
+		svc := new(mockStockService)
+		pSvc := new(mockPasardanaService)
+		idxSvc := new(mockIdxService)
+		u := NewStockUsecase(repo, svc, pSvc, idxSvc)
+
+		expected := []models.StockDetailResponse{
+			{Code: "BBCA", Name: "Bank Central Asia Tbk", Board: "Main"},
+		}
+		repo.On("GetAllStocks", ctx, models.GetAllStocksFilter{Board: "Main"}).Return(expected, nil).Once()
+
+		result, err := u.GetStocksByBoard(ctx, "Main")
+		assert.NoError(t, err)
+		assert.Equal(t, expected, result)
+		repo.AssertExpectations(t)
+	})
+
+	t.Run("error", func(t *testing.T) {
+		repo := new(mockStockRepo)
+		svc := new(mockStockService)
+		pSvc := new(mockPasardanaService)
+		idxSvc := new(mockIdxService)
+		u := NewStockUsecase(repo, svc, pSvc, idxSvc)
+
+		repo.On("GetAllStocks", ctx, models.GetAllStocksFilter{Board: "Main"}).Return(nil, assert.AnError).Once()
+
+		result, err := u.GetStocksByBoard(ctx, "Main")
+		assert.Error(t, err)
+		assert.Nil(t, result)
+		repo.AssertExpectations(t)
+	})
+}

@@ -3,7 +3,7 @@
 ## `cmd/api`
 - **Responsibility**: Application entry point and runtime bootstrap.
 - **Entry / Key Files**:
-  - `cmd/api/main.go` — Service initialization, configuration loading (`scc2go`), logger setup, DB connection with auto-migrations, broker seeding, Fiber HTTP web server startup, and Swagger annotation declarations (`//go:generate swag init ...`).
+  - `cmd/api/main.go` — Service initialization, configuration loading (`scc2go`), logger setup, DB connection, broker seeding, Fiber HTTP web server startup, and Swagger annotation declarations (`//go:generate swag init ...`).
 - **Dependencies**: `github.com/gofiber/fiber/v3`, `github.com/KAnggara75/scc2go`, `github.com/sirupsen/logrus`, `internal/config`, `internal/database`, `internal/repositories`, `internal/routes`, `internal/services`.
 - **Consumers**: Executable container / process entry point.
 - **External Integrations**: Spring Cloud Config server (via `scc2go`), SQLite database (`database/master_stocks.db`).
@@ -25,7 +25,7 @@
 ## `internal/handlers`
 - **Responsibility**: HTTP transport layer, request validation, query param binding, JSON response formatting, and OpenAPI Swagger documentation annotations.
 - **Entry / Key Files**:
-  - `internal/handlers/stock_handler.go` — Get all stocks (`/api/v1/stocks`), preview and upload Excel stock lists (`/api/v1/stocks/upload`), sync company details (`/api/v1/stocks/sync`), and fetch delisted stocks (`/api/v1/stocks/delisting/sync`).
+  - `internal/handlers/stock_handler.go` — Get all stocks (`/api/v1/stocks`), get stock by ticker code (`/api/v1/stocks/:code`), get distinct trading boards (`/api/v1/stocks/boards`), get stocks filtered by board (`/api/v1/stocks/boards/:board`), preview and upload Excel stock lists (`/api/v1/stocks/upload`), sync company details (`/api/v1/stocks/sync`), and fetch delisted stocks (`/api/v1/stocks/delisting/sync`).
   - `internal/handlers/history_handler.go` — Query stock historical prices (`/api/v1/stocks/:code/history`), sync daily EOD history (`/api/v1/stocks/history/sync`), and execute stock split adjustments (`/api/v1/stocks/split`).
   - `internal/handlers/broker_handler.go` — Sync broker activities and manage broker activity partition tables.
   - `internal/handlers/sector_handler.go` — Synchronize sector and sub-sector master data.
@@ -41,7 +41,7 @@
 ## `internal/usecases`
 - **Responsibility**: Core application business logic, orchestration of repositories, and external upstream APIs.
 - **Entry / Key Files**:
-  - `internal/usecases/stock_usecase.go` — Retrieving filtered stocks (`GetAllStocks`), parsing Excel lists, validating stock data, and syncing company profiles.
+  - `internal/usecases/stock_usecase.go` — Retrieving filtered stocks (`GetAllStocks`), lookup stock by code (`GetStockByCode`), listing distinct trading boards (`GetDistinctBoards`), query stocks by board (`GetStocksByBoard`), parsing Excel lists, validating stock data, and syncing company profiles.
   - `internal/usecases/history_usecase.go` — Processing historical market pricing, applying mathematical ratios for stock splits (`close`, `open_price`, `high`, `low`, and `volume`), and backfilling missing days.
   - `internal/usecases/broker_usecase.go` — Orchestrates broker activity synchronization.
   - `internal/usecases/sector_usecase.go` — Fetching and updating sector taxonomies.
@@ -71,7 +71,7 @@
 ## `internal/repositories`
 - **Responsibility**: Persistence layer, executing SQL queries, transactional batches, and data operations on SQLite.
 - **Entry / Key Files**:
-  - `internal/repositories/stock_repository.go` — Master stock retrieval (`GetAllStocks`), CRUD, and batch upserts for company profiles, board types, and delisting statuses.
+  - `internal/repositories/stock_repository.go` — Master stock retrieval (`GetAllStocks`), stock detail by code (`GetStockByCode`), distinct boards retrieval (`GetDistinctBoards`), CRUD, and batch upserts for company profiles, board types, and delisting statuses.
   - `internal/repositories/history_repository.go` — Historical EOD price querying, bulk insert, and SQL-based stock split adjustments.
   - `internal/repositories/broker_activity_repository.go` — Ingestion of broker transactions and partition operations.
   - `internal/repositories/broker_repository.go` — Query and upsert broker master records.
@@ -100,14 +100,14 @@
 ---
 
 ## `internal/database` & `internal/config`
-- **Responsibility**: Database connection management, schema migration orchestration, and structured logging.
+- **Responsibility**: Database connection management and structured logging.
 - **Entry / Key Files**:
-  - `internal/database/database.go` — Connects to SQLite (`modernc.org/sqlite`) using DSN from `DATABASE_URL` (fallback `database/master_stocks.db`), defines `DBExecutor`, and executes automated schema migrations from `migrations/*.sql` tracked in `schema_migrations`.
+  - `internal/database/database.go` — Connects to SQLite (`modernc.org/sqlite`) using DSN from `DATABASE_URL` (fallback `database/master_stocks.db`), defines `DBExecutor`, and manages the thread-safe connection pool.
   - `internal/config/logger.go` — Configures `logrus` JSON logging and log levels based on `LOG_LEVEL` environment variable.
 - **Dependencies**: `modernc.org/sqlite`, `github.com/spf13/viper`, `github.com/sirupsen/logrus`.
 - **Consumers**: `cmd/api/main.go`, `internal/routes/routes.go`.
 - **External Integrations**: SQLite.
-- **Key Notes**: Pure Go CGO-free database driver with resilient in-transaction migration executor.
+- **Key Notes**: Pure Go CGO-free database driver with connection pooling.
 
 ---
 

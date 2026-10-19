@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
-	"sort"
 	"strings"
 	"time"
 
@@ -141,7 +140,7 @@ func getDsn() (string, error) {
 	return dsn, nil
 }
 
-func connectWithConfig(ctx context.Context, dsn string, migrateFn func(executor ...DBExecutor)) (DBExecutor, error) {
+func connectWithConfig(ctx context.Context, dsn string) (DBExecutor, error) {
 	if dir := filepath.Dir(dsn); dir != "" && dir != "." && !strings.HasPrefix(dsn, ":memory:") {
 		if err := os.MkdirAll(dir, 0750); err != nil {
 			return nil, fmt.Errorf("unable to create database directory: %w", err)
@@ -165,15 +164,10 @@ func connectWithConfig(ctx context.Context, dsn string, migrateFn func(executor 
 		return nil, fmt.Errorf("unable to ping database: %w", err)
 	}
 
-	executor := NewDBExecutor(db)
-	if migrateFn != nil {
-		migrateFn(executor)
-	}
-
-	return executor, nil
+	return NewDBExecutor(db), nil
 }
 
-func connectDB(dsnGetter func() (string, error), connector func(ctx context.Context, dsn string, migrateFn func(executor ...DBExecutor)) (DBExecutor, error)) (DBExecutor, error) {
+func connectDB(dsnGetter func() (string, error), connector func(ctx context.Context, dsn string) (DBExecutor, error)) (DBExecutor, error) {
 	logrus.Debug("Connecting to the database")
 	dsn, err := dsnGetter()
 	if err != nil {
@@ -181,7 +175,7 @@ func connectDB(dsnGetter func() (string, error), connector func(ctx context.Cont
 	}
 	logrus.Debugf("Connecting to SQLite database at %s", dsn)
 
-	pool, err := connector(context.Background(), dsn, Migrate)
+	pool, err := connector(context.Background(), dsn)
 	if err != nil {
 		return nil, err
 	}
@@ -196,113 +190,4 @@ func Connect() {
 		logrus.Fatalf("%v", err)
 	}
 	Pool = pool
-}
-
-func Migrate(executor ...DBExecutor) {
-	var exec DBExecutor
-	if len(executor) > 0 && executor[0] != nil {
-		exec = executor[0]
-	} else if Pool != nil {
-		exec = Pool
-	}
-
-	if exec == nil {
-		logrus.Warn("Database pool is nil, skipping migrations")
-		return
-	}
-
-	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
-	defer cancel()
-
-	// 1. Ensure migrations tracking table exists
-	_, err := exec.Exec(ctx, `
-		CREATE TABLE IF NOT EXISTS schema_migrations (
-			filename TEXT PRIMARY KEY,
-			applied_at TEXT DEFAULT (datetime('now'))
-		)
-	`)
-	if err != nil {
-		logrus.Errorf("Failed to create migration tracking table: %v", err)
-		return
-	}
-
-	// 2. Handle transition from old skip logic:
-	// If stocks table exists but migrations haven't been tracked, mark 000 and 001 as applied
-	var stocksExists bool
-	err = exec.QueryRow(ctx, "SELECT EXISTS (SELECT 1 FROM sqlite_master WHERE type='table' AND name = 'stocks')").Scan(&stocksExists)
-	if err != nil {
-		logrus.Debugf("Note: could not check if stocks table exists: %v", err)
-	}
-
-	if stocksExists {
-		_, err = exec.Exec(ctx, "INSERT OR IGNORE INTO schema_migrations (filename) VALUES ('migrations/000_board_type.sql'), ('migrations/001_create_stocks_table.sql')")
-		if err != nil {
-			logrus.Debugf("Note: could not seed initial migrations: %v", err)
-		}
-	}
-
-	// 3. Get migration files
-	files, err := filepath.Glob("migrations/*.sql")
-	if err != nil || len(files) == 0 {
-		files, err = filepath.Glob("../../migrations/*.sql")
-	}
-	if err != nil {
-		logrus.Errorf("Failed to read migrations directory: %v", err)
-		return
-	}
-
-	sort.Strings(files)
-
-	for _, file := range files {
-		// Check if already applied
-		var applied bool
-		err = exec.QueryRow(ctx, "SELECT EXISTS (SELECT 1 FROM schema_migrations WHERE filename = ?1)", file).Scan(&applied)
-		if err != nil {
-			logrus.Errorf("Failed to check migration status for %s: %v", file, err)
-			continue
-		}
-
-		if applied {
-			continue
-		}
-
-		logrus.Infof("Running migration: %s", file)
-		cleanFile := filepath.Clean(file)
-		// #nosec G304
-		content, err := os.ReadFile(cleanFile)
-		if err != nil {
-			logrus.Errorf("Failed to read migration file %s: %v", file, err)
-			continue
-		}
-
-		rawSQL := string(content)
-		// Split multiple statements if any
-		statements := strings.Split(rawSQL, ";")
-		var execErr error
-		for _, stmt := range statements {
-			stmt = strings.TrimSpace(stmt)
-			if stmt == "" {
-				continue
-			}
-			_, err = exec.Exec(ctx, stmt)
-			if err != nil {
-				execErr = err
-				break
-			}
-		}
-
-		if execErr != nil {
-			logrus.Errorf("Failed to execute migration %s: %v", file, execErr)
-			continue
-		}
-
-		// Mark as applied
-		_, err = exec.Exec(ctx, "INSERT INTO schema_migrations (filename) VALUES (?1)", file)
-		if err != nil {
-			logrus.Errorf("Failed to record migration %s: %v", file, err)
-			continue
-		}
-	}
-
-	logrus.Info("Migrations synchronization completed")
 }

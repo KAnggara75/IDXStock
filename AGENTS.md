@@ -25,7 +25,6 @@ All comprehensive, ground-truth architectural documentation is maintained in the
 - **Web Framework**: Fiber v3 (`github.com/gofiber/fiber/v3`)
 - **API Documentation**: OpenAPI / Swagger 2.0 via `swaggo` (`/swagger/*`)
 - **Database Driver / Engine**: SQLite 3 via `modernc.org/sqlite` (pure Go, CGO-free, default `database/master_stocks.db`)
-- **Schema Migrations**: Managed internally via `internal/database/database.go` and `migrations/*.sql`
 - **Config Management**: Spring Cloud Config client via `github.com/KAnggara75/scc2go` + Viper
 - **Logging**: Logrus JSON formatted logger (`internal/config/logger.go`)
 - **Historical Datasets**: Monthly archives compressed with Zstandard (`zstd -19`) and distributed via GitHub Releases
