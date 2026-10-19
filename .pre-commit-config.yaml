@@ -38,12 +38,20 @@ repos:
 
   - repo: local
     hooks:
+      - id: gogenerate
+        name: go generate (code generator & openapi)
+        entry: go generate ./...
+        language: system
+        pass_filenames: false
+        stages: [pre-push]
+
       - id: gotest
         name: go test (unit tests)
         entry: go test ./...
         language: system
         pass_filenames: false
         stages: [pre-push]
+
 
       - id: gobuild
         name: go build (compile check)
