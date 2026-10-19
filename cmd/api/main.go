@@ -1,6 +1,6 @@
 package main
 
-//go:generate swag init -g main.go -d ./,../../internal -o ../../docs
+//go:generate swag init -d ./,../../internal/handlers,../../internal/models -g main.go -o ../../docs
 
 import (
 	"context"

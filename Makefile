@@ -3,7 +3,8 @@
 # Generate OpenAPI / Swagger documentation
 swagger:
 	@which swag > /dev/null || go install github.com/swaggo/swag/cmd/swag@latest
-	swag init -g cmd/api/main.go -o docs
+	swag init -d ./cmd/api,./internal/handlers,./internal/models -g main.go -o docs
+
 
 # Run go generate
 generate:
