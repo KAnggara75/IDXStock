@@ -9,6 +9,8 @@ IDXStock is a specialized Golang backend microservice engineered to ingest, norm
 - **In-Scope**:
   - Ingesting and validating official IDX listing reports from Excel files (`.xlsx`).
   - Serving master listed equities via `GET /api/v1/stocks` with board filtering and text search.
+  - Serving stock detail by ticker code (`/api/v1/stocks/:code`), distinct trading boards (`/api/v1/stocks/boards`), and stocks filtered by board (`/api/v1/stocks/boards/:board`).
+  - Maintaining Pasardana ID to ticker code mapping (`pasardana_stock_mapping`).
   - Synchronizing company profiles, sectors, sub-sectors, industries, and sub-industries.
   - Tracking delisted securities.
   - Ingesting and querying end-of-day (EOD) historical stock prices with support for date range filters and field selections.

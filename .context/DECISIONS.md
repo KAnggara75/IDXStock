@@ -121,3 +121,19 @@
   - Faster, cleaner application bootstrap without filesystem scanning for SQL files.
   - Reduced codebase footprint and simplified operational maintenance.
   - Future schema evolution will be handled directly in the master database schema or through explicit database update tools.
+
+---
+
+## ADR-009: Pasardana Stock ID Converter Mapping Table
+
+- **Status**: Accepted
+- **Date**: 2026-10-19
+- **Source**: Developer request & Database schema update (`database/master_stocks.db`)
+- **Context**: Upstream Pasardana endpoints (`pasardana.id`) utilize internal integer identifiers (`Id`) to reference listed equities and historical records, whereas IDX official standards identify securities primarily by ticker symbol (`code`). A deterministic lookup table was needed inside the master database to convert between Pasardana stock IDs and ticker symbols without repeated outbound API calls.
+- **Decision**: 
+  - Create table `pasardana_stock_mapping` in `database/master_stocks.db` with columns `id` (INTEGER PRIMARY KEY), `code` (TEXT NOT NULL UNIQUE), `name` (TEXT NOT NULL), and `last_modified` (TEXT NOT NULL DEFAULT datetime('now')).
+  - Add index `idx_pasardana_code` on `code` for constant-time ticker-to-ID resolution.
+  - Ingest and populate all 979 equity mappings directly from `https://www.pasardana.id/api/Stock/GetAllSimpleStocks`.
+- **Consequences**:
+  - Provides instant local mapping between Pasardana IDs and ticker codes for background synchronization jobs.
+  - Prevents redundant network calls to `GetAllSimpleStocks` during historical price fetching and profile sync.
