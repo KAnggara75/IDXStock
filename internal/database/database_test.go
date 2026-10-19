@@ -3,6 +3,7 @@ package database
 import (
 	"context"
 	"os"
+	"path/filepath"
 	"testing"
 
 	"github.com/DATA-DOG/go-sqlmock"
@@ -16,7 +17,7 @@ func TestGetDsn(t *testing.T) {
 		os.Unsetenv("DATABASE_URL")
 		dsn, err := getDsn()
 		assert.NoError(t, err)
-		assert.Equal(t, "idxstock.db", dsn)
+		assert.Equal(t, "database/master_stocks.db", dsn)
 	})
 
 	t.Run("dsn_env_set", func(t *testing.T) {
@@ -55,6 +56,19 @@ func TestConnectWithConfig(t *testing.T) {
 		assert.NoError(t, err)
 		assert.True(t, migrated)
 		assert.NotNil(t, pool)
+		assert.NoError(t, pool.Close())
+	})
+
+	t.Run("with_nested_directory", func(t *testing.T) {
+		tempDir, err := os.MkdirTemp("", "sqlite_test_*")
+		assert.NoError(t, err)
+		defer os.RemoveAll(tempDir)
+
+		dbPath := filepath.Join(tempDir, "subdir", "test.db")
+		pool, err := connectWithConfig(ctx, dbPath, nil)
+		assert.NoError(t, err)
+		assert.NotNil(t, pool)
+		assert.NoError(t, pool.Ping(ctx))
 		assert.NoError(t, pool.Close())
 	})
 }

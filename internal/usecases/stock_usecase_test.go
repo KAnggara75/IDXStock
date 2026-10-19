@@ -238,3 +238,43 @@ func TestStockUsecase_SyncDelistingStocks(t *testing.T) {
 		assert.Empty(t, res)
 	})
 }
+
+func TestStockUsecase_GetAllStocks(t *testing.T) {
+	ctx := context.Background()
+
+	t.Run("success", func(t *testing.T) {
+		repo := new(mockStockRepo)
+		svc := new(mockStockService)
+		pSvc := new(mockPasardanaService)
+		idxSvc := new(mockIdxService)
+		u := NewStockUsecase(repo, svc, pSvc, idxSvc)
+
+		filter := models.GetAllStocksFilter{Board: "UTAMA", Search: "BBCA"}
+		expected := []models.StockDetailResponse{
+			{Code: "BBCA", Name: "Bank Central Asia", Board: "UTAMA"},
+		}
+
+		repo.On("GetAllStocks", ctx, filter).Return(expected, nil).Once()
+
+		result, err := u.GetAllStocks(ctx, filter)
+		assert.NoError(t, err)
+		assert.Equal(t, expected, result)
+		repo.AssertExpectations(t)
+	})
+
+	t.Run("error", func(t *testing.T) {
+		repo := new(mockStockRepo)
+		svc := new(mockStockService)
+		pSvc := new(mockPasardanaService)
+		idxSvc := new(mockIdxService)
+		u := NewStockUsecase(repo, svc, pSvc, idxSvc)
+
+		filter := models.GetAllStocksFilter{}
+		repo.On("GetAllStocks", ctx, filter).Return(nil, assert.AnError).Once()
+
+		result, err := u.GetAllStocks(ctx, filter)
+		assert.Error(t, err)
+		assert.Nil(t, result)
+		repo.AssertExpectations(t)
+	})
+}

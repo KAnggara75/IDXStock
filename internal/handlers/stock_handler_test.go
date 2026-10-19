@@ -53,6 +53,14 @@ func (m *mockStockUsecase) SyncDelistingStocks(ctx context.Context, year, month 
 	return args.Get(0).([]models.StockResponse), args.Error(1)
 }
 
+func (m *mockStockUsecase) GetAllStocks(ctx context.Context, filter models.GetAllStocksFilter) ([]models.StockDetailResponse, error) {
+	args := m.Called(ctx, filter)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).([]models.StockDetailResponse), args.Error(1)
+}
+
 func createMultipartRequest(url, fieldName, fileName string, fileContent []byte) (*http.Request, error) {
 	body := &bytes.Buffer{}
 	writer := multipart.NewWriter(body)
@@ -205,6 +213,41 @@ func TestStockHandler_SyncDelistingStocksHandler(t *testing.T) {
 
 		req := httptest.NewRequest("POST", "/stocks/sync-delisting", bytes.NewBufferString(`{"year":2024,"month":4}`))
 		req.Header.Set("Content-Type", "application/json")
+		resp, err := app.Test(req)
+		assert.NoError(t, err)
+		assert.Equal(t, fiber.StatusInternalServerError, resp.StatusCode)
+		mockUsecase.AssertExpectations(t)
+	})
+}
+
+func TestStockHandler_GetAllStocksHandler(t *testing.T) {
+	mockUsecase := new(mockStockUsecase)
+	handler := NewStockHandler(mockUsecase)
+
+	app := fiber.New()
+	app.Get("/stocks", handler.GetAllStocksHandler)
+
+	t.Run("success", func(t *testing.T) {
+		expected := []models.StockDetailResponse{
+			{Code: "BBCA", Name: "Bank Central Asia", Board: "UTAMA"},
+		}
+		mockUsecase.On("GetAllStocks", mock.Anything, models.GetAllStocksFilter{
+			Board:  "UTAMA",
+			Search: "BBCA",
+		}).Return(expected, nil).Once()
+
+		req := httptest.NewRequest("GET", "/stocks?board=UTAMA&search=BBCA", nil)
+		resp, err := app.Test(req)
+		assert.NoError(t, err)
+		assert.Equal(t, fiber.StatusOK, resp.StatusCode)
+		mockUsecase.AssertExpectations(t)
+	})
+
+	t.Run("usecase_error", func(t *testing.T) {
+		mockUsecase.On("GetAllStocks", mock.Anything, models.GetAllStocksFilter{}).
+			Return(nil, fmt.Errorf("db error")).Once()
+
+		req := httptest.NewRequest("GET", "/stocks", nil)
 		resp, err := app.Test(req)
 		assert.NoError(t, err)
 		assert.Equal(t, fiber.StatusInternalServerError, resp.StatusCode)

@@ -315,6 +315,84 @@ func TestStockRepository(t *testing.T) {
 			assert.NoError(t, mock.ExpectationsWereMet())
 		})
 	})
+
+	t.Run("GetAllStocks", func(t *testing.T) {
+		t.Run("success", func(t *testing.T) {
+			db, mock, err := sqlmock.New()
+			assert.NoError(t, err)
+			defer db.Close()
+			mockExec := database.NewDBExecutor(db)
+
+			repo := NewStockRepository(mockExec)
+
+			cols := []string{
+				"code", "name", "listing_date", "delisting_date", "shares", "board",
+				"total_employees", "annual_dividend", "general_information", "founding_date",
+				"sector_id", "sub_sector_id", "industry_id", "sub_industry_id", "last_modified",
+			}
+			rows := sqlmock.NewRows(cols).
+				AddRow("BBCA", "Bank Central Asia", "2000-05-31", nil, int64(123456), "UTAMA",
+					"25000", 150.5, "Banking info", "1957-02-21",
+					1, 2, 3, 4, "2024-01-01 10:00:00").
+				AddRow("AADI", "Adaro Andalan", "2024-12-05", "2025-01-01", int64(7890), "PENGEMBANGAN",
+					nil, nil, nil, nil,
+					nil, nil, nil, nil, "2024-12-05 09:00:00")
+
+			mock.ExpectQuery("SELECT (.+) FROM stocks WHERE").
+				WithArgs("UTAMA", "BCA").
+				WillReturnRows(rows)
+
+			stocks, err := repo.GetAllStocks(ctx, models.GetAllStocksFilter{Board: "UTAMA", Search: "BCA"})
+			assert.NoError(t, err)
+			assert.Len(t, stocks, 2)
+			assert.Equal(t, "BBCA", stocks[0].Code)
+			assert.Equal(t, "25000", *stocks[0].TotalEmployees)
+			assert.Equal(t, 150.5, *stocks[0].AnnualDividend)
+			assert.Equal(t, 1, *stocks[0].SectorId)
+			assert.Equal(t, "AADI", stocks[1].Code)
+			assert.Nil(t, stocks[1].TotalEmployees)
+			assert.NoError(t, mock.ExpectationsWereMet())
+		})
+
+		t.Run("query_error", func(t *testing.T) {
+			db, mock, err := sqlmock.New()
+			assert.NoError(t, err)
+			defer db.Close()
+			mockExec := database.NewDBExecutor(db)
+
+			repo := NewStockRepository(mockExec)
+
+			mock.ExpectQuery("SELECT (.+) FROM stocks WHERE").
+				WithArgs("", "").
+				WillReturnError(assert.AnError)
+
+			stocks, err := repo.GetAllStocks(ctx, models.GetAllStocksFilter{})
+			assert.Error(t, err)
+			assert.Nil(t, stocks)
+			assert.NoError(t, mock.ExpectationsWereMet())
+		})
+
+		t.Run("scan_error", func(t *testing.T) {
+			db, mock, err := sqlmock.New()
+			assert.NoError(t, err)
+			defer db.Close()
+			mockExec := database.NewDBExecutor(db)
+
+			repo := NewStockRepository(mockExec)
+
+			cols := []string{"code"} // missing columns will cause scan error
+			rows := sqlmock.NewRows(cols).AddRow("BBCA")
+
+			mock.ExpectQuery("SELECT (.+) FROM stocks WHERE").
+				WithArgs("", "").
+				WillReturnRows(rows)
+
+			stocks, err := repo.GetAllStocks(ctx, models.GetAllStocksFilter{})
+			assert.Error(t, err)
+			assert.Nil(t, stocks)
+			assert.NoError(t, mock.ExpectationsWereMet())
+		})
+	})
 }
 
 func TestHistoryRepository(t *testing.T) {

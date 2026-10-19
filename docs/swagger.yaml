@@ -103,6 +103,39 @@ definitions:
       total_employees:
         type: string
     type: object
+  models.StockDetailResponse:
+    properties:
+      annual_dividend:
+        type: number
+      board:
+        type: string
+      code:
+        type: string
+      delisting_date:
+        type: string
+      founding_date:
+        type: string
+      general_information:
+        type: string
+      industry_id:
+        type: integer
+      last_modified:
+        type: string
+      listing_date:
+        type: string
+      name:
+        type: string
+      sector_id:
+        type: integer
+      shares:
+        type: integer
+      sub_industry_id:
+        type: integer
+      sub_sector_id:
+        type: integer
+      total_employees:
+        type: string
+    type: object
   models.StockResponse:
     properties:
       code:
@@ -306,6 +339,35 @@ paths:
       summary: Sync new sectors and sub-sectors
       tags:
       - sectors
+  /stocks:
+    get:
+      description: Retrieves list of all stocks/emiten with optional filter by board
+        and search query
+      parameters:
+      - description: Board filter (e.g. UTAMA, PENGEMBANGAN, AKSELERASI)
+        in: query
+        name: board
+        type: string
+      - description: Search by stock code or company name
+        in: query
+        name: search
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.StockDetailResponse'
+            type: array
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+      summary: Get all stocks / emiten
+      tags:
+      - stocks
   /stocks/{code}/history:
     get:
       description: Queries historical trading data for a specific stock code with

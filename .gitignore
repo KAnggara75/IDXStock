@@ -20,3 +20,4 @@
 /tmp
 build-errors.log
 issue.md
+database/history/*.db*

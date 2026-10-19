@@ -4,7 +4,6 @@ go 1.26.3
 
 require (
 	github.com/DATA-DOG/go-sqlmock v1.5.2
-	github.com/KAnggara75/scc2go v1.0.1
 	github.com/gofiber/contrib/v3/swaggo v1.0.13
 	github.com/gofiber/fiber/v3 v3.6.1
 	github.com/sirupsen/logrus v1.10.2
@@ -44,7 +43,6 @@ require (
 	github.com/richardlehane/mscfb v1.0.9 // indirect
 	github.com/richardlehane/msoleps v1.0.6 // indirect
 	github.com/rogpeppe/go-internal v1.12.0 // indirect
-	github.com/rs/zerolog v1.35.1 // indirect
 	github.com/sagikazarmark/locafero v0.12.0 // indirect
 	github.com/spf13/afero v1.15.0 // indirect
 	github.com/spf13/cast v1.10.0 // indirect
@@ -69,5 +67,4 @@ require (
 	modernc.org/libc v1.77.1 // indirect
 	modernc.org/mathutil v1.7.1 // indirect
 	modernc.org/memory v1.12.1 // indirect
-	resty.dev/v3 v3.0.0-rc.4 // indirect
 )

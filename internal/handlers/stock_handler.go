@@ -165,3 +165,34 @@ func (h *StockHandler) SyncDelistingStocksHandler(c fiber.Ctx) error {
 
 	return c.JSON(stocks)
 }
+
+// GetAllStocksHandler godoc
+// @Summary      Get all stocks / emiten
+// @Description  Retrieves list of all stocks/emiten with optional filter by board and search query
+// @Tags         stocks
+// @Produce      json
+// @Param        board   query     string  false  "Board filter (e.g. UTAMA, PENGEMBANGAN, AKSELERASI)"
+// @Param        search  query     string  false  "Search by stock code or company name"
+// @Success      200     {array}   models.StockDetailResponse
+// @Failure      500     {object}  models.ErrorResponse
+// @Router       /stocks [get]
+func (h *StockHandler) GetAllStocksHandler(c fiber.Ctx) error {
+	var filter models.GetAllStocksFilter
+	_ = c.Bind().Query(&filter)
+	if filter.Board == "" {
+		filter.Board = c.Query("board")
+	}
+	if filter.Search == "" {
+		filter.Search = c.Query("search")
+	}
+
+	stocks, err := h.usecase.GetAllStocks(c.Context(), filter)
+	if err != nil {
+		logrus.Errorf("Failed to retrieve stocks: %v", err)
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": err.Error(),
+		})
+	}
+
+	return c.JSON(stocks)
+}

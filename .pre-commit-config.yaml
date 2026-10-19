@@ -16,6 +16,7 @@ repos:
         stages: [pre-commit]
 
       - id: check-added-large-files
+        args: ['--maxkb=10000']
         stages: [pre-commit]
 
       - id: check-merge-conflict

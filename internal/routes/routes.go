@@ -70,6 +70,7 @@ func Setup(app *fiber.App, db ...repositories.DBExecutor) {
 	// API V1 Routes
 	v1 := app.Group("/api/v1")
 
+	v1.Get("/stocks", stockHandler.GetAllStocksHandler)
 	v1.Post("/stocks/upload", stockHandler.PreviewHandler)
 	v1.Patch("/stocks/upload", stockHandler.UploadHandler)
 	v1.Put("/stocks/sync", stockHandler.SyncStockDetailHandler)

@@ -3,10 +3,10 @@
 ## `cmd/api`
 - **Responsibility**: Application entry point and runtime bootstrap.
 - **Entry / Key Files**:
-  - `cmd/api/main.go` — Service initialization, configuration loading (`scc2go`), logger setup, DB connection with auto-migrations, broker seeding, and Fiber HTTP web server startup.
+  - `cmd/api/main.go` — Service initialization, configuration loading (`scc2go`), logger setup, DB connection with auto-migrations, broker seeding, Fiber HTTP web server startup, and Swagger annotation declarations (`//go:generate swag init ...`).
 - **Dependencies**: `github.com/gofiber/fiber/v3`, `github.com/KAnggara75/scc2go`, `github.com/sirupsen/logrus`, `internal/config`, `internal/database`, `internal/repositories`, `internal/routes`, `internal/services`.
 - **Consumers**: Executable container / process entry point.
-- **External Integrations**: Spring Cloud Config server (via `scc2go`), PostgreSQL database.
+- **External Integrations**: Spring Cloud Config server (via `scc2go`), SQLite database (`database/master_stocks.db`).
 - **Key Notes**: Reads `IDXSTOCK_CONFIG_URL` and `SCC_AUTH` during package `init()` to inject remote configurations into Viper before main runtime boots.
 
 ---
@@ -14,42 +14,42 @@
 ## `internal/routes`
 - **Responsibility**: HTTP route registration, middleware binding, and dependency injection wiring.
 - **Entry / Key Files**:
-  - `internal/routes/routes.go` — Instantiates repositories, services, use cases, handlers, and mounts routes onto `/health` and `/api/v1/*`.
-- **Dependencies**: `github.com/gofiber/fiber/v3`, `internal/handlers`, `internal/usecases`, `internal/services`, `internal/repositories`, `internal/database`.
+  - `internal/routes/routes.go` — Instantiates repositories, services, use cases, handlers, mounts Swagger UI at `/swagger/*`, and registers routes on `/health` and `/api/v1/*`.
+- **Dependencies**: `github.com/gofiber/fiber/v3`, `github.com/gofiber/contrib/v3/swaggo`, `docs`, `internal/handlers`, `internal/usecases`, `internal/services`, `internal/repositories`, `internal/database`.
 - **Consumers**: `cmd/api/main.go`.
 - **External Integrations**: None directly.
-- **Key Notes**: Pure manual DI setup connecting PostgreSQL connection pool (`database.Pool`) down to REST handlers.
+- **Key Notes**: Pure manual DI setup connecting SQLite connection executor (`database.Pool`) down to REST handlers.
 
 ---
 
 ## `internal/handlers`
-- **Responsibility**: HTTP transport layer, request validation, query param binding, and JSON response formatting.
+- **Responsibility**: HTTP transport layer, request validation, query param binding, JSON response formatting, and OpenAPI Swagger documentation annotations.
 - **Entry / Key Files**:
-  - `internal/handlers/stock_handler.go` — Preview and upload Excel stock lists, sync company details, and fetch delisted stocks.
-  - `internal/handlers/history_handler.go` — Query stock historical prices (`/api/v1/stocks/:code/history`), sync daily EOD history, and execute stock split adjustments.
-  - `internal/handlers/broker_handler.go` — Sync broker activities and maintain weekly PostgreSQL partitions for `broker_activities`.
+  - `internal/handlers/stock_handler.go` — Get all stocks (`/api/v1/stocks`), preview and upload Excel stock lists (`/api/v1/stocks/upload`), sync company details (`/api/v1/stocks/sync`), and fetch delisted stocks (`/api/v1/stocks/delisting/sync`).
+  - `internal/handlers/history_handler.go` — Query stock historical prices (`/api/v1/stocks/:code/history`), sync daily EOD history (`/api/v1/stocks/history/sync`), and execute stock split adjustments (`/api/v1/stocks/split`).
+  - `internal/handlers/broker_handler.go` — Sync broker activities and manage broker activity partition tables.
   - `internal/handlers/sector_handler.go` — Synchronize sector and sub-sector master data.
   - `internal/handlers/industry_handler.go` — Synchronize industry and sub-industry master data.
   - `internal/handlers/asset_handler.go` — Proxy company logos from external sources with HTTP stream piping and client caching.
 - **Dependencies**: `github.com/gofiber/fiber/v3`, `internal/usecases`, `internal/models`.
 - **Consumers**: Fiber router in `internal/routes/routes.go`.
 - **External Integrations**: None directly (delegated to use cases).
-- **Key Notes**: Handlers strictly handle HTTP-level concerns and return standardized JSON payload responses.
+- **Key Notes**: Handlers annotate Swagger specs and return standardized JSON payload responses.
 
 ---
 
 ## `internal/usecases`
 - **Responsibility**: Core application business logic, orchestration of repositories, and external upstream APIs.
 - **Entry / Key Files**:
-  - `internal/usecases/stock_usecase.go` — Parsing Excel lists, validating stock data, and syncing company profiles.
-  - `internal/usecases/history_usecase.go` — Processing historical market pricing, applying mathematical ratios for stock splits (`close_price`, `open_price`, `high_price`, `low_price`, and `volume`), and backfilling missing days.
-  - `internal/usecases/broker_usecase.go` — Orchestrates broker activity synchronization and dynamic partition provisioning.
+  - `internal/usecases/stock_usecase.go` — Retrieving filtered stocks (`GetAllStocks`), parsing Excel lists, validating stock data, and syncing company profiles.
+  - `internal/usecases/history_usecase.go` — Processing historical market pricing, applying mathematical ratios for stock splits (`close`, `open_price`, `high`, `low`, and `volume`), and backfilling missing days.
+  - `internal/usecases/broker_usecase.go` — Orchestrates broker activity synchronization.
   - `internal/usecases/sector_usecase.go` — Fetching and updating sector taxonomies.
   - `internal/usecases/industry_usecase.go` — Fetching and updating industry classifications.
 - **Dependencies**: `internal/repositories`, `internal/services`, `internal/models`.
 - **Consumers**: `internal/handlers`.
 - **External Integrations**: Orchestrates `PasardanaService`, `IdxService`, and `BrokerService`.
-- **Key Notes**: Business transaction boundaries are encapsulated here.
+- **Key Notes**: Encapsulates business transaction boundaries.
 
 ---
 
@@ -60,34 +60,34 @@
   - `internal/services/pasardana_service.go` — Integration with `pasardana.id` REST endpoints (stocks, sectors, historical quotes).
   - `internal/services/broker_service.go` — Fetching broker summary transactions from external market data endpoints.
   - `internal/services/stock_service.go` — Parsing Microsoft Excel (`.xlsx`) files containing official IDX listing reports using `excelize/v2`.
-  - `internal/services/seeder_service.go` — Seeding master broker codes and broker names into PostgreSQL on startup.
+  - `internal/services/seeder_service.go` — Seeding master broker codes and broker names into SQLite on startup.
 - **Dependencies**: `net/http`, `github.com/xuri/excelize/v2`, `github.com/sirupsen/logrus`.
 - **Consumers**: `internal/usecases`, `cmd/api/main.go`.
 - **External Integrations**: `idx.co.id`, `pasardana.id`, external broker API.
-- **Key Notes**: Implements resilient HTTP clients with timeout controls and custom response decoders (including gzip compression support).
+- **Key Notes**: Implements resilient HTTP clients with timeout controls and custom response decoders.
 
 ---
 
 ## `internal/repositories`
-- **Responsibility**: Persistence layer, executing SQL queries, transactional batches, and partition management on PostgreSQL.
+- **Responsibility**: Persistence layer, executing SQL queries, transactional batches, and data operations on SQLite.
 - **Entry / Key Files**:
-  - `internal/repositories/stock_repository.go` — CRUD and batch upserts for company profiles, board types, and delisting statuses.
+  - `internal/repositories/stock_repository.go` — Master stock retrieval (`GetAllStocks`), CRUD, and batch upserts for company profiles, board types, and delisting statuses.
   - `internal/repositories/history_repository.go` — Historical EOD price querying, bulk insert, and SQL-based stock split adjustments.
-  - `internal/repositories/broker_activity_repository.go` — Ingestion of broker transactions and dynamic DDL execution for weekly partition tables.
+  - `internal/repositories/broker_activity_repository.go` — Ingestion of broker transactions and partition operations.
   - `internal/repositories/broker_repository.go` — Query and upsert broker master records.
   - `internal/repositories/sector_search_repository.go` — Upsert sector & sub-sector records.
   - `internal/repositories/industry_repository.go` — Upsert industry & sub-industry records.
-- **Dependencies**: `github.com/jackc/pgx/v5/pgxpool`, `internal/models`.
+- **Dependencies**: `modernc.org/sqlite`, `internal/database`, `internal/models`.
 - **Consumers**: `internal/usecases`, `internal/services/seeder_service`.
-- **External Integrations**: PostgreSQL (schema `idxstock`).
-- **Key Notes**: Uses `pgx/v5` connection pool for high-performance parameterized SQL executions and explicit transaction blocks.
+- **External Integrations**: SQLite 3 database engine.
+- **Key Notes**: Relies on `database.DBExecutor` interface to allow seamless transaction execution and unit testing via `go-sqlmock`.
 
 ---
 
 ## `internal/models`
-- **Responsibility**: Data transfer objects (DTOs), domain models, and external API payload contracts.
+- **Responsibility**: Data transfer objects (DTOs), domain models, and Swagger API payload contracts.
 - **Entry / Key Files**:
-  - `internal/models/stock.go` — Stock profile entity and Excel upload schema.
+  - `internal/models/stock.go` — Stock profile entity, `GetAllStocksFilter`, `StockDetailResponse`, and Excel upload schemas.
   - `internal/models/history.go` — Stock price history entity, query filters, and stock split request models.
   - `internal/models/broker_activity.go` — Broker transaction entity and sync parameters.
   - `internal/models/broker.go` — Broker master entity.
@@ -95,16 +95,24 @@
 - **Dependencies**: Standard library.
 - **Consumers**: All layers across `internal/*`.
 - **External Integrations**: None.
-- **Key Notes**: Shared core types with JSON struct tags.
+- **Key Notes**: Shared core types with JSON and query struct tags.
 
 ---
 
 ## `internal/database` & `internal/config`
 - **Responsibility**: Database connection management, schema migration orchestration, and structured logging.
 - **Entry / Key Files**:
-  - `internal/database/database.go` — Initializes `pgxpool.Pool` from Viper configuration (`db.idxstock.dsn`) and executes automatic schema migrations against `idxstock.schema_migrations`.
+  - `internal/database/database.go` — Connects to SQLite (`modernc.org/sqlite`) using DSN from `DATABASE_URL` (fallback `database/master_stocks.db`), defines `DBExecutor`, and executes automated schema migrations from `migrations/*.sql` tracked in `schema_migrations`.
   - `internal/config/logger.go` — Configures `logrus` JSON logging and log levels based on `LOG_LEVEL` environment variable.
-- **Dependencies**: `github.com/jackc/pgx/v5`, `github.com/spf13/viper`, `github.com/sirupsen/logrus`.
+- **Dependencies**: `modernc.org/sqlite`, `github.com/spf13/viper`, `github.com/sirupsen/logrus`.
 - **Consumers**: `cmd/api/main.go`, `internal/routes/routes.go`.
-- **External Integrations**: PostgreSQL.
-- **Key Notes**: Includes auto-migration executor applying ordered SQL scripts from `migrations/` at application boot.
+- **External Integrations**: SQLite.
+- **Key Notes**: Pure Go CGO-free database driver with resilient in-transaction migration executor.
+
+---
+
+## `scripts`
+- **Responsibility**: Build, dataset management, and automated release utilities.
+- **Entry / Key Files**:
+  - `scripts/create_history_draft_releases.sh` — Compresses 83 monthly SQLite historical databases (`database/history/YYYY-MM.db`) using `zstd -19` and creates GitHub Draft Releases (`vYYYY-MM`) with attached `YYYY-MM.db.zst` assets.
+  - `build_local.sh` — Local container image build script using Podman.

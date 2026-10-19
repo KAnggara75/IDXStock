@@ -66,6 +66,14 @@ func (m *mockStockRepo) FindMissingCodes(ctx context.Context, codes []string) ([
 	return args.Get(0).([]string), args.Error(1)
 }
 
+func (m *mockStockRepo) GetAllStocks(ctx context.Context, filter models.GetAllStocksFilter) ([]models.StockDetailResponse, error) {
+	args := m.Called(ctx, filter)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).([]models.StockDetailResponse), args.Error(1)
+}
+
 type mockPasardanaService struct {
 	mock.Mock
 }

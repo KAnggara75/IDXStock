@@ -16,6 +16,7 @@ type StockRepository interface {
 	UpsertStocksDetail(ctx context.Context, data []models.PasardanaStockDetail) ([]models.StockResponse, error)
 	UpdateDelistingDate(ctx context.Context, code, delistingDate string) (*models.StockResponse, error)
 	FindMissingCodes(ctx context.Context, codes []string) ([]string, error)
+	GetAllStocks(ctx context.Context, filter models.GetAllStocksFilter) ([]models.StockDetailResponse, error)
 }
 
 type stockRepository struct {
@@ -225,4 +226,76 @@ func (r *stockRepository) FindMissingCodes(ctx context.Context, codes []string) 
 	}
 
 	return missingCodes, nil
+}
+
+func (r *stockRepository) GetAllStocks(ctx context.Context, filter models.GetAllStocksFilter) ([]models.StockDetailResponse, error) {
+	query := `
+		SELECT
+			code, name, listing_date, delisting_date, shares, board,
+			total_employees, annual_dividend, general_information, founding_date,
+			sector_id, sub_sector_id, industry_id, sub_industry_id, last_modified
+		FROM stocks
+		WHERE (?1 = '' OR UPPER(board) = UPPER(?1))
+		  AND (?2 = '' OR UPPER(code) LIKE '%' || UPPER(?2) || '%' OR UPPER(name) LIKE '%' || UPPER(?2) || '%')
+		ORDER BY code ASC
+	`
+
+	rows, err := r.pool.Query(ctx, query, strings.TrimSpace(filter.Board), strings.TrimSpace(filter.Search))
+	if err != nil {
+		return nil, fmt.Errorf("failed to get all stocks: %w", err)
+	}
+	defer rows.Close()
+
+	stocks := make([]models.StockDetailResponse, 0)
+	for rows.Next() {
+		var s models.StockDetailResponse
+		var delistingDate, totalEmployees, generalInfo, foundingDate sql.NullString
+		var annualDividend sql.NullFloat64
+		var sectorId, subSectorId, industryId, subIndustryId sql.NullInt64
+
+		err := rows.Scan(
+			&s.Code, &s.Name, &s.ListingDate, &delistingDate, &s.Shares, &s.Board,
+			&totalEmployees, &annualDividend, &generalInfo, &foundingDate,
+			&sectorId, &subSectorId, &industryId, &subIndustryId, &s.LastModified,
+		)
+		if err != nil {
+			return nil, fmt.Errorf("failed to scan stock row: %w", err)
+		}
+
+		if delistingDate.Valid {
+			s.DelistingDate = &delistingDate.String
+		}
+		if totalEmployees.Valid {
+			s.TotalEmployees = &totalEmployees.String
+		}
+		if annualDividend.Valid {
+			s.AnnualDividend = &annualDividend.Float64
+		}
+		if generalInfo.Valid {
+			s.GeneralInformation = &generalInfo.String
+		}
+		if foundingDate.Valid {
+			s.FoundingDate = &foundingDate.String
+		}
+		if sectorId.Valid {
+			v := int(sectorId.Int64)
+			s.SectorId = &v
+		}
+		if subSectorId.Valid {
+			v := int(subSectorId.Int64)
+			s.SubSectorId = &v
+		}
+		if industryId.Valid {
+			v := int(industryId.Int64)
+			s.IndustryId = &v
+		}
+		if subIndustryId.Valid {
+			v := int(subIndustryId.Int64)
+			s.SubIndustryId = &v
+		}
+
+		stocks = append(stocks, s)
+	}
+
+	return stocks, nil
 }

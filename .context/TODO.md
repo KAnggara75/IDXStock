@@ -2,8 +2,8 @@
 
 ## 1. Immediate Tasks
 _Urgent tasks affecting reliability, security, or immediate execution._
-- [ ] `internal/database/database.go:86`: Remove or clean legacy fallback hardcoding for `migrations/000_board_type.sql` and `migrations/001_create_stocks_table.sql` once historical migrations are completely standardized across all deployment environments.
-- [ ] `internal/routes/routes.go:38`: Add graceful shutdown handling (`app.ShutdownWithContext`) on SIGINT/SIGTERM signals in `cmd/api/main.go` to cleanly drain active DB connections and HTTP requests.
+- [ ] `cmd/api/main.go`: Add graceful shutdown handling (`app.ShutdownWithContext`) on SIGINT/SIGTERM signals to cleanly drain active DB connections and in-flight HTTP requests.
+- [ ] `internal/database/database.go:86`: Clean up legacy fallback handling for `migrations/000_board_type.sql` and `migrations/001_create_stocks_table.sql` once SQLite migration baseline is firmly established across all runtime environments.
 
 ## 2. Existing Code Annotations (TODO / FIXME)
 _Annotations found directly in source code._
@@ -11,7 +11,7 @@ _Annotations found directly in source code._
 
 ## 3. Technical Debt & Structural Improvements
 _Long-term architectural and refactoring initiatives._
-- [ ] **Test Coverage Expansion**: Current test coverage is ~7.4% (target: 75% as noted in `README.md`). Repository lacks comprehensive integration and unit tests for `StockUsecase`, `HistoryUsecase`, `StockRepository`, `HistoryRepository`, and external HTTP clients (`IdxService`, `PasardanaService`).
+- [x] **Test Coverage Expansion**: Project test coverage reached **90.3%** across all packages (`cmd/api`, `internal/handlers`, `internal/repositories`, `internal/usecases`, `internal/services`, `internal/routes`, `internal/utils`), surpassing the 80% threshold.
 - [ ] **Standardized Error Handling**: Unify API error response schema across all handlers (some return `{"error": ...}`, others return `{"status": "error", "message": ...}`).
-- [ ] **Distributed Configuration Fallback**: If Spring Cloud Config (`scc2go`) is unreachable during `init()`, ensure deterministic fallback or informative error logging rather than silent defaults.
+- [ ] **Distributed Configuration Fallback**: If Spring Cloud Config (`scc2go`) is unreachable during `init()`, ensure deterministic fallback or informative warning logging rather than silent defaults.
 - [ ] **Rate Limiting & Anti-Scraping Resilience**: Outbound calls to `idx.co.id` and `pasardana.id` rely on hardcoded HTTP headers and cookie bypasses; consider implementing exponential backoff and rotating proxy/token support.

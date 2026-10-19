@@ -11,8 +11,6 @@ import (
 	"github.com/gofiber/fiber/v3/middleware/recover"
 	"github.com/sirupsen/logrus"
 
-	"github.com/KAnggara75/scc2go"
-
 	"github.com/KAnggara75/IDXStock/internal/config"
 	"github.com/KAnggara75/IDXStock/internal/database"
 	"github.com/KAnggara75/IDXStock/internal/repositories"
@@ -27,10 +25,6 @@ import (
 // @contact.url                https://github.com/KAnggara75/IDXStock
 // @license.name               MIT
 // @BasePath                   /api/v1
-
-func init() {
-	scc2go.GetEnv(os.Getenv("IDXSTOCK_CONFIG_URL"), os.Getenv("SCC_AUTH"))
-}
 
 // buildApp creates and configures the Fiber application and its middlewares/routes.
 func buildApp(pool ...repositories.DBExecutor) *fiber.App {

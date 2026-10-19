@@ -19,6 +19,7 @@ type StockUsecase interface {
 	UploadStocks(ctx context.Context, file io.Reader) ([]models.Stock, error)
 	SyncStockDetail(ctx context.Context) ([]models.StockResponse, error)
 	SyncDelistingStocks(ctx context.Context, year, month int, cookie string) ([]models.StockResponse, error)
+	GetAllStocks(ctx context.Context, filter models.GetAllStocksFilter) ([]models.StockDetailResponse, error)
 }
 
 type stockUsecase struct {
@@ -228,4 +229,8 @@ func (u *stockUsecase) SyncDelistingStocks(ctx context.Context, year, month int,
 	}
 
 	return updatedStocks, nil
+}
+
+func (u *stockUsecase) GetAllStocks(ctx context.Context, filter models.GetAllStocksFilter) ([]models.StockDetailResponse, error) {
+	return u.repo.GetAllStocks(ctx, filter)
 }

@@ -58,3 +58,26 @@ type IdxDelistedStock struct {
 type IdxDelistingResponse struct {
 	Data []IdxDelistedStock `json:"data"`
 }
+
+type GetAllStocksFilter struct {
+	Board  string `query:"board"`
+	Search string `query:"search"`
+}
+
+type StockDetailResponse struct {
+	Code               string   `json:"code"`
+	Name               string   `json:"name"`
+	ListingDate        string   `json:"listing_date"`
+	DelistingDate      *string  `json:"delisting_date,omitempty"`
+	Shares             int64    `json:"shares"`
+	Board              string   `json:"board"`
+	TotalEmployees     *string  `json:"total_employees,omitempty"`
+	AnnualDividend     *float64 `json:"annual_dividend,omitempty"`
+	GeneralInformation *string  `json:"general_information,omitempty"`
+	FoundingDate       *string  `json:"founding_date,omitempty"`
+	SectorId           *int     `json:"sector_id,omitempty"`
+	SubSectorId        *int     `json:"sub_sector_id,omitempty"`
+	IndustryId         *int     `json:"industry_id,omitempty"`
+	SubIndustryId      *int     `json:"sub_industry_id,omitempty"`
+	LastModified       string   `json:"last_modified"`
+}

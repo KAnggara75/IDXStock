@@ -52,3 +52,55 @@
 - **Consequences**:
   - Ensures clean, consistent import grouping across the entire codebase prior to commit.
   - Prevents broken builds and known vulnerabilities from reaching remote branches while keeping commit latency near-instant.
+
+---
+
+## ADR-005: Pure-Go SQLite Driver & Schema Migration
+
+- **Status**: Accepted
+- **Date**: 2026-10-19
+- **Source**: Codebase evidence (`internal/database/database.go`, `migrations/*.sql`, PR #51)
+- **Context**: The service previously required an external PostgreSQL database container/instance (`pgx/v5`) with weekly table partitioning, increasing operational complexity and deployment footprint for embedded, local, and portable setups.
+- **Decision**: 
+  - Migrate the primary database engine to SQLite using `modernc.org/sqlite` (pure Go implementation, zero CGO dependency).
+  - Adopt file-based persistence defaulting to `database/master_stocks.db` or environment `DATABASE_URL`.
+  - Abstract SQL operations through `database.DBExecutor` interface wrapping standard `*sql.DB` / `*sql.Tx` to preserve transaction atomicity and testability via `go-sqlmock`.
+  - Adapt migrations (`migrations/*.sql`) from PostgreSQL syntax (`SERIAL`, `ON CONFLICT (...) DO UPDATE`) to standard SQLite syntax (`INTEGER PRIMARY KEY AUTOINCREMENT`, `ON CONFLICT (...) DO UPDATE` with `EXCLUDED`).
+- **Consequences**:
+  - Eliminates external PostgreSQL service dependencies, simplifying local development, CI/CD, and embedded deployments.
+  - Retains cross-platform portability without requiring C compilers (CGO-free).
+  - Concurrency is bounded by SQLite write-locking semantics; mitigated through connection pooling constraints and fast transactional operations.
+
+---
+
+## ADR-006: Automated OpenAPI Documentation Generation via Swaggo
+
+- **Status**: Accepted
+- **Date**: 2026-10-19
+- **Source**: Codebase evidence (`cmd/api/main.go`, `docs/*`, `.pre-commit-config.yaml`)
+- **Context**: REST API endpoints, DTO contracts, query filters, and Swagger UI lacked an automated, synchronized specification, risking documentation drift as endpoints evolve.
+- **Decision**: 
+  - Integrate `github.com/swaggo/swag` using declarative code annotations on API entry points and HTTP handlers.
+  - Add `//go:generate swag init ...` directive in `cmd/api/main.go` generating `docs/docs.go`, `docs/swagger.json`, and `docs/swagger.yaml`.
+  - Serve interactive Swagger UI directly via `github.com/gofiber/contrib/v3/swaggo` at `/swagger/*`.
+  - Enforce automated execution of `go generate ./...` in the `pre-push` git quality gate hook to ensure documentation is always in lockstep with handler definitions.
+- **Consequences**:
+  - Automatically provides interactive API documentation without manual YAML maintenance.
+  - Ensures changes to API models and parameters are immediately reflected in generated Swagger assets before push.
+
+---
+
+## ADR-007: Monthly Historical Market Data Distribution via Zstandard-Compressed GitHub Releases
+
+- **Status**: Accepted
+- **Date**: 2026-10-19
+- **Source**: Codebase evidence (`database/history/`, `scripts/create_history_draft_releases.sh`, GitHub Releases)
+- **Context**: End-of-day historical stock price datasets spanning 2019 to 2026 accumulate large storage volume (~405 MB across 83 monthly SQLite databases). Storing these directly in git bloats repository clone size.
+- **Decision**: 
+  - Partition historical stock database by calendar month into standalone SQLite files (`database/history/YYYY-MM.db`).
+  - Compress each monthly database using high-ratio Zstandard compression (`zstd -19`) producing `YYYY-MM.db.zst` (~86% compression ratio, reducing total payload from ~405 MB to ~56 MB).
+  - Automate draft release creation on GitHub via `scripts/create_history_draft_releases.sh` utilizing GitHub CLI (`gh release create vYYYY-MM YYYY-MM.db.zst --draft`).
+  - Add `database/history/*.db*` to `.gitignore` to prevent tracking binary artifacts in the git tree.
+- **Consequences**:
+  - Dramatically reduces storage requirements and bandwidth consumption for consumer distribution.
+  - Keeps the core repository lightweight while providing versioned monthly release assets for historical backtesting and analysis.

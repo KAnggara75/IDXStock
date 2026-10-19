@@ -135,13 +135,19 @@ func getDsn() (string, error) {
 		dsn = os.Getenv("DATABASE_URL")
 	}
 	if dsn == "" {
-		dsn = "idxstock.db"
+		dsn = "database/master_stocks.db"
 	}
 	logrus.Debug("SQLite DSN is set")
 	return dsn, nil
 }
 
 func connectWithConfig(ctx context.Context, dsn string, migrateFn func(executor ...DBExecutor)) (DBExecutor, error) {
+	if dir := filepath.Dir(dsn); dir != "" && dir != "." && !strings.HasPrefix(dsn, ":memory:") {
+		if err := os.MkdirAll(dir, 0750); err != nil {
+			return nil, fmt.Errorf("unable to create database directory: %w", err)
+		}
+	}
+
 	db, err := sql.Open("sqlite", dsn)
 	if err != nil {
 		return nil, fmt.Errorf("unable to open database: %w", err)

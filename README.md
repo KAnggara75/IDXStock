@@ -59,19 +59,18 @@ Architectural documentation and project memory are centralized in [`.context/`](
 
 ### Prerequisites
 - Go 1.26+ installed
-- PostgreSQL 15+ instance
 - (Optional) Podman / Docker
 
 ### Environment Variables
 Configure the following environment variables:
 
-| Variable | Description | Example |
-| :--- | :--- | :--- |
-| `IDXSTOCK_CONFIG_URL` | Spring Cloud Config server URL | `http://config-server:8888` |
-| `SCC_AUTH` | HTTP Basic Auth for Config server | `Basic <base64-credentials>` |
-| `DATABASE_URL` | PostgreSQL connection DSN (if not supplied via SCC) | `postgres://user:password@localhost:5432/idxstock?sslmode=disable` |
-| `PORT` | HTTP server listen port (default: `3000`) | `3000` |
-| `LOG_LEVEL` | Log level (`debug`, `info`, `warn`, `error`) | `info` |
+| Variable              | Description                                     | Example                                 |
+| :-------------------- | :---------------------------------------------- | :-------------------------------------- |
+| `IDXSTOCK_CONFIG_URL` | Spring Cloud Config server URL                  | `http://config-server:8888`             |
+| `SCC_AUTH`            | HTTP Basic Auth for Config server               | `Basic <base64-credentials>`            |
+| `DATABASE_URL`        | SQLite database path or DSN                     | `database/master_stocks.db`             |
+| `PORT`                | HTTP server listen port (default: `3000`)       | `3000`                                  |
+| `LOG_LEVEL`           | Log level (`debug`, `info`, `warn`, `error`)    | `info`                                  |
 
 ### Running Locally
 
@@ -124,34 +123,34 @@ go tool cover -func=coverage.out
 ## 📚 API Reference
 
 ### System & Health
-| Method | Endpoint | Description |
-| :--- | :--- | :--- |
-| `GET` | `/health` | Verify HTTP service and PostgreSQL connection pool health |
+| Method | Endpoint  | Description                                                 |
+| :----- | :-------- | :---------------------------------------------------------- |
+| `GET`  | `/health` | Verify HTTP service and SQLite database connection health   |
 
 ### Stocks & Equities
-| Method | Endpoint | Description | Query / Body Params |
-| :--- | :--- | :--- | :--- |
-| `POST` | `/api/v1/stocks/upload` | Preview parsed records from an Excel `.xlsx` file | Multipart form: `file` |
-| `PATCH` | `/api/v1/stocks/upload` | Persist and upsert equities parsed from `.xlsx` | Multipart form: `file` |
-| `PUT` | `/api/v1/stocks/sync` | Sync detailed company profiles & statistics | None |
-| `PUT` | `/api/v1/stocks/delisting/sync` | Sync delisted equities from official sources | None |
-| `PUT` | `/api/v1/stocks/history/sync` | Ingest end-of-day (EOD) quote history | None |
-| `GET` | `/api/v1/stocks/:code/history` | Retrieve historical price data by stock ticker | `start_date`, `end_date`, `fields` |
-| `PUT` | `/api/v1/stocks/split` | Adjust historical price & volume for stock splits | JSON body: `stock_code`, `date`, `from_ratio`, `to_ratio` |
+| Method  | Endpoint                        | Description                                       | Query / Body Params                                       |
+| :------ | :------------------------------ | :------------------------------------------------ | :-------------------------------------------------------- |
+| `POST`  | `/api/v1/stocks/upload`         | Preview parsed records from an Excel `.xlsx` file | Multipart form: `file`                                    |
+| `PATCH` | `/api/v1/stocks/upload`         | Persist and upsert equities parsed from `.xlsx`   | Multipart form: `file`                                    |
+| `PUT`   | `/api/v1/stocks/sync`           | Sync detailed company profiles & statistics       | None                                                      |
+| `PUT`   | `/api/v1/stocks/delisting/sync` | Sync delisted equities from official sources      | None                                                      |
+| `PUT`   | `/api/v1/stocks/history/sync`   | Ingest end-of-day (EOD) quote history             | None                                                      |
+| `GET`   | `/api/v1/stocks/:code/history`  | Retrieve historical price data by stock ticker    | `start_date`, `end_date`, `fields`                        |
+| `PUT`   | `/api/v1/stocks/split`          | Adjust historical price & volume for stock splits | JSON body: `stock_code`, `date`, `from_ratio`, `to_ratio` |
 
 ### Master Data (Sectors & Industries)
-| Method | Endpoint | Description |
-| :--- | :--- | :--- |
-| `PUT` | `/api/v1/sectors/sync` | Fetch and update sector and sub-sector taxonomies |
-| `PUT` | `/api/v1/industries/sync` | Fetch and update industry and sub-industry classifications |
+| Method | Endpoint                  | Description                                                |
+| :----- | :------------------------ | :--------------------------------------------------------- |
+| `PUT`  | `/api/v1/sectors/sync`    | Fetch and update sector and sub-sector taxonomies          |
+| `PUT`  | `/api/v1/industries/sync` | Fetch and update industry and sub-industry classifications |
 
 ### Broker Activities
-| Method | Endpoint | Description | Query / Header Params |
-| :--- | :--- | :--- | :--- |
-| `GET` | `/api/v1/broker/sync` | Synchronize daily broker transaction summaries | Header: `Authorization: Bearer <token>`, Query: `broker_code`, `from`, `to`, `transaction_type`, `market_board`, `investor_type` |
-| `PUT` | `/api/v1/partition/broker-activity` | Pre-allocate weekly PostgreSQL partitions (next 2 ISO weeks) | None |
+| Method | Endpoint                            | Description                                              | Query / Header Params                                                                                                            |
+| :----- | :---------------------------------- | :------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------- |
+| `GET`  | `/api/v1/broker/sync`               | Synchronize daily broker transaction summaries           | Header: `Authorization: Bearer <token>`, Query: `broker_code`, `from`, `to`, `transaction_type`, `market_board`, `investor_type` |
+| `PUT`  | `/api/v1/partition/broker-activity` | Pre-allocate weekly SQLite partition tables (next 2 ISO weeks) | None                                                                                                                             |
 
 ### Assets & Media
-| Method | Endpoint | Description |
-| :--- | :--- | :--- |
-| `GET` | `/api/v1/assets/logos/companies/:code` | Stream company logo (e.g., `BBCA.png`) with HTTP caching |
+| Method | Endpoint                               | Description                                              |
+| :----- | :------------------------------------- | :------------------------------------------------------- |
+| `GET`  | `/api/v1/assets/logos/companies/:code` | Stream company logo (e.g., `BBCA.png`) with HTTP caching |

@@ -236,6 +236,49 @@
                 }
             }
         },
+        "/stocks": {
+            "get": {
+                "description": "Retrieves list of all stocks/emiten with optional filter by board and search query",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "stocks"
+                ],
+                "summary": "Get all stocks / emiten",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Board filter (e.g. UTAMA, PENGEMBANGAN, AKSELERASI)",
+                        "name": "board",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Search by stock code or company name",
+                        "name": "search",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/models.StockDetailResponse"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/models.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/stocks/delisting/sync": {
             "put": {
                 "description": "Fetches delisted stocks for specific year/month from IDX and updates the database",
@@ -734,6 +777,56 @@
                     "type": "string"
                 },
                 "listing_date": {
+                    "type": "string"
+                },
+                "sector_id": {
+                    "type": "integer"
+                },
+                "shares": {
+                    "type": "integer"
+                },
+                "sub_industry_id": {
+                    "type": "integer"
+                },
+                "sub_sector_id": {
+                    "type": "integer"
+                },
+                "total_employees": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.StockDetailResponse": {
+            "type": "object",
+            "properties": {
+                "annual_dividend": {
+                    "type": "number"
+                },
+                "board": {
+                    "type": "string"
+                },
+                "code": {
+                    "type": "string"
+                },
+                "delisting_date": {
+                    "type": "string"
+                },
+                "founding_date": {
+                    "type": "string"
+                },
+                "general_information": {
+                    "type": "string"
+                },
+                "industry_id": {
+                    "type": "integer"
+                },
+                "last_modified": {
+                    "type": "string"
+                },
+                "listing_date": {
+                    "type": "string"
+                },
+                "name": {
                     "type": "string"
                 },
                 "sector_id": {
