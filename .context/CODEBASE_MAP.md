@@ -7,7 +7,7 @@
 - **Dependencies**: `github.com/gofiber/fiber/v3`, `github.com/KAnggara75/scc2go`, `github.com/sirupsen/logrus`, `internal/config`, `internal/database`, `internal/repositories`, `internal/routes`, `internal/services`.
 - **Consumers**: Executable container / process entry point.
 - **External Integrations**: Spring Cloud Config server (via `scc2go`), PostgreSQL database.
-- **Key Notes**: Reads `SCC_URL` and `SCC_AUTH` during package `init()` to inject remote configurations into Viper before main runtime boots.
+- **Key Notes**: Reads `IDXSTOCK_CONFIG_URL` and `SCC_AUTH` during package `init()` to inject remote configurations into Viper before main runtime boots.
 
 ---
 

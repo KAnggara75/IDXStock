@@ -67,7 +67,7 @@ Configure the following environment variables:
 
 | Variable | Description | Example |
 | :--- | :--- | :--- |
-| `SCC_URL` | Spring Cloud Config server URL | `http://config-server:8888` |
+| `IDXSTOCK_CONFIG_URL` | Spring Cloud Config server URL | `http://config-server:8888` |
 | `SCC_AUTH` | HTTP Basic Auth for Config server | `Basic <base64-credentials>` |
 | `DATABASE_URL` | PostgreSQL connection DSN (if not supplied via SCC) | `postgres://user:password@localhost:5432/idxstock?sslmode=disable` |
 | `PORT` | HTTP server listen port (default: `3000`) | `3000` |

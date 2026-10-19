@@ -32,7 +32,7 @@
 - **Date**: 2026-10-12
 - **Source**: Codebase evidence (`cmd/api/main.go#L20-L22`, `go.mod`)
 - **Context**: Application deployments need decoupled configuration without hardcoding sensitive database credentials and API endpoints inside local repositories or image builds.
-- **Decision**: Initialize remote configuration retrieval using `github.com/KAnggara75/scc2go` during package `init()`, fetching settings dynamically based on `SCC_URL` and `SCC_AUTH`.
+- **Decision**: Initialize remote configuration retrieval using `github.com/KAnggara75/scc2go` during package `init()`, fetching settings dynamically based on `IDXSTOCK_CONFIG_URL` and `SCC_AUTH`.
 - **Consequences**:
   - Centralizes credential and environment management across microservices.
   - Requires the Spring Cloud Config service to be reachable at boot time.

@@ -35,7 +35,7 @@ All comprehensive, ground-truth architectural documentation is maintained in the
 ### Running Locally
 ```bash
 # Set required configuration variables
-export SCC_URL="http://your-config-server:8888"
+export IDXSTOCK_CONFIG_URL="http://your-config-server:8888"
 export SCC_AUTH="Basic <credentials>"
 export DATABASE_URL="postgres://user:password@localhost:5432/dbname"
 

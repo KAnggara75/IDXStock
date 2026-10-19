@@ -29,7 +29,7 @@ import (
 // @BasePath                   /api/v1
 
 func init() {
-	scc2go.GetEnv(os.Getenv("SCC_URL"), os.Getenv("SCC_AUTH"))
+	scc2go.GetEnv(os.Getenv("IDXSTOCK_CONFIG_URL"), os.Getenv("SCC_AUTH"))
 }
 
 // buildApp creates and configures the Fiber application and its middlewares/routes.
