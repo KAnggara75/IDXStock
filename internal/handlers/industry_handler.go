@@ -17,7 +17,16 @@ func NewIndustryHandler(usecase usecases.IndustryUsecase) *IndustryHandler {
 	}
 }
 
+// IndustrySyncHandler godoc
+// @Summary      Sync industries and sub-industries
+// @Description  Fetches industries taxonomy from Pasardana and updates the database
+// @Tags         industries
+// @Produce      json
+// @Success      200  {object}  models.IndustrySyncResponse
+// @Failure      500  {object}  models.ErrorResponse
+// @Router       /industries/sync [put]
 func (h *IndustryHandler) IndustrySyncHandler(c fiber.Ctx) error {
+
 	results, err := h.usecase.SyncIndustry(c.Context())
 	if err != nil {
 		logrus.Errorf("Failed to sync industries: %v", err)

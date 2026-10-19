@@ -53,4 +53,14 @@ func TestSetup_And_Health(t *testing.T) {
 		assert.NoError(t, err)
 		assert.Equal(t, fiber.StatusInternalServerError, resp.StatusCode)
 	})
+
+	t.Run("swagger_route", func(t *testing.T) {
+		app := fiber.New()
+		Setup(app, nil)
+
+		req := httptest.NewRequest("GET", "/swagger/index.html", nil)
+		resp, err := app.Test(req)
+		assert.NoError(t, err)
+		assert.Equal(t, fiber.StatusOK, resp.StatusCode)
+	})
 }

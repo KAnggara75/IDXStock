@@ -1,0 +1,551 @@
+basePath: /api/v1
+definitions:
+  models.BasicResponse:
+    properties:
+      id:
+        type: integer
+      name:
+        type: string
+    type: object
+  models.BasicResponseWithCode:
+    properties:
+      code:
+        type: string
+      id:
+        type: integer
+      name:
+        type: string
+    type: object
+  models.BrokerActivity:
+    properties:
+      avg_price:
+        type: number
+      broker_code:
+        type: string
+      date:
+        type: string
+      freq:
+        type: integer
+      lot:
+        type: integer
+      side:
+        description: '"buy" or "sell"'
+        type: string
+      stock_code:
+        type: string
+      value:
+        type: integer
+    type: object
+  models.ErrorResponse:
+    properties:
+      error:
+        type: string
+    type: object
+  models.IdxDelistedStock:
+    properties:
+      DeListingDate:
+        type: string
+      code:
+        type: string
+    type: object
+  models.IndustrySyncResponse:
+    properties:
+      industries:
+        items:
+          $ref: '#/definitions/models.BasicResponse'
+        type: array
+      sub_industries:
+        items:
+          $ref: '#/definitions/models.BasicResponse'
+        type: array
+    type: object
+  models.SectorSyncNewResponse:
+    properties:
+      sectors:
+        items:
+          $ref: '#/definitions/models.BasicResponseWithCode'
+        type: array
+      sub_sectors:
+        items:
+          $ref: '#/definitions/models.BasicResponseWithCode'
+        type: array
+    type: object
+  models.Stock:
+    properties:
+      annual_dividend:
+        type: number
+      code:
+        type: string
+      company_name:
+        type: string
+      delisting_date:
+        type: string
+      founding_date:
+        type: string
+      general_information:
+        type: string
+      id:
+        type: integer
+      industry_id:
+        type: integer
+      listing_board:
+        type: string
+      listing_date:
+        type: string
+      sector_id:
+        type: integer
+      shares:
+        type: integer
+      sub_industry_id:
+        type: integer
+      sub_sector_id:
+        type: integer
+      total_employees:
+        type: string
+    type: object
+  models.StockResponse:
+    properties:
+      code:
+        type: string
+      id:
+        type: integer
+      name:
+        type: string
+    type: object
+  models.StockSplitRequest:
+    properties:
+      end_date:
+        type: string
+      ratio:
+        type: string
+      start_date:
+        type: string
+      stock_code:
+        type: string
+    type: object
+  models.SuccessResponse:
+    properties:
+      message:
+        type: string
+      status:
+        type: string
+    type: object
+  models.SyncDelistingRequest:
+    properties:
+      month:
+        type: integer
+      year:
+        type: integer
+    type: object
+  models.SyncHistoryRequest:
+    properties:
+      day:
+        type: integer
+      month:
+        type: integer
+      year:
+        type: integer
+    type: object
+info:
+  contact:
+    name: IDXStock Support
+    url: https://github.com/KAnggara75/IDXStock
+  description: Automated stock market data integration and analytics API for the Indonesia
+    Stock Exchange (IDX).
+  license:
+    name: MIT
+  title: IDXStock API
+  version: "1.0"
+paths:
+  /assets/logos/companies/{code}:
+    get:
+      description: Proxies and caches company logo image from Stockbit asset CDN
+      parameters:
+      - description: Stock code (e.g. BBCA)
+        in: path
+        name: code
+        required: true
+        type: string
+      produces:
+      - image/png
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: file
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+        "503":
+          description: Service Unavailable
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+      summary: Get company logo
+      tags:
+      - assets
+  /broker/sync:
+    get:
+      consumes:
+      - application/json
+      description: Fetches broker transaction activities from Exodus API using access
+        token
+      parameters:
+      - description: Bearer token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: Broker code (e.g. CC)
+        in: query
+        name: broker_code
+        type: string
+      - description: Start date (YYYY-MM-DD)
+        in: query
+        name: from
+        type: string
+      - description: End date (YYYY-MM-DD)
+        in: query
+        name: to
+        type: string
+      - description: Transaction type (e.g. NET)
+        in: query
+        name: transaction_type
+        type: string
+      - description: Market board (e.g. RG)
+        in: query
+        name: market_board
+        type: string
+      - description: Investor type (e.g. ALL, D, F)
+        in: query
+        name: investor_type
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.BrokerActivity'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+      summary: Sync broker activity
+      tags:
+      - brokers
+  /industries/sync:
+    put:
+      description: Fetches industries taxonomy from Pasardana and updates the database
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.IndustrySyncResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+      summary: Sync industries and sub-industries
+      tags:
+      - industries
+  /partition/broker-activity:
+    put:
+      description: Automatically detects and provisions monthly table partitions for
+        broker activity
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "201":
+          description: Created
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+      summary: Manage broker activity table partitions
+      tags:
+      - partitions
+  /sectors/sync:
+    put:
+      description: Fetches sectors and subsectors from Pasardana and updates the database
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.SectorSyncNewResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+      summary: Sync new sectors and sub-sectors
+      tags:
+      - sectors
+  /stocks/{code}/history:
+    get:
+      description: Queries historical trading data for a specific stock code with
+        field filtering and CSV/JSON output support
+      parameters:
+      - description: Stock Code (e.g. BBCA)
+        in: path
+        name: code
+        required: true
+        type: string
+      - description: Start date (YYYY-MM-DD)
+        in: query
+        name: start_date
+        type: string
+      - description: End date (YYYY-MM-DD, defaults to today)
+        in: query
+        name: end_date
+        type: string
+      - description: Comma-separated field list
+        in: query
+        name: fields
+        type: string
+      - description: 'Output format (''json'' or ''csv'', default: json)'
+        in: query
+        name: output
+        type: string
+      produces:
+      - application/json
+      - text/csv
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              additionalProperties: true
+              type: object
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+      summary: Get stock history records
+      tags:
+      - history
+  /stocks/delisting/sync:
+    put:
+      consumes:
+      - application/json
+      description: Fetches delisted stocks for specific year/month from IDX and updates
+        the database
+      parameters:
+      - description: Delisting sync request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/models.SyncDelistingRequest'
+      - description: IDX Session Cookie
+        in: header
+        name: Cookie
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.IdxDelistedStock'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+      summary: Sync delisted stocks
+      tags:
+      - stocks
+  /stocks/history/sync:
+    put:
+      consumes:
+      - application/json
+      description: Syncs daily stock history from either IDX or Pasardana. For Pasardana,
+        sync runs asynchronously.
+      parameters:
+      - description: Source provider ('idx' or 'pasardana')
+        in: query
+        name: source
+        required: true
+        type: string
+      - description: IDX Session Cookie (required for idx source)
+        in: header
+        name: Cookie
+        type: string
+      - description: Target date to sync
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/models.SyncHistoryRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "202":
+          description: Accepted
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+        "429":
+          description: Too Many Requests
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+      summary: Sync stock history from data source
+      tags:
+      - history
+  /stocks/split:
+    put:
+      consumes:
+      - application/json
+      description: Adjusts historical price, volume, and shares records for a given
+        stock code over a date range
+      parameters:
+      - description: Stock split parameters
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/models.StockSplitRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+      summary: Apply stock split adjustments
+      tags:
+      - history
+  /stocks/sync:
+    put:
+      description: Triggers background sync for stock details from Pasardana
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.SuccessResponse'
+      summary: Sync stock details asynchronously
+      tags:
+      - stocks
+  /stocks/upload:
+    patch:
+      consumes:
+      - multipart/form-data
+      description: Parses and inserts uploaded stock Excel file into the database
+      parameters:
+      - description: Excel file (.xlsx or .xls)
+        in: formData
+        name: file
+        required: true
+        type: file
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.StockResponse'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+      summary: Upload stocks from Excel file
+      tags:
+      - stocks
+    post:
+      consumes:
+      - multipart/form-data
+      description: Parses uploaded stock Excel (.xlsx or .xls) file without persisting
+        to database
+      parameters:
+      - description: Excel file (.xlsx or .xls)
+        in: formData
+        name: file
+        required: true
+        type: file
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.Stock'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+      summary: Preview stocks from Excel file
+      tags:
+      - stocks
+swagger: "2.0"

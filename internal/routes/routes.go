@@ -1,8 +1,10 @@
 package routes
 
 import (
+	"github.com/gofiber/contrib/v3/swaggo"
 	"github.com/gofiber/fiber/v3"
 
+	_ "github.com/KAnggara75/IDXStock/docs"
 	"github.com/KAnggara75/IDXStock/internal/database"
 	"github.com/KAnggara75/IDXStock/internal/handlers"
 	"github.com/KAnggara75/IDXStock/internal/repositories"
@@ -62,8 +64,12 @@ func Setup(app *fiber.App, db ...repositories.DBExecutor) {
 		})
 	})
 
+	// Swagger OpenAPI documentation
+	app.Get("/swagger/*", swaggo.HandlerDefault)
+
 	// API V1 Routes
 	v1 := app.Group("/api/v1")
+
 	v1.Post("/stocks/upload", stockHandler.PreviewHandler)
 	v1.Patch("/stocks/upload", stockHandler.UploadHandler)
 	v1.Put("/stocks/sync", stockHandler.SyncStockDetailHandler)

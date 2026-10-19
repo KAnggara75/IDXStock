@@ -28,7 +28,19 @@ func NewAssetHandler() *AssetHandler {
 	}
 }
 
+// GetCompanyLogo godoc
+// @Summary      Get company logo
+// @Description  Proxies and caches company logo image from Stockbit asset CDN
+// @Tags         assets
+// @Produce      image/png
+// @Param        code  path      string  true  "Stock code (e.g. BBCA)"
+// @Success      200   {file}    binary
+// @Failure      400   {object}  models.ErrorResponse
+// @Failure      404   {object}  models.ErrorResponse
+// @Failure      503   {object}  models.ErrorResponse
+// @Router       /assets/logos/companies/{code} [get]
 func (h *AssetHandler) GetCompanyLogo(c fiber.Ctx) error {
+
 	code := c.Params("code")
 	if code == "" {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{

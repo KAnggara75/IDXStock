@@ -24,7 +24,23 @@ func NewHistoryHandler(usecase usecases.HistoryUsecase) *HistoryHandler {
 	}
 }
 
+// SyncStockHistoryHandler godoc
+// @Summary      Sync stock history from data source
+// @Description  Syncs daily stock history from either IDX or Pasardana. For Pasardana, sync runs asynchronously.
+// @Tags         history
+// @Accept       json
+// @Produce      json
+// @Param        source   query     string                    true  "Source provider ('idx' or 'pasardana')"
+// @Param        Cookie   header    string                    false "IDX Session Cookie (required for idx source)"
+// @Param        request  body      models.SyncHistoryRequest true  "Target date to sync"
+// @Success      200      {object}  map[string]any
+// @Success      202      {object}  map[string]any
+// @Failure      400      {object}  models.ErrorResponse
+// @Failure      429      {object}  models.ErrorResponse
+// @Failure      500      {object}  models.ErrorResponse
+// @Router       /stocks/history/sync [put]
 func (h *HistoryHandler) SyncStockHistoryHandler(c fiber.Ctx) error {
+
 	source := strings.Clone(c.Query("source"))
 	cookie := strings.Clone(c.Get("Cookie"))
 
@@ -98,7 +114,23 @@ func (h *HistoryHandler) SyncStockHistoryHandler(c fiber.Ctx) error {
 		"source":  source,
 	})
 }
+
+// GetStockHistoryHandler godoc
+// @Summary      Get stock history records
+// @Description  Queries historical trading data for a specific stock code with field filtering and CSV/JSON output support
+// @Tags         history
+// @Produce      json,text/csv
+// @Param        code        path      string  true   "Stock Code (e.g. BBCA)"
+// @Param        start_date  query     string  false  "Start date (YYYY-MM-DD)"
+// @Param        end_date    query     string  false  "End date (YYYY-MM-DD, defaults to today)"
+// @Param        fields      query     string  false  "Comma-separated field list"
+// @Param        output      query     string  false  "Output format ('json' or 'csv', default: json)"
+// @Success      200         {array}   map[string]any
+// @Failure      400         {object}  models.ErrorResponse
+// @Failure      500         {object}  models.ErrorResponse
+// @Router       /stocks/{code}/history [get]
 func (h *HistoryHandler) GetStockHistoryHandler(c fiber.Ctx) error {
+
 	code := c.Params("code")
 	output := c.Query("output", "json")
 	fieldsRaw := c.Query("fields")
@@ -209,7 +241,19 @@ func (h *HistoryHandler) GetStockHistoryHandler(c fiber.Ctx) error {
 	return c.JSON(results)
 }
 
+// ApplyStockSplitHandler godoc
+// @Summary      Apply stock split adjustments
+// @Description  Adjusts historical price, volume, and shares records for a given stock code over a date range
+// @Tags         history
+// @Accept       json
+// @Produce      json
+// @Param        request  body      models.StockSplitRequest  true  "Stock split parameters"
+// @Success      200      {object}  map[string]any
+// @Failure      400      {object}  models.ErrorResponse
+// @Failure      500      {object}  models.ErrorResponse
+// @Router       /stocks/split [put]
 func (h *HistoryHandler) ApplyStockSplitHandler(c fiber.Ctx) error {
+
 	var req models.StockSplitRequest
 	if err := c.Bind().JSON(&req); err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{

@@ -24,6 +24,17 @@ func NewStockHandler(usecase usecases.StockUsecase) *StockHandler {
 	}
 }
 
+// PreviewHandler godoc
+// @Summary      Preview stocks from Excel file
+// @Description  Parses uploaded stock Excel (.xlsx or .xls) file without persisting to database
+// @Tags         stocks
+// @Accept       multipart/form-data
+// @Produce      json
+// @Param        file  formData  file  true  "Excel file (.xlsx or .xls)"
+// @Success      200   {array}   models.Stock
+// @Failure      400   {object}  models.ErrorResponse
+// @Failure      500   {object}  models.ErrorResponse
+// @Router       /stocks/upload [post]
 func (h *StockHandler) PreviewHandler(c fiber.Ctx) error {
 	f, err := h.getFileAndValidate(c)
 	if err != nil {
@@ -44,6 +55,17 @@ func (h *StockHandler) PreviewHandler(c fiber.Ctx) error {
 	return c.JSON(stocks)
 }
 
+// UploadHandler godoc
+// @Summary      Upload stocks from Excel file
+// @Description  Parses and inserts uploaded stock Excel file into the database
+// @Tags         stocks
+// @Accept       multipart/form-data
+// @Produce      json
+// @Param        file  formData  file  true  "Excel file (.xlsx or .xls)"
+// @Success      200   {array}   models.StockResponse
+// @Failure      400   {object}  models.ErrorResponse
+// @Failure      500   {object}  models.ErrorResponse
+// @Router       /stocks/upload [patch]
 func (h *StockHandler) UploadHandler(c fiber.Ctx) error {
 	f, err := h.getFileAndValidate(c)
 	if err != nil {
@@ -85,6 +107,13 @@ func (h *StockHandler) getFileAndValidate(c fiber.Ctx) (multipart.File, error) {
 	return f, nil
 }
 
+// SyncStockDetailHandler godoc
+// @Summary      Sync stock details asynchronously
+// @Description  Triggers background sync for stock details from Pasardana
+// @Tags         stocks
+// @Produce      json
+// @Success      200  {object}  models.SuccessResponse
+// @Router       /stocks/sync [put]
 func (h *StockHandler) SyncStockDetailHandler(c fiber.Ctx) error {
 	// Run synchronization in background
 	go func(ctx context.Context) {
@@ -100,6 +129,18 @@ func (h *StockHandler) SyncStockDetailHandler(c fiber.Ctx) error {
 	})
 }
 
+// SyncDelistingStocksHandler godoc
+// @Summary      Sync delisted stocks
+// @Description  Fetches delisted stocks for specific year/month from IDX and updates the database
+// @Tags         stocks
+// @Accept       json
+// @Produce      json
+// @Param        request  body      models.SyncDelistingRequest  true  "Delisting sync request"
+// @Param        Cookie   header    string                       false "IDX Session Cookie"
+// @Success      200      {array}   models.IdxDelistedStock
+// @Failure      400      {object}  models.ErrorResponse
+// @Failure      500      {object}  models.ErrorResponse
+// @Router       /stocks/delisting/sync [put]
 func (h *StockHandler) SyncDelistingStocksHandler(c fiber.Ctx) error {
 	var req models.SyncDelistingRequest
 	if err := c.Bind().JSON(&req); err != nil {

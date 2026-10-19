@@ -1,5 +1,7 @@
 package main
 
+//go:generate swag init -g main.go -d ./,../../internal -o ../../docs
+
 import (
 	"context"
 	"os"
@@ -17,6 +19,14 @@ import (
 	"github.com/KAnggara75/IDXStock/internal/routes"
 	"github.com/KAnggara75/IDXStock/internal/services"
 )
+
+// @title                      IDXStock API
+// @version                    1.0
+// @description                Automated stock market data integration and analytics API for the Indonesia Stock Exchange (IDX).
+// @contact.name               IDXStock Support
+// @contact.url                https://github.com/KAnggara75/IDXStock
+// @license.name               MIT
+// @BasePath                   /api/v1
 
 func init() {
 	scc2go.GetEnv(os.Getenv("SCC_URL"), os.Getenv("SCC_AUTH"))
