@@ -8,8 +8,9 @@ repos:
         stages: [pre-commit]
 
       - id: end-of-file-fixer
-        exclude: LICENSE
+        exclude: (LICENSE|docs/swagger\.json)
         stages: [pre-commit]
+
 
       - id: check-yaml
         stages: [pre-commit]
