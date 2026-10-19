@@ -5,9 +5,11 @@ import (
 	"os"
 	"testing"
 
+	"github.com/DATA-DOG/go-sqlmock"
 	"github.com/gofiber/fiber/v3"
-	"github.com/pashagolub/pgxmock/v5"
 	"github.com/stretchr/testify/assert"
+
+	"github.com/KAnggara75/IDXStock/internal/database"
 )
 
 func TestGetPort(t *testing.T) {
@@ -24,13 +26,14 @@ func TestGetPort(t *testing.T) {
 }
 
 func TestBuildApp(t *testing.T) {
-	mock, err := pgxmock.NewPool()
+	db, mock, err := sqlmock.New(sqlmock.MonitorPingsOption(true))
 	assert.NoError(t, err)
-	defer mock.Close()
+	defer db.Close()
+	mockExec := database.NewDBExecutor(db)
 
 	mock.ExpectPing()
 
-	app := buildApp(mock)
+	app := buildApp(mockExec)
 	assert.NotNil(t, app)
 
 	// Test request logging middleware and route handler
@@ -49,21 +52,23 @@ func TestRunSeeder(t *testing.T) {
 	})
 
 	t.Run("mock_pool", func(t *testing.T) {
-		mock, err := pgxmock.NewPool()
+		db, _, err := sqlmock.New()
 		assert.NoError(t, err)
-		defer mock.Close()
+		defer db.Close()
+		mockExec := database.NewDBExecutor(db)
 
 		assert.NotPanics(t, func() {
-			runSeeder(mock)
+			runSeeder(mockExec)
 		})
 	})
 }
 
 func TestRunMain(t *testing.T) {
 	t.Run("successful_execution", func(t *testing.T) {
-		mock, err := pgxmock.NewPool()
+		db, _, err := sqlmock.New()
 		assert.NoError(t, err)
-		defer mock.Close()
+		defer db.Close()
+		mockExec := database.NewDBExecutor(db)
 
 		var connected bool
 		var listened bool
@@ -78,7 +83,7 @@ func TestRunMain(t *testing.T) {
 			return nil
 		}
 
-		runMain(fakeConnect, fakeListen, mock)
+		runMain(fakeConnect, fakeListen, mockExec)
 		assert.True(t, connected)
 		assert.True(t, listened)
 	})
@@ -101,12 +106,9 @@ func TestRunMain(t *testing.T) {
 		assert.True(t, listened)
 	})
 
-	t.Run("startServer_function", func(t *testing.T) {
-
+	t.Run("startServer_real_invoked", func(t *testing.T) {
 		app := fiber.New()
-		go func() {
-			_ = startServer(app, "0")
-		}()
-		_ = app.Shutdown()
+		err := startServer(app, "invalid_port_!")
+		assert.Error(t, err)
 	})
 }

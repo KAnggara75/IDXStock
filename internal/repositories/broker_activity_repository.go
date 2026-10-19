@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/jackc/pgx/v5"
 	"github.com/sirupsen/logrus"
 
 	"github.com/KAnggara75/IDXStock/internal/database"
@@ -43,45 +42,33 @@ func (r *brokerActivityRepository) BatchInsertBrokerActivity(ctx context.Context
 	defer tx.Rollback(ctx)
 
 	query := `
-		INSERT INTO idxstock.broker_activity (
+		INSERT INTO broker_activity (
 			broker_code, stock_code, date, side, lot, value, avg_price, freq, updated_at
 		)
-		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, now())
-		ON CONFLICT (broker_code, stock_code, date, side) DO UPDATE SET
-			lot = EXCLUDED.lot,
-			value = EXCLUDED.value,
-			avg_price = EXCLUDED.avg_price,
-			freq = EXCLUDED.freq,
-			updated_at = now()
+		VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, datetime('now'))
+		ON CONFLICT (broker_code, date, stock_code, side) DO UPDATE SET
+			lot = excluded.lot,
+			value = excluded.value,
+			avg_price = excluded.avg_price,
+			freq = excluded.freq,
+			updated_at = datetime('now')
 		WHERE
-			idxstock.broker_activity.lot IS DISTINCT FROM EXCLUDED.lot OR
-			idxstock.broker_activity.value IS DISTINCT FROM EXCLUDED.value OR
-			idxstock.broker_activity.avg_price IS DISTINCT FROM EXCLUDED.avg_price OR
-			idxstock.broker_activity.freq IS DISTINCT FROM EXCLUDED.freq
+			broker_activity.lot IS NOT excluded.lot OR
+			broker_activity.value IS NOT excluded.value OR
+			broker_activity.avg_price IS NOT excluded.avg_price OR
+			broker_activity.freq IS NOT excluded.freq
 	`
 
-	batch := &pgx.Batch{}
-	for _, rec := range records {
-		batch.Queue(query,
-			rec.BrokerCode, rec.StockCode, rec.Date, rec.Side,
+	var affected int64
+	for i, rec := range records {
+		ct, err := tx.Exec(ctx, query,
+			rec.BrokerCode, rec.StockCode, rec.Date.Format("2006-01-02"), rec.Side,
 			rec.Lot, rec.Value, rec.AvgPrice, rec.Freq,
 		)
-	}
-
-	br := tx.SendBatch(ctx, batch)
-	defer br.Close()
-
-	var affected int64
-	for i := 0; i < len(records); i++ {
-		ct, err := br.Exec()
 		if err != nil {
 			return fmt.Errorf("failed to execute batch upsert for broker activity at index %d: %w", i, err)
 		}
 		affected += ct.RowsAffected()
-	}
-
-	if err := br.Close(); err != nil {
-		return fmt.Errorf("failed to close batch: %w", err)
 	}
 
 	if err := tx.Commit(ctx); err != nil {
@@ -94,15 +81,15 @@ func (r *brokerActivityRepository) BatchInsertBrokerActivity(ctx context.Context
 
 func (r *brokerActivityRepository) InsertBrokerActivity(ctx context.Context, rec models.BrokerActivity) (bool, error) {
 	query := `
-		INSERT INTO idxstock.broker_activity (
+		INSERT INTO broker_activity (
 			broker_code, stock_code, date, side, lot, value, avg_price, freq, updated_at
 		)
-		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, now())
-		ON CONFLICT (broker_code, stock_code, date, side) DO NOTHING
+		VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, datetime('now'))
+		ON CONFLICT (broker_code, date, stock_code, side) DO NOTHING
 	`
 
 	ct, err := r.pool.Exec(ctx, query,
-		rec.BrokerCode, rec.StockCode, rec.Date, rec.Side,
+		rec.BrokerCode, rec.StockCode, rec.Date.Format("2006-01-02"), rec.Side,
 		rec.Lot, rec.Value, rec.AvgPrice, rec.Freq,
 	)
 	if err != nil {
@@ -116,8 +103,8 @@ func (r *brokerActivityRepository) InsertBrokerActivity(ctx context.Context, rec
 func (r *brokerActivityRepository) CheckPartitionExists(ctx context.Context, tableName string) (bool, error) {
 	query := `
 		SELECT EXISTS (
-			SELECT 1 FROM information_schema.tables
-			WHERE table_schema = 'idxstock' AND table_name = $1
+			SELECT 1 FROM sqlite_master
+			WHERE type = 'table' AND name = ?1
 		)
 	`
 	var exists bool
@@ -129,11 +116,20 @@ func (r *brokerActivityRepository) CheckPartitionExists(ctx context.Context, tab
 }
 
 func (r *brokerActivityRepository) CreatePartition(ctx context.Context, tableName, startDate, endDate string) error {
-	// DDL statements cannot use parameters for table names, so we use fmt.Sprintf
-	// We assume tableName is internally generated and safe.
 	query := fmt.Sprintf(`
-		CREATE TABLE idxstock.%s PARTITION OF idxstock.broker_activity
-		FOR VALUES FROM ('%s') TO ('%s')
+		CREATE TABLE IF NOT EXISTS %s (
+			broker_code TEXT NOT NULL REFERENCES brokers(code),
+			stock_code TEXT NOT NULL REFERENCES stocks(code),
+			date TEXT NOT NULL CHECK (date >= '%s' AND date <= '%s'),
+			side TEXT NOT NULL CHECK (side IN ('buy', 'sell')),
+			lot INTEGER,
+			value INTEGER,
+			avg_price REAL,
+			freq INTEGER,
+			created_at TEXT DEFAULT (datetime('now')),
+			updated_at TEXT DEFAULT (datetime('now')),
+			PRIMARY KEY (broker_code, date, stock_code, side)
+		)
 	`, tableName, startDate, endDate)
 
 	_, err := r.pool.Exec(ctx, query)

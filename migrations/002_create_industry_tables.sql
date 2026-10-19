@@ -1,14 +1,14 @@
-CREATE TABLE IF NOT EXISTS idxstock.industry
+CREATE TABLE IF NOT EXISTS industry
 (
-    id             INT            PRIMARY KEY,
-    name           VARCHAR(200)   NOT NULL,
-    last_modified  TIMESTAMPTZ    NOT NULL DEFAULT now()
+    id             INTEGER        PRIMARY KEY,
+    name           TEXT           NOT NULL,
+    last_modified  TEXT           NOT NULL DEFAULT (datetime('now'))
 );
 
-CREATE TABLE IF NOT EXISTS idxstock.sub_industry
+CREATE TABLE IF NOT EXISTS sub_industry
 (
-    id             INT            PRIMARY KEY,
-    name           VARCHAR(200)   NOT NULL,
-    industry_id    INT            NOT NULL REFERENCES idxstock.industry(id),
-    last_modified  TIMESTAMPTZ    NOT NULL DEFAULT now()
+    id             INTEGER        PRIMARY KEY,
+    name           TEXT           NOT NULL,
+    industry_id    INTEGER        NOT NULL REFERENCES industry(id),
+    last_modified  TEXT           NOT NULL DEFAULT (datetime('now'))
 );

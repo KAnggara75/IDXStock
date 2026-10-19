@@ -23,7 +23,7 @@ All comprehensive, ground-truth architectural documentation is maintained in the
 
 - **Language / Runtime**: Go 1.26.3
 - **Web Framework**: Fiber v3 (`github.com/gofiber/fiber/v3`)
-- **Database Driver / Pool**: `pgx/v5` (`github.com/jackc/pgx/v5/pgxpool`)
+- **Database Driver / Engine**: SQLite 3 via `modernc.org/sqlite` (pure Go, CGO-free)
 - **Schema Migrations**: Managed internally via `internal/database/database.go` and `migrations/*.sql`
 - **Config Management**: Spring Cloud Config client via `github.com/KAnggara75/scc2go` + Viper
 - **Logging**: Logrus JSON formatted logger (`internal/config/logger.go`)
@@ -37,7 +37,7 @@ All comprehensive, ground-truth architectural documentation is maintained in the
 # Set required configuration variables
 export IDXSTOCK_CONFIG_URL="http://your-config-server:8888"
 export SCC_AUTH="Basic <credentials>"
-export DATABASE_URL="postgres://user:password@localhost:5432/dbname"
+export DATABASE_URL="idxstock.db"
 
 # Run with hot reloading
 air
