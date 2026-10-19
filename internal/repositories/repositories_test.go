@@ -2,13 +2,14 @@ package repositories
 
 import (
 	"context"
+	"database/sql"
 	"testing"
 	"time"
 
-	"github.com/jackc/pgx/v5"
-	"github.com/pashagolub/pgxmock/v5"
+	"github.com/DATA-DOG/go-sqlmock"
 	"github.com/stretchr/testify/assert"
 
+	"github.com/KAnggara75/IDXStock/internal/database"
 	"github.com/KAnggara75/IDXStock/internal/models"
 )
 
@@ -16,11 +17,12 @@ func TestIndustryRepository(t *testing.T) {
 	ctx := context.Background()
 
 	t.Run("empty_upsert", func(t *testing.T) {
-		mock, err := pgxmock.NewPool()
+		db, _, err := sqlmock.New()
 		assert.NoError(t, err)
-		defer mock.Close()
+		defer db.Close()
+		mockExec := database.NewDBExecutor(db)
 
-		repo := NewIndustryRepository(mock)
+		repo := NewIndustryRepository(mockExec)
 		res1, err := repo.UpsertIndustries(ctx, nil)
 		assert.NoError(t, err)
 		assert.Empty(t, res1)
@@ -31,31 +33,32 @@ func TestIndustryRepository(t *testing.T) {
 	})
 
 	t.Run("begin_tx_error", func(t *testing.T) {
-		mock, err := pgxmock.NewPool()
+		db, mock, err := sqlmock.New()
 		assert.NoError(t, err)
-		defer mock.Close()
+		defer db.Close()
+		mockExec := database.NewDBExecutor(db)
 
 		mock.ExpectBegin().WillReturnError(assert.AnError)
 
-		repo := NewIndustryRepository(mock)
+		repo := NewIndustryRepository(mockExec)
 		res, err := repo.UpsertIndustries(ctx, []models.Industry{{Id: 1, Name: "Tech"}})
 		assert.Error(t, err)
 		assert.Nil(t, res)
 	})
 
 	t.Run("success_batch_upsert", func(t *testing.T) {
-		mock, err := pgxmock.NewPool()
+		db, mock, err := sqlmock.New()
 		assert.NoError(t, err)
-		defer mock.Close()
+		defer db.Close()
+		mockExec := database.NewDBExecutor(db)
 
 		mock.ExpectBegin()
-		batch := mock.ExpectBatch()
-		batch.ExpectQuery("INSERT INTO idxstock.industry").
+		mock.ExpectQuery("INSERT INTO industry").
 			WithArgs(1, "Tech").
-			WillReturnRows(pgxmock.NewRows([]string{"id", "name"}).AddRow(1, "Tech"))
+			WillReturnRows(sqlmock.NewRows([]string{"id", "name"}).AddRow(1, "Tech"))
 		mock.ExpectCommit()
 
-		repo := NewIndustryRepository(mock)
+		repo := NewIndustryRepository(mockExec)
 		res, err := repo.UpsertIndustries(ctx, []models.Industry{{Id: 1, Name: "Tech"}})
 		assert.NoError(t, err)
 		assert.Len(t, res, 1)
@@ -64,18 +67,18 @@ func TestIndustryRepository(t *testing.T) {
 	})
 
 	t.Run("success_sub_industries_batch_upsert", func(t *testing.T) {
-		mock, err := pgxmock.NewPool()
+		db, mock, err := sqlmock.New()
 		assert.NoError(t, err)
-		defer mock.Close()
+		defer db.Close()
+		mockExec := database.NewDBExecutor(db)
 
 		mock.ExpectBegin()
-		batch := mock.ExpectBatch()
-		batch.ExpectQuery("INSERT INTO idxstock.sub_industry").
+		mock.ExpectQuery("INSERT INTO sub_industry").
 			WithArgs(1, "Software", 1).
-			WillReturnRows(pgxmock.NewRows([]string{"id", "name"}).AddRow(1, "Software"))
+			WillReturnRows(sqlmock.NewRows([]string{"id", "name"}).AddRow(1, "Software"))
 		mock.ExpectCommit()
 
-		repo := NewIndustryRepository(mock)
+		repo := NewIndustryRepository(mockExec)
 		res, err := repo.UpsertSubIndustries(ctx, []models.SubIndustry{{Id: 1, Name: "Software", IndustryId: 1}})
 		assert.NoError(t, err)
 		assert.Len(t, res, 1)
@@ -88,11 +91,12 @@ func TestSectorSearchRepository(t *testing.T) {
 	ctx := context.Background()
 
 	t.Run("empty_upsert", func(t *testing.T) {
-		mock, err := pgxmock.NewPool()
+		db, _, err := sqlmock.New()
 		assert.NoError(t, err)
-		defer mock.Close()
+		defer db.Close()
+		mockExec := database.NewDBExecutor(db)
 
-		repo := NewSectorSearchRepository(mock)
+		repo := NewSectorSearchRepository(mockExec)
 		res1, err := repo.UpsertNewSectors(ctx, nil)
 		assert.NoError(t, err)
 		assert.Empty(t, res1)
@@ -103,30 +107,32 @@ func TestSectorSearchRepository(t *testing.T) {
 	})
 
 	t.Run("begin_tx_error", func(t *testing.T) {
-		mock, err := pgxmock.NewPool()
+		db, mock, err := sqlmock.New()
 		assert.NoError(t, err)
-		defer mock.Close()
+		defer db.Close()
+		mockExec := database.NewDBExecutor(db)
 
 		mock.ExpectBegin().WillReturnError(assert.AnError)
 
-		repo := NewSectorSearchRepository(mock)
+		repo := NewSectorSearchRepository(mockExec)
 		res, err := repo.UpsertNewSectors(ctx, []models.SectorNew{{Id: 1, Name: "Finance"}})
 		assert.Error(t, err)
 		assert.Nil(t, res)
 	})
+
 	t.Run("success_batch_upsert", func(t *testing.T) {
-		mock, err := pgxmock.NewPool()
+		db, mock, err := sqlmock.New()
 		assert.NoError(t, err)
-		defer mock.Close()
+		defer db.Close()
+		mockExec := database.NewDBExecutor(db)
 
 		mock.ExpectBegin()
-		batch := mock.ExpectBatch()
-		batch.ExpectQuery("INSERT INTO idxstock.sector").
+		mock.ExpectQuery("INSERT INTO sector").
 			WithArgs(1, (*string)(nil), "Finance", (*string)(nil), (*string)(nil)).
-			WillReturnRows(pgxmock.NewRows([]string{"id", "code", "name"}).AddRow(1, nil, "Finance"))
+			WillReturnRows(sqlmock.NewRows([]string{"id", "code", "name"}).AddRow(1, nil, "Finance"))
 		mock.ExpectCommit()
 
-		repo := NewSectorSearchRepository(mock)
+		repo := NewSectorSearchRepository(mockExec)
 		res, err := repo.UpsertNewSectors(ctx, []models.SectorNew{{Id: 1, Name: "Finance"}})
 		assert.NoError(t, err)
 		assert.Len(t, res, 1)
@@ -135,18 +141,18 @@ func TestSectorSearchRepository(t *testing.T) {
 	})
 
 	t.Run("success_subsectors_batch_upsert", func(t *testing.T) {
-		mock, err := pgxmock.NewPool()
+		db, mock, err := sqlmock.New()
 		assert.NoError(t, err)
-		defer mock.Close()
+		defer db.Close()
+		mockExec := database.NewDBExecutor(db)
 
 		mock.ExpectBegin()
-		batch := mock.ExpectBatch()
-		batch.ExpectQuery("INSERT INTO idxstock.sub_sector").
+		mock.ExpectQuery("INSERT INTO sub_sector").
 			WithArgs(1, (*string)(nil), "Bank", (*string)(nil), (*string)(nil), 1).
-			WillReturnRows(pgxmock.NewRows([]string{"id", "code", "name"}).AddRow(1, nil, "Bank"))
+			WillReturnRows(sqlmock.NewRows([]string{"id", "code", "name"}).AddRow(1, nil, "Bank"))
 		mock.ExpectCommit()
 
-		repo := NewSectorSearchRepository(mock)
+		repo := NewSectorSearchRepository(mockExec)
 		res, err := repo.UpsertNewSubSectors(ctx, []models.SubSector{{Id: 1, Name: "Bank", SectorId: 1}})
 		assert.NoError(t, err)
 		assert.Len(t, res, 1)
@@ -159,11 +165,12 @@ func TestStockRepository(t *testing.T) {
 	ctx := context.Background()
 
 	t.Run("empty_upsert", func(t *testing.T) {
-		mock, err := pgxmock.NewPool()
+		db, _, err := sqlmock.New()
 		assert.NoError(t, err)
-		defer mock.Close()
+		defer db.Close()
+		mockExec := database.NewDBExecutor(db)
 
-		repo := NewStockRepository(mock)
+		repo := NewStockRepository(mockExec)
 		err = repo.BatchInsertStocks(ctx, nil)
 		assert.NoError(t, err)
 
@@ -173,19 +180,19 @@ func TestStockRepository(t *testing.T) {
 	})
 
 	t.Run("success_batch_insert_stocks", func(t *testing.T) {
-		mock, err := pgxmock.NewPool()
+		db, mock, err := sqlmock.New()
 		assert.NoError(t, err)
-		defer mock.Close()
+		defer db.Close()
+		mockExec := database.NewDBExecutor(db)
 
 		d := "2020-01-01"
 		mock.ExpectBegin()
-		batch := mock.ExpectBatch()
-		batch.ExpectExec("INSERT INTO idxstock.stocks").
-			WithArgs("BBCA", "Bank Central Asia", &d, (*string)(nil), int64(100), "Main").
-			WillReturnResult(pgxmock.NewResult("INSERT", 1))
+		mock.ExpectExec("INSERT INTO stocks").
+			WithArgs("BBCA", "Bank Central Asia", d, "", int64(100), "Main").
+			WillReturnResult(sqlmock.NewResult(1, 1))
 		mock.ExpectCommit()
 
-		repo := NewStockRepository(mock)
+		repo := NewStockRepository(mockExec)
 		err = repo.BatchInsertStocks(ctx, []models.Stock{
 			{Code: "BBCA", CompanyName: "Bank Central Asia", ListingDate: &d, DelistingDate: nil, Shares: 100, ListingBoard: "Main"},
 		})
@@ -194,24 +201,24 @@ func TestStockRepository(t *testing.T) {
 	})
 
 	t.Run("success_upsert_stocks_detail", func(t *testing.T) {
-		mock, err := pgxmock.NewPool()
+		db, mock, err := sqlmock.New()
 		assert.NoError(t, err)
-		defer mock.Close()
+		defer db.Close()
+		mockExec := database.NewDBExecutor(db)
 
 		mock.ExpectBegin()
-		batch := mock.ExpectBatch()
 		d := "2020-01-01"
 		s := models.PasardanaStockDetail{
 			Id: 1, Code: "BBCA", Name: "Bank Central Asia", ListingDate: &d, FoundingDate: &d,
 		}
-		batch.ExpectQuery("INSERT INTO idxstock.stocks").
-			WithArgs(s.Id, s.Code, s.Name, s.ListingDate, s.TotalEmployees, s.AnnualDividend,
+		mock.ExpectQuery("INSERT INTO stocks").
+			WithArgs(s.Id, s.Code, s.Name, *s.ListingDate, s.TotalEmployees, s.AnnualDividend,
 				s.GeneralInformation, s.FoundingDate, s.FkNewSectorId, s.FkNewSubSectorId,
 				s.FkNewIndustryId, s.FkNewSubIndustryId).
-			WillReturnRows(pgxmock.NewRows([]string{"id", "code", "name"}).AddRow(1, "BBCA", "Bank Central Asia"))
+			WillReturnRows(sqlmock.NewRows([]string{"id", "code", "name"}).AddRow(1, "BBCA", "Bank Central Asia"))
 		mock.ExpectCommit()
 
-		repo := NewStockRepository(mock)
+		repo := NewStockRepository(mockExec)
 		res, err := repo.UpsertStocksDetail(ctx, []models.PasardanaStockDetail{s})
 		assert.NoError(t, err)
 		assert.Len(t, res, 1)
@@ -219,18 +226,19 @@ func TestStockRepository(t *testing.T) {
 	})
 
 	t.Run("UpdateDelistingDate_found", func(t *testing.T) {
-		mock, err := pgxmock.NewPool()
+		db, mock, err := sqlmock.New()
 		assert.NoError(t, err)
-		defer mock.Close()
+		defer db.Close()
+		mockExec := database.NewDBExecutor(db)
 
-		repo := NewStockRepository(mock)
+		repo := NewStockRepository(mockExec)
 		code := "BBCA"
 		dateStr := "2024-04-17"
 
-		rows := pgxmock.NewRows([]string{"id", "code", "name"}).
+		rows := sqlmock.NewRows([]string{"id", "code", "name"}).
 			AddRow(1, "BBCA", "Bank Central Asia")
 
-		mock.ExpectQuery("UPDATE idxstock.stocks SET delisting_date").
+		mock.ExpectQuery("UPDATE stocks SET delisting_date").
 			WithArgs(dateStr, code).
 			WillReturnRows(rows)
 
@@ -242,17 +250,18 @@ func TestStockRepository(t *testing.T) {
 	})
 
 	t.Run("UpdateDelistingDate_not_found_ErrNoRows", func(t *testing.T) {
-		mock, err := pgxmock.NewPool()
+		db, mock, err := sqlmock.New()
 		assert.NoError(t, err)
-		defer mock.Close()
+		defer db.Close()
+		mockExec := database.NewDBExecutor(db)
 
-		repo := NewStockRepository(mock)
+		repo := NewStockRepository(mockExec)
 		code := "UNKNOWN"
 		dateStr := "2024-04-17"
 
-		mock.ExpectQuery("UPDATE idxstock.stocks SET delisting_date").
+		mock.ExpectQuery("UPDATE stocks SET delisting_date").
 			WithArgs(dateStr, code).
-			WillReturnError(pgx.ErrNoRows)
+			WillReturnError(sql.ErrNoRows)
 
 		stock, err := repo.UpdateDelistingDate(ctx, code, dateStr)
 		assert.NoError(t, err)
@@ -261,15 +270,16 @@ func TestStockRepository(t *testing.T) {
 	})
 
 	t.Run("UpdateDelistingDate_error", func(t *testing.T) {
-		mock, err := pgxmock.NewPool()
+		db, mock, err := sqlmock.New()
 		assert.NoError(t, err)
-		defer mock.Close()
+		defer db.Close()
+		mockExec := database.NewDBExecutor(db)
 
-		repo := NewStockRepository(mock)
+		repo := NewStockRepository(mockExec)
 		code := "ERR"
 		dateStr := "2024-04-17"
 
-		mock.ExpectQuery("UPDATE idxstock.stocks SET delisting_date").
+		mock.ExpectQuery("UPDATE stocks SET delisting_date").
 			WithArgs(dateStr, code).
 			WillReturnError(assert.AnError)
 
@@ -280,11 +290,12 @@ func TestStockRepository(t *testing.T) {
 	})
 
 	t.Run("FindMissingCodes", func(t *testing.T) {
-		mock, err := pgxmock.NewPool()
+		db, mock, err := sqlmock.New()
 		assert.NoError(t, err)
-		defer mock.Close()
+		defer db.Close()
+		mockExec := database.NewDBExecutor(db)
 
-		repo := NewStockRepository(mock)
+		repo := NewStockRepository(mockExec)
 
 		t.Run("empty", func(t *testing.T) {
 			res, err := repo.FindMissingCodes(ctx, nil)
@@ -293,9 +304,9 @@ func TestStockRepository(t *testing.T) {
 		})
 
 		t.Run("with_codes", func(t *testing.T) {
-			rows := pgxmock.NewRows([]string{"c"}).AddRow("BBRI")
-			mock.ExpectQuery("SELECT c FROM").
-				WithArgs([]string{"BBCA", "BBRI"}).
+			rows := sqlmock.NewRows([]string{"code"}).AddRow("BBRI")
+			mock.ExpectQuery("WITH input\\(code\\) AS").
+				WithArgs("BBCA", "BBRI").
 				WillReturnRows(rows)
 
 			missing, err := repo.FindMissingCodes(ctx, []string{"BBCA", "BBRI"})
@@ -310,67 +321,69 @@ func TestHistoryRepository(t *testing.T) {
 	ctx := context.Background()
 
 	t.Run("empty_upsert", func(t *testing.T) {
-		mock, err := pgxmock.NewPool()
+		db, _, err := sqlmock.New()
 		assert.NoError(t, err)
-		defer mock.Close()
+		defer db.Close()
+		mockExec := database.NewDBExecutor(db)
 
-		repo := NewHistoryRepository(mock)
+		repo := NewHistoryRepository(mockExec)
 		err = repo.BatchUpsertStockHistory(ctx, nil)
 		assert.NoError(t, err)
 	})
 
 	t.Run("begin_tx_error", func(t *testing.T) {
-		mock, err := pgxmock.NewPool()
+		db, mock, err := sqlmock.New()
 		assert.NoError(t, err)
-		defer mock.Close()
+		defer db.Close()
+		mockExec := database.NewDBExecutor(db)
 
 		mock.ExpectBegin().WillReturnError(assert.AnError)
 
-		repo := NewHistoryRepository(mock)
+		repo := NewHistoryRepository(mockExec)
 		err = repo.BatchUpsertStockHistory(ctx, []models.StockHistory{{Code: "BBCA"}})
 		assert.Error(t, err)
 		assert.NoError(t, mock.ExpectationsWereMet())
 	})
 
 	t.Run("success_batch_upsert_stock_history", func(t *testing.T) {
-		mock, err := pgxmock.NewPool()
+		db, mock, err := sqlmock.New()
 		assert.NoError(t, err)
-		defer mock.Close()
+		defer db.Close()
+		mockExec := database.NewDBExecutor(db)
 
 		mock.ExpectBegin()
-		batch := mock.ExpectBatch()
 		date := time.Date(2024, 1, 1, 0, 0, 0, 0, time.UTC)
 		rec := models.StockHistory{Code: "BBCA", Date: date}
-		batch.ExpectExec("INSERT INTO idxstock.history").
+		mock.ExpectExec("INSERT INTO history").
 			WithArgs(
-				rec.Code, rec.Date, rec.Previous, rec.OpenPrice, rec.FirstTrade,
+				rec.Code, "2024-01-01", rec.Previous, rec.OpenPrice, rec.FirstTrade,
 				rec.High, rec.Low, rec.Close, rec.Change, rec.Volume, rec.Value,
 				rec.Frequency, rec.IndexIndividual, rec.Offer, rec.OfferVolume,
 				rec.Bid, rec.BidVolume, rec.ListedShares, rec.TradebleShares,
 				rec.WeightForIndex, rec.ForeignSell, rec.ForeignBuy, (*string)(nil),
 				rec.NonRegularVolume, rec.NonRegularValue, rec.NonRegularFrequency,
 			).
-			WillReturnResult(pgxmock.NewResult("INSERT", 1))
+			WillReturnResult(sqlmock.NewResult(1, 1))
 		mock.ExpectCommit()
 
-		repo := NewHistoryRepository(mock)
+		repo := NewHistoryRepository(mockExec)
 		err = repo.BatchUpsertStockHistory(ctx, []models.StockHistory{rec})
 		assert.NoError(t, err)
 		assert.NoError(t, mock.ExpectationsWereMet())
 	})
 
 	t.Run("batch_upsert_stock_history_exec_error_continues", func(t *testing.T) {
-		mock, err := pgxmock.NewPool()
+		db, mock, err := sqlmock.New()
 		assert.NoError(t, err)
-		defer mock.Close()
+		defer db.Close()
+		mockExec := database.NewDBExecutor(db)
 
 		mock.ExpectBegin()
-		batch := mock.ExpectBatch()
 		date := time.Date(2024, 1, 1, 0, 0, 0, 0, time.UTC)
 		rec := models.StockHistory{Code: "BBCA", Date: date}
-		batch.ExpectExec("INSERT INTO idxstock.history").
+		mock.ExpectExec("INSERT INTO history").
 			WithArgs(
-				rec.Code, rec.Date, rec.Previous, rec.OpenPrice, rec.FirstTrade,
+				rec.Code, "2024-01-01", rec.Previous, rec.OpenPrice, rec.FirstTrade,
 				rec.High, rec.Low, rec.Close, rec.Change, rec.Volume, rec.Value,
 				rec.Frequency, rec.IndexIndividual, rec.Offer, rec.OfferVolume,
 				rec.Bid, rec.BidVolume, rec.ListedShares, rec.TradebleShares,
@@ -380,34 +393,36 @@ func TestHistoryRepository(t *testing.T) {
 			WillReturnError(assert.AnError)
 		mock.ExpectCommit()
 
-		repo := NewHistoryRepository(mock)
+		repo := NewHistoryRepository(mockExec)
 		err = repo.BatchUpsertStockHistory(ctx, []models.StockHistory{rec})
 		assert.NoError(t, err)
 		assert.NoError(t, mock.ExpectationsWereMet())
 	})
 
 	t.Run("GetHistoryByCode", func(t *testing.T) {
-		mock, err := pgxmock.NewPool()
+		db, mock, err := sqlmock.New()
 		assert.NoError(t, err)
-		defer mock.Close()
+		defer db.Close()
+		mockExec := database.NewDBExecutor(db)
 
-		repo := NewHistoryRepository(mock)
+		repo := NewHistoryRepository(mockExec)
 
-		date := time.Date(2024, 1, 1, 0, 0, 0, 0, time.UTC)
-		rows := pgxmock.NewRows([]string{
+		dateStr := "2024-01-01"
+		lastModStr := "2024-01-01 10:00:00"
+		rows := sqlmock.NewRows([]string{
 			"code", "date", "previous", "open_price", "first_trade", "high", "low", "close", "change",
 			"volume", "value", "frequency", "index_individual", "offer", "offer_volume", "bid", "bid_volume",
 			"listed_shares", "tradeble_shares", "weight_for_index", "foreign_sell", "foreign_buy",
 			"delisting_date", "non_regular_volume", "non_regular_value", "non_regular_frequency", "last_modified",
 		}).AddRow(
-			"BBCA", date, nil, nil, nil, nil, nil, nil, nil,
+			"BBCA", dateStr, nil, nil, nil, nil, nil, nil, nil,
 			nil, nil, nil, nil, nil, nil, nil, nil,
 			nil, nil, nil, nil, nil, nil, nil,
-			nil, nil, time.Now(),
+			nil, nil, lastModStr,
 		)
 
-		mock.ExpectQuery("SELECT (.+) FROM idxstock.history").
-			WithArgs("BBCA", (*time.Time)(nil), (*time.Time)(nil)).
+		mock.ExpectQuery("SELECT (.+) FROM history").
+			WithArgs("BBCA", nil, nil).
 			WillReturnRows(rows)
 
 		hist, err := repo.GetHistoryByCode(ctx, "BBCA", nil, nil)
@@ -418,17 +433,18 @@ func TestHistoryRepository(t *testing.T) {
 	})
 
 	t.Run("ApplyStockSplit", func(t *testing.T) {
-		mock, err := pgxmock.NewPool()
+		db, mock, err := sqlmock.New()
 		assert.NoError(t, err)
-		defer mock.Close()
+		defer db.Close()
+		mockExec := database.NewDBExecutor(db)
 
-		repo := NewHistoryRepository(mock)
+		repo := NewHistoryRepository(mockExec)
 		start := time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC)
 		end := time.Date(2021, 1, 1, 0, 0, 0, 0, time.UTC)
 
-		mock.ExpectExec("UPDATE idxstock.history").
-			WithArgs("BBCA", 5.0, start, end).
-			WillReturnResult(pgxmock.NewResult("UPDATE", 10))
+		mock.ExpectExec("UPDATE history").
+			WithArgs("BBCA", 5.0, "2020-01-01", "2021-01-01").
+			WillReturnResult(sqlmock.NewResult(1, 10))
 
 		err = repo.ApplyStockSplit(ctx, "BBCA", start, end, 5.0)
 		assert.NoError(t, err)

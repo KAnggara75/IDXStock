@@ -2,9 +2,10 @@ package repositories
 
 import (
 	"context"
+	"database/sql"
 	"fmt"
+	"strings"
 
-	"github.com/jackc/pgx/v5"
 	"github.com/sirupsen/logrus"
 
 	"github.com/KAnggara75/IDXStock/internal/models"
@@ -39,46 +40,42 @@ func (r *stockRepository) BatchInsertStocks(ctx context.Context, stocks []models
 	defer tx.Rollback(ctx)
 
 	query := `
-		INSERT INTO idxstock.stocks (code, name, listing_date, delisting_date, shares, board)
-		VALUES ($1, $2, $3::DATE, NULLIF($4, '')::DATE, $5, $6)
+		INSERT INTO stocks (code, name, listing_date, delisting_date, shares, board)
+		VALUES (?1, ?2, ?3, NULLIF(?4, ''), ?5, ?6)
 		ON CONFLICT (code) DO UPDATE SET
-			name = EXCLUDED.name,
-			listing_date = EXCLUDED.listing_date,
-			delisting_date = EXCLUDED.delisting_date,
-			shares = EXCLUDED.shares,
-			board = EXCLUDED.board,
-			last_modified = now()
+			name = excluded.name,
+			listing_date = excluded.listing_date,
+			delisting_date = excluded.delisting_date,
+			shares = excluded.shares,
+			board = excluded.board,
+			last_modified = datetime('now')
 		WHERE
-			stocks.name IS DISTINCT FROM EXCLUDED.name OR
-			stocks.listing_date IS DISTINCT FROM EXCLUDED.listing_date OR
-			stocks.delisting_date IS DISTINCT FROM EXCLUDED.delisting_date OR
-			stocks.shares IS DISTINCT FROM EXCLUDED.shares OR
-			stocks.board IS DISTINCT FROM EXCLUDED.board
+			stocks.name IS NOT excluded.name OR
+			stocks.listing_date IS NOT excluded.listing_date OR
+			stocks.delisting_date IS NOT excluded.delisting_date OR
+			stocks.shares IS NOT excluded.shares OR
+			stocks.board IS NOT excluded.board
 	`
 
-	batch := &pgx.Batch{}
-	for _, s := range stocks {
-		batch.Queue(query, s.Code, s.CompanyName, s.ListingDate, s.DelistingDate, s.Shares, s.ListingBoard)
-	}
-
-	br := tx.SendBatch(ctx, batch)
-	defer br.Close()
-
 	var changedCount int64
-	for i := range stocks {
-		cmdTag, err := br.Exec()
+	for i, s := range stocks {
+		var listDate, delistDate string
+		if s.ListingDate != nil {
+			listDate = *s.ListingDate
+		}
+		if s.DelistingDate != nil {
+			delistDate = *s.DelistingDate
+		}
+
+		res, err := tx.Exec(ctx, query, s.Code, s.CompanyName, listDate, delistDate, s.Shares, s.ListingBoard)
 		if err != nil {
 			return fmt.Errorf("failed to execute batch statement %d: %w", i, err)
 		}
 
-		if cmdTag.RowsAffected() > 0 {
+		if res.RowsAffected() > 0 {
 			changedCount++
 			logrus.Debugf("Data changed for stock: %s (%s)", stocks[i].Code, stocks[i].CompanyName)
 		}
-	}
-
-	if err := br.Close(); err != nil {
-		return fmt.Errorf("failed to close batch result: %w", err)
 	}
 
 	if err := tx.Commit(ctx); err != nil {
@@ -86,25 +83,28 @@ func (r *stockRepository) BatchInsertStocks(ctx context.Context, stocks []models
 	}
 
 	logrus.Debugf("Successfully processed %d stocks, %d records updated/inserted", len(stocks), changedCount)
-
 	return nil
 }
 
 func (r *stockRepository) UpdateDelistingDate(ctx context.Context, code, delistingDate string) (*models.StockResponse, error) {
 	query := `
-		UPDATE idxstock.stocks
-		SET delisting_date = $1::DATE, last_modified = now()
-		WHERE code = $2
+		UPDATE stocks
+		SET delisting_date = ?1, last_modified = datetime('now')
+		WHERE code = ?2
 		RETURNING id, code, name
 	`
 
 	var sr models.StockResponse
-	err := r.pool.QueryRow(ctx, query, delistingDate, code).Scan(&sr.Id, &sr.Code, &sr.Name)
+	var id sql.NullInt64
+	err := r.pool.QueryRow(ctx, query, delistingDate, code).Scan(&id, &sr.Code, &sr.Name)
 	if err != nil {
-		if err == pgx.ErrNoRows {
+		if err == sql.ErrNoRows {
 			return nil, nil // No stock found with this code
 		}
 		return nil, fmt.Errorf("failed to update delisting date for %s: %w", code, err)
+	}
+	if id.Valid {
+		sr.Id = int(id.Int64)
 	}
 
 	return &sr, nil
@@ -122,79 +122,65 @@ func (r *stockRepository) UpsertStocksDetail(ctx context.Context, data []models.
 	defer tx.Rollback(ctx)
 
 	query := `
-		INSERT INTO idxstock.stocks (
+		INSERT INTO stocks (
 			id, code, name, listing_date, total_employees, annual_dividend,
 			general_information, founding_date, sector_id, sub_sector_id,
 			industry_id, sub_industry_id, last_modified
 		)
-		VALUES ($1, $2, $3, $4::DATE, $5, $6, $7, $8, $9, $10, $11, $12, now())
+		VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12, datetime('now'))
 		ON CONFLICT (code) DO UPDATE SET
-			id = EXCLUDED.id,
-			name = EXCLUDED.name,
-			listing_date = EXCLUDED.listing_date,
-			total_employees = EXCLUDED.total_employees,
-			annual_dividend = EXCLUDED.annual_dividend,
-			general_information = EXCLUDED.general_information,
-			founding_date = EXCLUDED.founding_date,
-			sector_id = EXCLUDED.sector_id,
-			sub_sector_id = EXCLUDED.sub_sector_id,
-			industry_id = EXCLUDED.industry_id,
-			sub_industry_id = EXCLUDED.sub_industry_id,
-			last_modified = now()
+			id = excluded.id,
+			name = excluded.name,
+			listing_date = excluded.listing_date,
+			total_employees = excluded.total_employees,
+			annual_dividend = excluded.annual_dividend,
+			general_information = excluded.general_information,
+			founding_date = excluded.founding_date,
+			sector_id = excluded.sector_id,
+			sub_sector_id = excluded.sub_sector_id,
+			industry_id = excluded.industry_id,
+			sub_industry_id = excluded.sub_industry_id,
+			last_modified = datetime('now')
 		WHERE
-			stocks.id IS DISTINCT FROM EXCLUDED.id OR
-			stocks.name IS DISTINCT FROM EXCLUDED.name OR
-			stocks.listing_date IS DISTINCT FROM EXCLUDED.listing_date OR
-			stocks.total_employees IS DISTINCT FROM EXCLUDED.total_employees OR
-			stocks.annual_dividend IS DISTINCT FROM EXCLUDED.annual_dividend OR
-			stocks.general_information IS DISTINCT FROM EXCLUDED.general_information OR
-			stocks.founding_date IS DISTINCT FROM EXCLUDED.founding_date OR
-			stocks.sector_id IS DISTINCT FROM EXCLUDED.sector_id OR
-			stocks.sub_sector_id IS DISTINCT FROM EXCLUDED.sub_sector_id OR
-			stocks.industry_id IS DISTINCT FROM EXCLUDED.industry_id OR
-			stocks.sub_industry_id IS DISTINCT FROM EXCLUDED.sub_industry_id
+			stocks.id IS NOT excluded.id OR
+			stocks.name IS NOT excluded.name OR
+			stocks.listing_date IS NOT excluded.listing_date OR
+			stocks.total_employees IS NOT excluded.total_employees OR
+			stocks.annual_dividend IS NOT excluded.annual_dividend OR
+			stocks.general_information IS NOT excluded.general_information OR
+			stocks.founding_date IS NOT excluded.founding_date OR
+			stocks.sector_id IS NOT excluded.sector_id OR
+			stocks.sub_sector_id IS NOT excluded.sub_sector_id OR
+			stocks.industry_id IS NOT excluded.industry_id OR
+			stocks.sub_industry_id IS NOT excluded.sub_industry_id
 		RETURNING id, code, name
 	`
 
-	batch := &pgx.Batch{}
-	for _, s := range data {
-		batch.Queue(query,
-			s.Id, s.Code, s.Name, s.ListingDate, s.TotalEmployees, s.AnnualDividend,
-			s.GeneralInformation, s.FoundingDate, s.FkNewSectorId, s.FkNewSubSectorId,
-			s.FkNewIndustryId, s.FkNewSubIndustryId,
-		)
-	}
-
-	br := tx.SendBatch(ctx, batch)
-	defer br.Close()
-
 	updatedStocks := make([]models.StockResponse, 0)
 	for i, s := range data {
-		rows, err := br.Query()
+		var listDate string
+		if s.ListingDate != nil {
+			listDate = *s.ListingDate
+		}
+
+		var sr models.StockResponse
+		var id sql.NullInt64
+		err := tx.QueryRow(ctx, query,
+			s.Id, s.Code, s.Name, listDate, s.TotalEmployees, s.AnnualDividend,
+			s.GeneralInformation, s.FoundingDate, s.FkNewSectorId, s.FkNewSubSectorId,
+			s.FkNewIndustryId, s.FkNewSubIndustryId,
+		).Scan(&id, &sr.Code, &sr.Name)
+
 		if err != nil {
-			logrus.Errorf("[%s] Sync failed: %v", s.Code, err)
+			logrus.Debugf("[%d/%d] [%s]: No Change Detected or skipped", i+1, len(data), s.Code)
 			continue
 		}
 
-		hasChange := false
-		for rows.Next() {
-			var sr models.StockResponse
-			if err := rows.Scan(&sr.Id, &sr.Code, &sr.Name); err == nil {
-				updatedStocks = append(updatedStocks, sr)
-				hasChange = true
-			}
+		if id.Valid {
+			sr.Id = int(id.Int64)
 		}
-		rows.Close()
-
-		if hasChange {
-			logrus.Infof("[%d/%d] [%s]: Data Change Detected - Synced", i+1, len(data), s.Code)
-		} else {
-			logrus.Debugf("[%d/%d] [%s]: No Change Detected", i+1, len(data), s.Code)
-		}
-	}
-
-	if err := br.Close(); err != nil {
-		return nil, fmt.Errorf("failed to close batch result: %w", err)
+		updatedStocks = append(updatedStocks, sr)
+		logrus.Infof("[%d/%d] [%s]: Data Change Detected - Synced", i+1, len(data), s.Code)
 	}
 
 	if err := tx.Commit(ctx); err != nil {
@@ -203,18 +189,27 @@ func (r *stockRepository) UpsertStocksDetail(ctx context.Context, data []models.
 
 	return updatedStocks, nil
 }
+
 func (r *stockRepository) FindMissingCodes(ctx context.Context, codes []string) ([]string, error) {
 	if len(codes) == 0 {
 		return nil, nil
 	}
 
-	query := `
-		SELECT c FROM (SELECT UNNEST($1::VARCHAR[]) as c) AS input
-		LEFT JOIN idxstock.stocks s ON input.c = s.code
-		WHERE s.code IS NULL
-	`
+	placeholders := make([]string, len(codes))
+	args := make([]any, len(codes))
+	for i, c := range codes {
+		placeholders[i] = fmt.Sprintf("(?%d)", i+1)
+		args[i] = c
+	}
 
-	rows, err := r.pool.Query(ctx, query, codes)
+	query := fmt.Sprintf(`
+		WITH input(code) AS (VALUES %s)
+		SELECT input.code FROM input
+		LEFT JOIN stocks s ON input.code = s.code
+		WHERE s.code IS NULL
+	`, strings.Join(placeholders, ", "))
+
+	rows, err := r.pool.Query(ctx, query, args...)
 	if err != nil {
 		return nil, fmt.Errorf("failed to find missing codes: %w", err)
 	}

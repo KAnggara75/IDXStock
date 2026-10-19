@@ -1,13 +1,13 @@
-CREATE TABLE IF NOT EXISTS idxstock.brokers (
-    code VARCHAR PRIMARY KEY,
-    name VARCHAR NOT NULL,
-    investor_type VARCHAR,
-    total_value BIGINT,
-    net_value BIGINT,
-    buy_value BIGINT,
-    sell_value BIGINT,
-    total_volume BIGINT,
-    total_frequency BIGINT,
-    broker_group VARCHAR, -- Menghindari tipe reserved word 'group'
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+CREATE TABLE IF NOT EXISTS brokers (
+    code TEXT PRIMARY KEY,
+    name TEXT NOT NULL,
+    investor_type TEXT,
+    total_value INTEGER,
+    net_value INTEGER,
+    buy_value INTEGER,
+    sell_value INTEGER,
+    total_volume INTEGER,
+    total_frequency INTEGER,
+    broker_group TEXT,
+    created_at TEXT DEFAULT (datetime('now'))
 );

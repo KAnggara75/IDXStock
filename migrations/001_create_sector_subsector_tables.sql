@@ -1,20 +1,20 @@
-CREATE TABLE IF NOT EXISTS idxstock.sector
+CREATE TABLE IF NOT EXISTS sector
 (
-    id             INT            PRIMARY KEY,
-    code           VARCHAR(50),
-    name           VARCHAR(200)   NOT NULL,
-    name_en        VARCHAR(200),
+    id             INTEGER        PRIMARY KEY,
+    code           TEXT,
+    name           TEXT           NOT NULL,
+    name_en        TEXT,
     description    TEXT,
-    last_modified  TIMESTAMPTZ    NOT NULL DEFAULT now()
+    last_modified  TEXT           NOT NULL DEFAULT (datetime('now'))
 );
 
-CREATE TABLE IF NOT EXISTS idxstock.sub_sector
+CREATE TABLE IF NOT EXISTS sub_sector
 (
-    id             INT            PRIMARY KEY,
-    code           VARCHAR(50),
-    name           VARCHAR(200)   NOT NULL,
-    name_en        VARCHAR(200),
+    id             INTEGER        PRIMARY KEY,
+    code           TEXT,
+    name           TEXT           NOT NULL,
+    name_en        TEXT,
     description    TEXT,
-    sector_id      INT            NOT NULL REFERENCES idxstock.sector(id),
-    last_modified  TIMESTAMPTZ    NOT NULL DEFAULT now()
+    sector_id      INTEGER        NOT NULL REFERENCES sector(id),
+    last_modified  TEXT           NOT NULL DEFAULT (datetime('now'))
 );

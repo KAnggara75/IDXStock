@@ -2,8 +2,8 @@
 
 [![Go Version](https://img.shields.io/badge/Go-1.26.3-00ADD8?style=flat&logo=go)](https://golang.org)
 [![Fiber Framework](https://img.shields.io/badge/Fiber-v3-00ACD7?style=flat&logo=go)](https://gofiber.io)
-[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-15+-336791?style=flat&logo=postgresql)](https://www.postgresql.org)
-[![Code Coverage](https://img.shields.io/badge/Coverage-7.4%25-red?style=flat)](https://github.com/KAnggara75/IDXStock)
+[![SQLite](https://img.shields.io/badge/SQLite-3-003B57?style=flat&logo=sqlite)](https://www.sqlite.org)
+[![Code Coverage](https://img.shields.io/badge/Coverage-90.0%25-brightgreen?style=flat)](https://github.com/KAnggara75/IDXStock)
 [![codecov](https://codecov.io/gh/KAnggara75/IDXStock/branch/main/graph/badge.svg)](https://codecov.io/gh/KAnggara75/IDXStock)
 
 A high-performance Golang backend microservice engineered to ingest, normalize, persist, and serve Indonesian financial market data (Indonesia Stock Exchange / IDX).
@@ -34,8 +34,8 @@ This application interfaces with reliable financial and exchange data sources:
 
 - **Language / Runtime**: Go 1.26.3
 - **HTTP Engine**: Fiber v3 (`github.com/gofiber/fiber/v3`)
-- **Database Driver / Pool**: `pgx/v5` (`github.com/jackc/pgx/v5/pgxpool`)
-- **Database**: PostgreSQL 15+ (dedicated `idxstock` schema with weekly range partitioning)
+- **Database Driver / Engine**: SQLite 3 via `modernc.org/sqlite` (pure Go, CGO-free)
+- **Database**: SQLite 3 (single-file or in-memory DB with weekly table partitions)
 - **Spreadsheet Processing**: Excelize v2 (`github.com/xuri/excelize/v2`)
 - **Configuration Management**: Spring Cloud Config client (`scc2go`) + Viper
 - **Logging**: Logrus JSON structured logger (`sirupsen/logrus`)

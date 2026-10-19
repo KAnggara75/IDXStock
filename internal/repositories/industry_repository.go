@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/jackc/pgx/v5"
 	"github.com/sirupsen/logrus"
 
 	"github.com/KAnggara75/IDXStock/internal/models"
@@ -37,36 +36,23 @@ func (r *industryRepository) UpsertIndustries(ctx context.Context, industries []
 	defer tx.Rollback(ctx)
 
 	query := `
-		INSERT INTO idxstock.industry (id, name, last_modified)
-		VALUES ($1, $2, now())
+		INSERT INTO industry (id, name, last_modified)
+		VALUES (?1, ?2, datetime('now'))
 		ON CONFLICT (id) DO UPDATE SET
-			name = EXCLUDED.name,
-			last_modified = now()
-		WHERE (idxstock.industry.name IS DISTINCT FROM EXCLUDED.name)
+			name = excluded.name,
+			last_modified = datetime('now')
+		WHERE (industry.name IS NOT excluded.name)
 		RETURNING id, name
 	`
 
-	batch := &pgx.Batch{}
-	for _, ind := range industries {
-		batch.Queue(query, ind.Id, ind.Name)
-	}
-
-	br := tx.SendBatch(ctx, batch)
-	defer br.Close()
-
 	updated := make([]models.BasicResponse, 0)
-	for i := 0; i < len(industries); i++ {
+	for _, ind := range industries {
 		var res models.BasicResponse
-		err := br.QueryRow().Scan(&res.Id, &res.Name)
+		err := tx.QueryRow(ctx, query, ind.Id, ind.Name).Scan(&res.Id, &res.Name)
 		if err != nil {
-			// Skip if RETURNING didn't return anything (though for UPSERT it usually should)
 			continue
 		}
 		updated = append(updated, res)
-	}
-
-	if err := br.Close(); err != nil {
-		return nil, fmt.Errorf("failed to close batch result: %w", err)
 	}
 
 	if err := tx.Commit(ctx); err != nil {
@@ -89,37 +75,25 @@ func (r *industryRepository) UpsertSubIndustries(ctx context.Context, subIndustr
 	defer tx.Rollback(ctx)
 
 	query := `
-		INSERT INTO idxstock.sub_industry (id, name, industry_id, last_modified)
-		VALUES ($1, $2, $3, now())
+		INSERT INTO sub_industry (id, name, industry_id, last_modified)
+		VALUES (?1, ?2, ?3, datetime('now'))
 		ON CONFLICT (id) DO UPDATE SET
-			name = EXCLUDED.name,
-			industry_id = EXCLUDED.industry_id,
-			last_modified = now()
-		WHERE (idxstock.sub_industry.name IS DISTINCT FROM EXCLUDED.name OR
-		       idxstock.sub_industry.industry_id IS DISTINCT FROM EXCLUDED.industry_id)
+			name = excluded.name,
+			industry_id = excluded.industry_id,
+			last_modified = datetime('now')
+		WHERE (sub_industry.name IS NOT excluded.name OR
+		       sub_industry.industry_id IS NOT excluded.industry_id)
 		RETURNING id, name
 	`
 
-	batch := &pgx.Batch{}
-	for _, sub := range subIndustries {
-		batch.Queue(query, sub.Id, sub.Name, sub.IndustryId)
-	}
-
-	br := tx.SendBatch(ctx, batch)
-	defer br.Close()
-
 	updated := make([]models.BasicResponse, 0)
-	for i := 0; i < len(subIndustries); i++ {
+	for _, sub := range subIndustries {
 		var res models.BasicResponse
-		err := br.QueryRow().Scan(&res.Id, &res.Name)
+		err := tx.QueryRow(ctx, query, sub.Id, sub.Name, sub.IndustryId).Scan(&res.Id, &res.Name)
 		if err != nil {
 			continue
 		}
 		updated = append(updated, res)
-	}
-
-	if err := br.Close(); err != nil {
-		return nil, fmt.Errorf("failed to close batch result: %w", err)
 	}
 
 	if err := tx.Commit(ctx); err != nil {

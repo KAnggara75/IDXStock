@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/jackc/pgx/v5"
 	"github.com/sirupsen/logrus"
 
 	"github.com/KAnggara75/IDXStock/internal/models"
@@ -39,7 +38,7 @@ func (r *historyRepository) BatchUpsertStockHistory(ctx context.Context, records
 	defer tx.Rollback(ctx)
 
 	query := `
-		INSERT INTO idxstock.history AS h (
+		INSERT INTO history (
 			code, date, previous, open_price, first_trade, high, low, close, change,
 			volume, value, frequency, index_individual, offer, offer_volume,
 			bid, bid_volume, listed_shares, tradeble_shares, weight_for_index,
@@ -47,97 +46,83 @@ func (r *historyRepository) BatchUpsertStockHistory(ctx context.Context, records
 			non_regular_value, non_regular_frequency, last_modified
 		)
 		VALUES (
-			$1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15,
-			$16, $17, $18, $19, $20, $21, $22, $23::DATE, $24, $25, $26, now()
+			?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12, ?13, ?14, ?15,
+			?16, ?17, ?18, ?19, ?20, ?21, ?22, ?23, ?24, ?25, ?26, datetime('now')
 		)
 		ON CONFLICT (code, date) DO UPDATE SET
-			previous = COALESCE(EXCLUDED.previous, h.previous),
-			open_price = COALESCE(EXCLUDED.open_price, h.open_price),
-			first_trade = COALESCE(EXCLUDED.first_trade, h.first_trade),
-			high = COALESCE(EXCLUDED.high, h.high),
-			low = COALESCE(EXCLUDED.low, h.low),
-			close = COALESCE(EXCLUDED.close, h.close),
-			change = COALESCE(EXCLUDED.change, h.change),
-			volume = COALESCE(EXCLUDED.volume, h.volume),
-			value = COALESCE(EXCLUDED.value, h.value),
-			frequency = COALESCE(EXCLUDED.frequency, h.frequency),
-			index_individual = COALESCE(EXCLUDED.index_individual, h.index_individual),
-			offer = COALESCE(EXCLUDED.offer, h.offer),
-			offer_volume = COALESCE(EXCLUDED.offer_volume, h.offer_volume),
-			bid = COALESCE(EXCLUDED.bid, h.bid),
-			bid_volume = COALESCE(EXCLUDED.bid_volume, h.bid_volume),
-			listed_shares = COALESCE(EXCLUDED.listed_shares, h.listed_shares),
-			tradeble_shares = COALESCE(EXCLUDED.tradeble_shares, h.tradeble_shares),
-			weight_for_index = COALESCE(EXCLUDED.weight_for_index, h.weight_for_index),
-			foreign_sell = COALESCE(EXCLUDED.foreign_sell, h.foreign_sell),
-			foreign_buy = COALESCE(EXCLUDED.foreign_buy, h.foreign_buy),
-			delisting_date = COALESCE(EXCLUDED.delisting_date, h.delisting_date),
-			non_regular_volume = COALESCE(EXCLUDED.non_regular_volume, h.non_regular_volume),
-			non_regular_value = COALESCE(EXCLUDED.non_regular_value, h.non_regular_value),
-			non_regular_frequency = COALESCE(EXCLUDED.non_regular_frequency, h.non_regular_frequency),
-			last_modified = now()
+			previous = COALESCE(excluded.previous, history.previous),
+			open_price = COALESCE(excluded.open_price, history.open_price),
+			first_trade = COALESCE(excluded.first_trade, history.first_trade),
+			high = COALESCE(excluded.high, history.high),
+			low = COALESCE(excluded.low, history.low),
+			close = COALESCE(excluded.close, history.close),
+			change = COALESCE(excluded.change, history.change),
+			volume = COALESCE(excluded.volume, history.volume),
+			value = COALESCE(excluded.value, history.value),
+			frequency = COALESCE(excluded.frequency, history.frequency),
+			index_individual = COALESCE(excluded.index_individual, history.index_individual),
+			offer = COALESCE(excluded.offer, history.offer),
+			offer_volume = COALESCE(excluded.offer_volume, history.offer_volume),
+			bid = COALESCE(excluded.bid, history.bid),
+			bid_volume = COALESCE(excluded.bid_volume, history.bid_volume),
+			listed_shares = COALESCE(excluded.listed_shares, history.listed_shares),
+			tradeble_shares = COALESCE(excluded.tradeble_shares, history.tradeble_shares),
+			weight_for_index = COALESCE(excluded.weight_for_index, history.weight_for_index),
+			foreign_sell = COALESCE(excluded.foreign_sell, history.foreign_sell),
+			foreign_buy = COALESCE(excluded.foreign_buy, history.foreign_buy),
+			delisting_date = COALESCE(excluded.delisting_date, history.delisting_date),
+			non_regular_volume = COALESCE(excluded.non_regular_volume, history.non_regular_volume),
+			non_regular_value = COALESCE(excluded.non_regular_value, history.non_regular_value),
+			non_regular_frequency = COALESCE(excluded.non_regular_frequency, history.non_regular_frequency),
+			last_modified = datetime('now')
 		WHERE
-			(EXCLUDED.previous IS NOT NULL AND h.previous IS DISTINCT FROM EXCLUDED.previous) OR
-			(EXCLUDED.open_price IS NOT NULL AND h.open_price IS DISTINCT FROM EXCLUDED.open_price) OR
-			(EXCLUDED.first_trade IS NOT NULL AND h.first_trade IS DISTINCT FROM EXCLUDED.first_trade) OR
-			(EXCLUDED.high IS NOT NULL AND h.high IS DISTINCT FROM EXCLUDED.high) OR
-			(EXCLUDED.low IS NOT NULL AND h.low IS DISTINCT FROM EXCLUDED.low) OR
-			(EXCLUDED.close IS NOT NULL AND h.close IS DISTINCT FROM EXCLUDED.close) OR
-			(EXCLUDED.change IS NOT NULL AND h.change IS DISTINCT FROM EXCLUDED.change) OR
-			(EXCLUDED.volume IS NOT NULL AND h.volume IS DISTINCT FROM EXCLUDED.volume) OR
-			(EXCLUDED.value IS NOT NULL AND h.value IS DISTINCT FROM EXCLUDED.value) OR
-			(EXCLUDED.frequency IS NOT NULL AND h.frequency IS DISTINCT FROM EXCLUDED.frequency) OR
-			(EXCLUDED.index_individual IS NOT NULL AND h.index_individual IS DISTINCT FROM EXCLUDED.index_individual) OR
-			(EXCLUDED.offer IS NOT NULL AND h.offer IS DISTINCT FROM EXCLUDED.offer) OR
-			(EXCLUDED.offer_volume IS NOT NULL AND h.offer_volume IS DISTINCT FROM EXCLUDED.offer_volume) OR
-			(EXCLUDED.bid IS NOT NULL AND h.bid IS DISTINCT FROM EXCLUDED.bid) OR
-			(EXCLUDED.bid_volume IS NOT NULL AND h.bid_volume IS DISTINCT FROM EXCLUDED.bid_volume) OR
-			(EXCLUDED.listed_shares IS NOT NULL AND h.listed_shares IS DISTINCT FROM EXCLUDED.listed_shares) OR
-			(EXCLUDED.tradeble_shares IS NOT NULL AND h.tradeble_shares IS DISTINCT FROM EXCLUDED.tradeble_shares) OR
-			(EXCLUDED.weight_for_index IS NOT NULL AND h.weight_for_index IS DISTINCT FROM EXCLUDED.weight_for_index) OR
-			(EXCLUDED.foreign_sell IS NOT NULL AND h.foreign_sell IS DISTINCT FROM EXCLUDED.foreign_sell) OR
-			(EXCLUDED.foreign_buy IS NOT NULL AND h.foreign_buy IS DISTINCT FROM EXCLUDED.foreign_buy) OR
-			(EXCLUDED.delisting_date IS NOT NULL AND h.delisting_date IS DISTINCT FROM EXCLUDED.delisting_date) OR
-			(EXCLUDED.non_regular_volume IS NOT NULL AND h.non_regular_volume IS DISTINCT FROM EXCLUDED.non_regular_volume) OR
-			(EXCLUDED.non_regular_value IS NOT NULL AND h.non_regular_value IS DISTINCT FROM EXCLUDED.non_regular_value) OR
-			(EXCLUDED.non_regular_frequency IS NOT NULL AND h.non_regular_frequency IS DISTINCT FROM EXCLUDED.non_regular_frequency)
+			(excluded.previous IS NOT NULL AND history.previous IS NOT excluded.previous) OR
+			(excluded.open_price IS NOT NULL AND history.open_price IS NOT excluded.open_price) OR
+			(excluded.first_trade IS NOT NULL AND history.first_trade IS NOT excluded.first_trade) OR
+			(excluded.high IS NOT NULL AND history.high IS NOT excluded.high) OR
+			(excluded.low IS NOT NULL AND history.low IS NOT excluded.low) OR
+			(excluded.close IS NOT NULL AND history.close IS NOT excluded.close) OR
+			(excluded.change IS NOT NULL AND history.change IS NOT excluded.change) OR
+			(excluded.volume IS NOT NULL AND history.volume IS NOT excluded.volume) OR
+			(excluded.value IS NOT NULL AND history.value IS NOT excluded.value) OR
+			(excluded.frequency IS NOT NULL AND history.frequency IS NOT excluded.frequency) OR
+			(excluded.index_individual IS NOT NULL AND history.index_individual IS NOT excluded.index_individual) OR
+			(excluded.offer IS NOT NULL AND history.offer IS NOT excluded.offer) OR
+			(excluded.offer_volume IS NOT NULL AND history.offer_volume IS NOT excluded.offer_volume) OR
+			(excluded.bid IS NOT NULL AND history.bid IS NOT excluded.bid) OR
+			(excluded.bid_volume IS NOT NULL AND history.bid_volume IS NOT excluded.bid_volume) OR
+			(excluded.listed_shares IS NOT NULL AND history.listed_shares IS NOT excluded.listed_shares) OR
+			(excluded.tradeble_shares IS NOT NULL AND history.tradeble_shares IS NOT excluded.tradeble_shares) OR
+			(excluded.weight_for_index IS NOT NULL AND history.weight_for_index IS NOT excluded.weight_for_index) OR
+			(excluded.foreign_sell IS NOT NULL AND history.foreign_sell IS NOT excluded.foreign_sell) OR
+			(excluded.foreign_buy IS NOT NULL AND history.foreign_buy IS NOT excluded.foreign_buy) OR
+			(excluded.delisting_date IS NOT NULL AND history.delisting_date IS NOT excluded.delisting_date) OR
+			(excluded.non_regular_volume IS NOT NULL AND history.non_regular_volume IS NOT excluded.non_regular_volume) OR
+			(excluded.non_regular_value IS NOT NULL AND history.non_regular_value IS NOT excluded.non_regular_value) OR
+			(excluded.non_regular_frequency IS NOT NULL AND history.non_regular_frequency IS NOT excluded.non_regular_frequency)
 	`
 
-	batch := &pgx.Batch{}
+	var affected int64
 	for _, rec := range records {
 		var dd *string
 		if rec.DelistingDate != nil && *rec.DelistingDate != "" {
 			dd = rec.DelistingDate
 		}
 
-		batch.Queue(query,
-			rec.Code, rec.Date, rec.Previous, rec.OpenPrice, rec.FirstTrade,
+		dateStr := rec.Date.Format("2006-01-02")
+		ct, err := tx.Exec(ctx, query,
+			rec.Code, dateStr, rec.Previous, rec.OpenPrice, rec.FirstTrade,
 			rec.High, rec.Low, rec.Close, rec.Change, rec.Volume, rec.Value,
 			rec.Frequency, rec.IndexIndividual, rec.Offer, rec.OfferVolume,
 			rec.Bid, rec.BidVolume, rec.ListedShares, rec.TradebleShares,
 			rec.WeightForIndex, rec.ForeignSell, rec.ForeignBuy, dd,
 			rec.NonRegularVolume, rec.NonRegularValue, rec.NonRegularFrequency,
 		)
-	}
-
-	br := tx.SendBatch(ctx, batch)
-	defer br.Close()
-
-	var affected int64
-	for i := range records {
-		ct, err := br.Exec()
 		if err != nil {
-			// If it fails because of foreign key constraint, we might want to log it and continue
-			// but for now let's fail the whole batch to be safe, or just log.
-			// Actually history depends on stocks table.
-			logrus.Warnf("Failed to upsert history for %s on %s: %v", records[i].Code, records[i].Date.Format("2006-01-02"), err)
+			logrus.Warnf("Failed to upsert history for %s on %s: %v", rec.Code, dateStr, err)
 			continue
 		}
 		affected += ct.RowsAffected()
-	}
-
-	if err := br.Close(); err != nil {
-		return fmt.Errorf("failed to close batch: %w", err)
 	}
 
 	if err := tx.Commit(ctx); err != nil {
@@ -147,7 +132,16 @@ func (r *historyRepository) BatchUpsertStockHistory(ctx context.Context, records
 	logrus.Infof("Batch upsert completed. Affected rows: %d", affected)
 	return nil
 }
+
 func (r *historyRepository) GetHistoryByCode(ctx context.Context, code string, startDate, endDate *time.Time) ([]models.StockHistory, error) {
+	var startStr, endStr any
+	if startDate != nil {
+		startStr = startDate.Format("2006-01-02")
+	}
+	if endDate != nil {
+		endStr = endDate.Format("2006-01-02")
+	}
+
 	query := `
 		SELECT
 			code, date, previous, open_price, first_trade, high, low, close, change,
@@ -155,14 +149,14 @@ func (r *historyRepository) GetHistoryByCode(ctx context.Context, code string, s
 			bid, bid_volume, listed_shares, tradeble_shares, weight_for_index,
 			foreign_sell, foreign_buy, delisting_date, non_regular_volume,
 			non_regular_value, non_regular_frequency, last_modified
-		FROM idxstock.history
-		WHERE code = $1
-			AND ($2::DATE IS NULL OR date >= $2)
-			AND ($3::DATE IS NULL OR date <= $3)
+		FROM history
+		WHERE code = ?1
+			AND (?2 IS NULL OR date >= ?2)
+			AND (?3 IS NULL OR date <= ?3)
 		ORDER BY date ASC
 	`
 
-	rows, err := r.pool.Query(ctx, query, code, startDate, endDate)
+	rows, err := r.pool.Query(ctx, query, code, startStr, endStr)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get history for %s: %w", code, err)
 	}
@@ -171,16 +165,24 @@ func (r *historyRepository) GetHistoryByCode(ctx context.Context, code string, s
 	var records []models.StockHistory
 	for rows.Next() {
 		var h models.StockHistory
+		var dateStr string
+		var lastModifiedStr string
 		err := rows.Scan(
-			&h.Code, &h.Date, &h.Previous, &h.OpenPrice, &h.FirstTrade,
+			&h.Code, &dateStr, &h.Previous, &h.OpenPrice, &h.FirstTrade,
 			&h.High, &h.Low, &h.Close, &h.Change, &h.Volume, &h.Value,
 			&h.Frequency, &h.IndexIndividual, &h.Offer, &h.OfferVolume,
 			&h.Bid, &h.BidVolume, &h.ListedShares, &h.TradebleShares,
 			&h.WeightForIndex, &h.ForeignSell, &h.ForeignBuy, &h.DelistingDate,
-			&h.NonRegularVolume, &h.NonRegularValue, &h.NonRegularFrequency, &h.LastModified,
+			&h.NonRegularVolume, &h.NonRegularValue, &h.NonRegularFrequency, &lastModifiedStr,
 		)
 		if err != nil {
 			return nil, fmt.Errorf("failed to scan history record: %w", err)
+		}
+		if t, err := time.Parse("2006-01-02", dateStr); err == nil {
+			h.Date = t
+		}
+		if t, err := time.Parse("2006-01-02 15:04:05", lastModifiedStr); err == nil {
+			h.LastModified = t
 		}
 		records = append(records, h)
 	}
@@ -189,33 +191,36 @@ func (r *historyRepository) GetHistoryByCode(ctx context.Context, code string, s
 }
 
 func (r *historyRepository) ApplyStockSplit(ctx context.Context, code string, startDate, endDate time.Time, multiplier float64) error {
+	startStr := startDate.Format("2006-01-02")
+	endStr := endDate.Format("2006-01-02")
+
 	query := `
-		UPDATE idxstock.history
+		UPDATE history
 		SET
-			previous = previous / $2,
-			open_price = open_price / $2,
-			first_trade = first_trade / $2,
-			high = high / $2,
-			low = low / $2,
-			close = close / $2,
-			offer = offer / $2,
-			bid = bid / $2,
-			volume = volume * $2,
-			offer_volume = offer_volume * $2,
-			bid_volume = bid_volume * $2,
-			listed_shares = listed_shares * $2,
-			tradeble_shares = tradeble_shares * $2,
-			foreign_sell = foreign_sell * $2,
-			foreign_buy = foreign_buy * $2,
-			non_regular_volume = non_regular_volume * $2,
-			change = (close / $2) - (previous / $2),
-			last_modified = now()
-		WHERE code = $1
-		  AND date >= $3
-		  AND date <= $4
+			previous = previous / ?2,
+			open_price = open_price / ?2,
+			first_trade = first_trade / ?2,
+			high = high / ?2,
+			low = low / ?2,
+			close = close / ?2,
+			offer = offer / ?2,
+			bid = bid / ?2,
+			volume = volume * ?2,
+			offer_volume = offer_volume * ?2,
+			bid_volume = bid_volume * ?2,
+			listed_shares = listed_shares * ?2,
+			tradeble_shares = tradeble_shares * ?2,
+			foreign_sell = foreign_sell * ?2,
+			foreign_buy = foreign_buy * ?2,
+			non_regular_volume = non_regular_volume * ?2,
+			change = (close / ?2) - (previous / ?2),
+			last_modified = datetime('now')
+		WHERE code = ?1
+		  AND date >= ?3
+		  AND date <= ?4
 	`
 
-	_, err := r.pool.Exec(ctx, query, code, multiplier, startDate, endDate)
+	_, err := r.pool.Exec(ctx, query, code, multiplier, startStr, endStr)
 	if err != nil {
 		return fmt.Errorf("failed to apply stock split for %s: %w", code, err)
 	}
