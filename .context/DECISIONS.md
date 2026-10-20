@@ -137,3 +137,22 @@
 - **Consequences**:
   - Provides instant local mapping between Pasardana IDs and ticker codes for background synchronization jobs.
   - Prevents redundant network calls to `GetAllSimpleStocks` during historical price fetching and profile sync.
+
+---
+
+## ADR-010: Consolidation of Master Stocks & Historical Price Dataset via Zstandard Release Asset
+
+- **Status**: Accepted
+- **Date**: 2026-10-20
+- **Source**: Developer request & Database consolidation (`database/master_stocks.db`, GitHub Release `v2026-10`)
+- **Context**: Historical EOD price records (1.34+ million rows spanning 2019 to 2026) were previously fragmented across 83 monthly SQLite databases (`database/history/YYYY-MM.db`). Querying across multiple months required managing multiple SQLite connections or external file switching. Furthermore, storing the compiled master SQLite database (~437 MB uncompressed) directly in Git would severely bloat repository clone size and breach version control best practices.
+- **Decision**: 
+  - Consolidate all historical EOD prices into a unified table `stocks_history` inside `database/master_stocks.db`.
+  - Implement high-performance B-tree indexes (`idx_stocks_history_code_date` composite, `idx_stocks_history_date`, `idx_stocks_history_code`) to guarantee sub-millisecond query execution over 1.34M rows.
+  - Exclude raw binary database files (`database/master_stocks.db`, `database/master_stocks.db-shm`, `database/master_stocks.db-wal`, and `database/master_stocks.db.zst`) from Git tracking via `.gitignore`.
+  - Compress the unified master database with high-ratio Zstandard compression (`zstd -19`) producing `database/master_stocks.db.zst` (~58 MB, ~86% reduction).
+  - Clean up fragmented monthly draft releases and publish a consolidated draft release (`v2026-10`) tagged as `--latest` with `master_stocks.db.zst` attached as the primary distribution asset.
+- **Consequences**:
+  - Provides a single, unified database schema for master company metadata, taxonomic classifications, broker data, and comprehensive historical price series.
+  - Eliminates large binary artifacts from git history while providing automated, versioned release distribution on GitHub.
+  - Consumers download and decompress a single portable artifact (`master_stocks.db.zst`) for immediate queryability.

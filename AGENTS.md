@@ -27,7 +27,7 @@ All comprehensive, ground-truth architectural documentation is maintained in the
 - **Database Driver / Engine**: SQLite 3 via `modernc.org/sqlite` (pure Go, CGO-free, default `database/master_stocks.db`)
 - **Config Management**: Spring Cloud Config client via `github.com/KAnggara75/scc2go` + Viper
 - **Logging**: Logrus JSON formatted logger (`internal/config/logger.go`)
-- **Historical Datasets**: Monthly archives compressed with Zstandard (`zstd -19`) and distributed via GitHub Releases
+- **Historical Datasets**: Consolidated master database snapshot (`master_stocks.db.zst`) compressed with Zstandard (`zstd -19`) and distributed via GitHub Releases (e.g. `v2026-10`)
 
 ---
 

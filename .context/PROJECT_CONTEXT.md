@@ -18,7 +18,7 @@ IDXStock is a specialized Golang backend microservice engineered to ingest, norm
   - Streaming and caching company logo images.
   - Ingesting and persisting daily broker transactions and summaries.
   - Serving interactive OpenAPI/Swagger documentation at `/swagger/*`.
-  - Monthly historical price dataset packaging via Zstandard-compressed SQLite releases (`YYYY-MM.db.zst`).
+  - Consolidated master and historical price dataset packaging via Zstandard-compressed SQLite release (`master_stocks.db.zst` attached to release `v2026-10`).
 - **Out-of-Scope**:
   - Direct order routing or real-time trading execution.
   - User authentication and multi-tenant authorization (delegated to upstream API gateway/proxy).
