@@ -111,5 +111,5 @@
 ## `scripts`
 - **Responsibility**: Build, dataset management, and automated release utilities.
 - **Entry / Key Files**:
-  - `scripts/create_history_draft_releases.sh` — Compresses 83 monthly SQLite historical databases (`database/history/YYYY-MM.db`) using `zstd -19` and creates GitHub Draft Releases (`vYYYY-MM`) with attached `YYYY-MM.db.zst` assets.
+  - `scripts/archive_and_release.sh` — Compresses `database/master_stocks.db` using `zstd -19` and replaces the database snapshot asset in the latest GitHub release via `gh release upload --clobber` (run manually).
   - `build_local.sh` — Local container image build script using Podman.
