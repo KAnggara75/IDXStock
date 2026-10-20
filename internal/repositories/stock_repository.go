@@ -50,8 +50,7 @@ func (r *stockRepository) BatchInsertStocks(ctx context.Context, stocks []models
 			listing_date = excluded.listing_date,
 			delisting_date = excluded.delisting_date,
 			shares = excluded.shares,
-			board = excluded.board,
-			last_modified = datetime('now')
+			board = excluded.board
 		WHERE
 			stocks.name IS NOT excluded.name OR
 			stocks.listing_date IS NOT excluded.listing_date OR
@@ -92,22 +91,18 @@ func (r *stockRepository) BatchInsertStocks(ctx context.Context, stocks []models
 func (r *stockRepository) UpdateDelistingDate(ctx context.Context, code, delistingDate string) (*models.StockResponse, error) {
 	query := `
 		UPDATE stocks
-		SET delisting_date = ?1, last_modified = datetime('now')
+		SET delisting_date = ?1
 		WHERE code = ?2
-		RETURNING id, code, name
+		RETURNING code, name
 	`
 
 	var sr models.StockResponse
-	var id sql.NullInt64
-	err := r.pool.QueryRow(ctx, query, delistingDate, code).Scan(&id, &sr.Code, &sr.Name)
+	err := r.pool.QueryRow(ctx, query, delistingDate, code).Scan(&sr.Code, &sr.Name)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return nil, nil // No stock found with this code
 		}
 		return nil, fmt.Errorf("failed to update delisting date for %s: %w", code, err)
-	}
-	if id.Valid {
-		sr.Id = int(id.Int64)
 	}
 
 	return &sr, nil
@@ -126,37 +121,25 @@ func (r *stockRepository) UpsertStocksDetail(ctx context.Context, data []models.
 
 	query := `
 		INSERT INTO stocks (
-			id, code, name, listing_date, total_employees, annual_dividend,
-			general_information, founding_date, sector_id, sector_sub_id,
-			industry_id, industry_sub_id, last_modified
+			code, name, listing_date, sector_id, sector_sub_id,
+			industry_id, industry_sub_id
 		)
-		VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12, datetime('now'))
+		VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7)
 		ON CONFLICT (code) DO UPDATE SET
-			id = excluded.id,
 			name = excluded.name,
 			listing_date = excluded.listing_date,
-			total_employees = excluded.total_employees,
-			annual_dividend = excluded.annual_dividend,
-			general_information = excluded.general_information,
-			founding_date = excluded.founding_date,
 			sector_id = excluded.sector_id,
 			sector_sub_id = excluded.sector_sub_id,
 			industry_id = excluded.industry_id,
-			industry_sub_id = excluded.industry_sub_id,
-			last_modified = datetime('now')
+			industry_sub_id = excluded.industry_sub_id
 		WHERE
-			stocks.id IS NOT excluded.id OR
 			stocks.name IS NOT excluded.name OR
 			stocks.listing_date IS NOT excluded.listing_date OR
-			stocks.total_employees IS NOT excluded.total_employees OR
-			stocks.annual_dividend IS NOT excluded.annual_dividend OR
-			stocks.general_information IS NOT excluded.general_information OR
-			stocks.founding_date IS NOT excluded.founding_date OR
 			stocks.sector_id IS NOT excluded.sector_id OR
 			stocks.sector_sub_id IS NOT excluded.sector_sub_id OR
 			stocks.industry_id IS NOT excluded.industry_id OR
 			stocks.industry_sub_id IS NOT excluded.industry_sub_id
-		RETURNING id, code, name
+		RETURNING code, name
 	`
 
 	updatedStocks := make([]models.StockResponse, 0)
@@ -167,21 +150,16 @@ func (r *stockRepository) UpsertStocksDetail(ctx context.Context, data []models.
 		}
 
 		var sr models.StockResponse
-		var id sql.NullInt64
 		err := tx.QueryRow(ctx, query,
-			s.Id, s.Code, s.Name, listDate, s.TotalEmployees, s.AnnualDividend,
-			s.GeneralInformation, s.FoundingDate, s.FkNewSectorId, s.FkNewSubSectorId,
+			s.Code, s.Name, listDate, s.FkNewSectorId, s.FkNewSubSectorId,
 			s.FkNewIndustryId, s.FkNewSubIndustryId,
-		).Scan(&id, &sr.Code, &sr.Name)
+		).Scan(&sr.Code, &sr.Name)
 
 		if err != nil {
 			logrus.Debugf("[%d/%d] [%s]: No Change Detected or skipped", i+1, len(data), s.Code)
 			continue
 		}
 
-		if id.Valid {
-			sr.Id = int(id.Int64)
-		}
 		updatedStocks = append(updatedStocks, sr)
 		logrus.Infof("[%d/%d] [%s]: Data Change Detected - Synced", i+1, len(data), s.Code)
 	}
@@ -234,8 +212,7 @@ func (r *stockRepository) GetAllStocks(ctx context.Context, filter models.GetAll
 	query := `
 		SELECT
 			code, name, listing_date, delisting_date, shares, board,
-			total_employees, annual_dividend, general_information, founding_date,
-			sector_id, sector_sub_id, industry_id, industry_sub_id, last_modified
+			sector_id, sector_sub_id, industry_id, industry_sub_id
 		FROM stocks
 		WHERE (?1 = '' OR UPPER(board) = UPPER(?1))
 		  AND (?2 = '' OR UPPER(code) LIKE '%' || UPPER(?2) || '%' OR UPPER(name) LIKE '%' || UPPER(?2) || '%')
@@ -251,14 +228,12 @@ func (r *stockRepository) GetAllStocks(ctx context.Context, filter models.GetAll
 	stocks := make([]models.StockDetailResponse, 0)
 	for rows.Next() {
 		var s models.StockDetailResponse
-		var delistingDate, totalEmployees, generalInfo, foundingDate sql.NullString
-		var annualDividend sql.NullFloat64
+		var delistingDate sql.NullString
 		var sectorId, sectorSubId, industryId, industrySubId sql.NullInt64
 
 		err := rows.Scan(
 			&s.Code, &s.Name, &s.ListingDate, &delistingDate, &s.Shares, &s.Board,
-			&totalEmployees, &annualDividend, &generalInfo, &foundingDate,
-			&sectorId, &sectorSubId, &industryId, &industrySubId, &s.LastModified,
+			&sectorId, &sectorSubId, &industryId, &industrySubId,
 		)
 		if err != nil {
 			return nil, fmt.Errorf("failed to scan stock row: %w", err)
@@ -266,18 +241,6 @@ func (r *stockRepository) GetAllStocks(ctx context.Context, filter models.GetAll
 
 		if delistingDate.Valid {
 			s.DelistingDate = &delistingDate.String
-		}
-		if totalEmployees.Valid {
-			s.TotalEmployees = &totalEmployees.String
-		}
-		if annualDividend.Valid {
-			s.AnnualDividend = &annualDividend.Float64
-		}
-		if generalInfo.Valid {
-			s.GeneralInformation = &generalInfo.String
-		}
-		if foundingDate.Valid {
-			s.FoundingDate = &foundingDate.String
 		}
 		if sectorId.Valid {
 			v := int(sectorId.Int64)
@@ -306,22 +269,19 @@ func (r *stockRepository) GetStockByCode(ctx context.Context, code string) (*mod
 	query := `
 		SELECT
 			code, name, listing_date, delisting_date, shares, board,
-			total_employees, annual_dividend, general_information, founding_date,
-			sector_id, sector_sub_id, industry_id, industry_sub_id, last_modified
+			sector_id, sector_sub_id, industry_id, industry_sub_id
 		FROM stocks
 		WHERE UPPER(code) = UPPER(?1)
 		LIMIT 1
 	`
 
 	var s models.StockDetailResponse
-	var delistingDate, totalEmployees, generalInfo, foundingDate sql.NullString
-	var annualDividend sql.NullFloat64
+	var delistingDate sql.NullString
 	var sectorId, sectorSubId, industryId, industrySubId sql.NullInt64
 
 	err := r.pool.QueryRow(ctx, query, strings.TrimSpace(code)).Scan(
 		&s.Code, &s.Name, &s.ListingDate, &delistingDate, &s.Shares, &s.Board,
-		&totalEmployees, &annualDividend, &generalInfo, &foundingDate,
-		&sectorId, &sectorSubId, &industryId, &industrySubId, &s.LastModified,
+		&sectorId, &sectorSubId, &industryId, &industrySubId,
 	)
 	if err != nil {
 		if err == sql.ErrNoRows {
@@ -332,18 +292,6 @@ func (r *stockRepository) GetStockByCode(ctx context.Context, code string) (*mod
 
 	if delistingDate.Valid {
 		s.DelistingDate = &delistingDate.String
-	}
-	if totalEmployees.Valid {
-		s.TotalEmployees = &totalEmployees.String
-	}
-	if annualDividend.Valid {
-		s.AnnualDividend = &annualDividend.Float64
-	}
-	if generalInfo.Valid {
-		s.GeneralInformation = &generalInfo.String
-	}
-	if foundingDate.Valid {
-		s.FoundingDate = &foundingDate.String
 	}
 	if sectorId.Valid {
 		v := int(sectorId.Int64)

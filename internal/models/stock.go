@@ -1,21 +1,17 @@
 package models
 
 type Stock struct {
-	Id                 *int     `json:"id,omitempty"`
-	Code               string   `json:"code"`
-	CompanyName        string   `json:"company_name"`
-	ListingDate        *string  `json:"listing_date,omitempty"`
-	DelistingDate      *string  `json:"delisting_date,omitempty"`
-	ListingBoard       string   `json:"listing_board"`
-	Shares             int64    `json:"shares"`
-	TotalEmployees     *string  `json:"total_employees,omitempty"`
-	AnnualDividend     *float64 `json:"annual_dividend,omitempty"`
-	GeneralInformation *string  `json:"general_information,omitempty"`
-	FoundingDate       *string  `json:"founding_date,omitempty"`
-	SectorId           *int     `json:"sector_id,omitempty"`
-	SectorSubId        *int     `json:"sector_sub_id,omitempty"`
-	IndustryId         *int     `json:"industry_id,omitempty"`
-	IndustrySubId      *int     `json:"industry_sub_id,omitempty"`
+	Id            *int    `json:"id,omitempty"`
+	Code          string  `json:"code"`
+	CompanyName   string  `json:"company_name"`
+	ListingDate   *string `json:"listing_date,omitempty"`
+	DelistingDate *string `json:"delisting_date,omitempty"`
+	ListingBoard  string  `json:"listing_board"`
+	Shares        int64   `json:"shares"`
+	SectorId      *int    `json:"sector_id,omitempty"`
+	SectorSubId   *int    `json:"sector_sub_id,omitempty"`
+	IndustryId    *int    `json:"industry_id,omitempty"`
+	IndustrySubId *int    `json:"industry_sub_id,omitempty"`
 }
 
 type PasardanaStockDetail struct {
@@ -65,19 +61,14 @@ type GetAllStocksFilter struct {
 }
 
 type StockDetailResponse struct {
-	Code               string   `json:"code"`
-	Name               string   `json:"name"`
-	ListingDate        string   `json:"listing_date"`
-	DelistingDate      *string  `json:"delisting_date,omitempty"`
-	Shares             int64    `json:"shares"`
-	Board              string   `json:"board"`
-	TotalEmployees     *string  `json:"total_employees,omitempty"`
-	AnnualDividend     *float64 `json:"annual_dividend,omitempty"`
-	GeneralInformation *string  `json:"general_information,omitempty"`
-	FoundingDate       *string  `json:"founding_date,omitempty"`
-	SectorId           *int     `json:"sector_id,omitempty"`
-	SectorSubId        *int     `json:"sector_sub_id,omitempty"`
-	IndustryId         *int     `json:"industry_id,omitempty"`
-	IndustrySubId      *int     `json:"industry_sub_id,omitempty"`
-	LastModified       string   `json:"last_modified"`
+	Code          string  `json:"code"`
+	Name          string  `json:"name"`
+	ListingDate   string  `json:"listing_date"`
+	DelistingDate *string `json:"delisting_date,omitempty"`
+	Shares        int64   `json:"shares"`
+	Board         string  `json:"board"`
+	SectorId      *int    `json:"sector_id,omitempty"`
+	SectorSubId   *int    `json:"sector_sub_id,omitempty"`
+	IndustryId    *int    `json:"industry_id,omitempty"`
+	IndustrySubId *int    `json:"industry_sub_id,omitempty"`
 }

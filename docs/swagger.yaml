@@ -52,17 +52,11 @@ definitions:
     type: object
   models.Stock:
     properties:
-      annual_dividend:
-        type: number
       code:
         type: string
       company_name:
         type: string
       delisting_date:
-        type: string
-      founding_date:
-        type: string
-      general_information:
         type: string
       id:
         type: integer
@@ -80,29 +74,19 @@ definitions:
         type: integer
       shares:
         type: integer
-      total_employees:
-        type: string
     type: object
   models.StockDetailResponse:
     properties:
-      annual_dividend:
-        type: number
       board:
         type: string
       code:
         type: string
       delisting_date:
         type: string
-      founding_date:
-        type: string
-      general_information:
-        type: string
       industry_id:
         type: integer
       industry_sub_id:
         type: integer
-      last_modified:
-        type: string
       listing_date:
         type: string
       name:
@@ -113,8 +97,6 @@ definitions:
         type: integer
       shares:
         type: integer
-      total_employees:
-        type: string
     type: object
   models.StockResponse:
     properties:

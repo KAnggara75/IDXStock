@@ -212,10 +212,9 @@ func TestStockRepository(t *testing.T) {
 			Id: 1, Code: "BBCA", Name: "Bank Central Asia", ListingDate: &d, FoundingDate: &d,
 		}
 		mock.ExpectQuery("INSERT INTO stocks").
-			WithArgs(s.Id, s.Code, s.Name, *s.ListingDate, s.TotalEmployees, s.AnnualDividend,
-				s.GeneralInformation, s.FoundingDate, s.FkNewSectorId, s.FkNewSubSectorId,
+			WithArgs(s.Code, s.Name, *s.ListingDate, s.FkNewSectorId, s.FkNewSubSectorId,
 				s.FkNewIndustryId, s.FkNewSubIndustryId).
-			WillReturnRows(sqlmock.NewRows([]string{"id", "code", "name"}).AddRow(1, "BBCA", "Bank Central Asia"))
+			WillReturnRows(sqlmock.NewRows([]string{"code", "name"}).AddRow("BBCA", "Bank Central Asia"))
 		mock.ExpectCommit()
 
 		repo := NewStockRepository(mockExec)
@@ -235,8 +234,8 @@ func TestStockRepository(t *testing.T) {
 		code := "BBCA"
 		dateStr := "2024-04-17"
 
-		rows := sqlmock.NewRows([]string{"id", "code", "name"}).
-			AddRow(1, "BBCA", "Bank Central Asia")
+		rows := sqlmock.NewRows([]string{"code", "name"}).
+			AddRow("BBCA", "Bank Central Asia")
 
 		mock.ExpectQuery("UPDATE stocks SET delisting_date").
 			WithArgs(dateStr, code).
@@ -327,16 +326,13 @@ func TestStockRepository(t *testing.T) {
 
 			cols := []string{
 				"code", "name", "listing_date", "delisting_date", "shares", "board",
-				"total_employees", "annual_dividend", "general_information", "founding_date",
-				"sector_id", "sector_sub_id", "industry_id", "industry_sub_id", "last_modified",
+				"sector_id", "sector_sub_id", "industry_id", "industry_sub_id",
 			}
 			rows := sqlmock.NewRows(cols).
 				AddRow("BBCA", "Bank Central Asia", "2000-05-31", nil, int64(123456), "UTAMA",
-					"25000", 150.5, "Banking info", "1957-02-21",
-					1, 2, 3, 4, "2024-01-01 10:00:00").
+					1, 2, 3, 4).
 				AddRow("AADI", "Adaro Andalan", "2024-12-05", "2025-01-01", int64(7890), "PENGEMBANGAN",
-					nil, nil, nil, nil,
-					nil, nil, nil, nil, "2024-12-05 09:00:00")
+					nil, nil, nil, nil)
 
 			mock.ExpectQuery("SELECT (.+) FROM stocks WHERE").
 				WithArgs("UTAMA", "BCA").
@@ -346,11 +342,8 @@ func TestStockRepository(t *testing.T) {
 			assert.NoError(t, err)
 			assert.Len(t, stocks, 2)
 			assert.Equal(t, "BBCA", stocks[0].Code)
-			assert.Equal(t, "25000", *stocks[0].TotalEmployees)
-			assert.Equal(t, 150.5, *stocks[0].AnnualDividend)
 			assert.Equal(t, 1, *stocks[0].SectorId)
 			assert.Equal(t, "AADI", stocks[1].Code)
-			assert.Nil(t, stocks[1].TotalEmployees)
 			assert.NoError(t, mock.ExpectationsWereMet())
 		})
 
@@ -539,13 +532,11 @@ func TestHistoryRepository(t *testing.T) {
 
 		columns := []string{
 			"code", "name", "listing_date", "delisting_date", "shares", "board",
-			"total_employees", "annual_dividend", "general_information", "founding_date",
-			"sector_id", "sector_sub_id", "industry_id", "industry_sub_id", "last_modified",
+			"sector_id", "sector_sub_id", "industry_id", "industry_sub_id",
 		}
 		rows := sqlmock.NewRows(columns).AddRow(
 			"BBCA", "Bank Central Asia Tbk", "1982-01-01", "2024-01-01", int64(1000000), "UTAMA",
-			"25000", 150.5, "Banking and finance", "1957-02-21",
-			1, 2, 3, 4, "2024-01-01 00:00:00",
+			1, 2, 3, 4,
 		)
 
 		mock.ExpectQuery("SELECT (.+) FROM stocks WHERE UPPER\\(code\\) = UPPER\\(\\?1\\) LIMIT 1").
@@ -559,14 +550,6 @@ func TestHistoryRepository(t *testing.T) {
 		assert.Equal(t, "Bank Central Asia Tbk", stock.Name)
 		assert.NotNil(t, stock.DelistingDate)
 		assert.Equal(t, "2024-01-01", *stock.DelistingDate)
-		assert.NotNil(t, stock.TotalEmployees)
-		assert.Equal(t, "25000", *stock.TotalEmployees)
-		assert.NotNil(t, stock.AnnualDividend)
-		assert.Equal(t, 150.5, *stock.AnnualDividend)
-		assert.NotNil(t, stock.GeneralInformation)
-		assert.Equal(t, "Banking and finance", *stock.GeneralInformation)
-		assert.NotNil(t, stock.FoundingDate)
-		assert.Equal(t, "1957-02-21", *stock.FoundingDate)
 		assert.NotNil(t, stock.SectorId)
 		assert.Equal(t, 1, *stock.SectorId)
 		assert.NotNil(t, stock.SectorSubId)

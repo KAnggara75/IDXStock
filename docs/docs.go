@@ -723,9 +723,6 @@ const docTemplate = `{
         "models.Stock": {
             "type": "object",
             "properties": {
-                "annual_dividend": {
-                    "type": "number"
-                },
                 "code": {
                     "type": "string"
                 },
@@ -733,12 +730,6 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "delisting_date": {
-                    "type": "string"
-                },
-                "founding_date": {
-                    "type": "string"
-                },
-                "general_information": {
                     "type": "string"
                 },
                 "id": {
@@ -764,18 +755,12 @@ const docTemplate = `{
                 },
                 "shares": {
                     "type": "integer"
-                },
-                "total_employees": {
-                    "type": "string"
                 }
             }
         },
         "models.StockDetailResponse": {
             "type": "object",
             "properties": {
-                "annual_dividend": {
-                    "type": "number"
-                },
                 "board": {
                     "type": "string"
                 },
@@ -785,20 +770,11 @@ const docTemplate = `{
                 "delisting_date": {
                     "type": "string"
                 },
-                "founding_date": {
-                    "type": "string"
-                },
-                "general_information": {
-                    "type": "string"
-                },
                 "industry_id": {
                     "type": "integer"
                 },
                 "industry_sub_id": {
                     "type": "integer"
-                },
-                "last_modified": {
-                    "type": "string"
                 },
                 "listing_date": {
                     "type": "string"
@@ -814,9 +790,6 @@ const docTemplate = `{
                 },
                 "shares": {
                     "type": "integer"
-                },
-                "total_employees": {
-                    "type": "string"
                 }
             }
         },
