@@ -9,8 +9,10 @@
   - Cross-cutting Configuration: `internal/config`, `internal/database`, `internal/utils`.
 - **Pure-Go SQLite Persistence (`CONFIRMED`)**:
   - Embedded, CGO-free SQLite database engine (`modernc.org/sqlite`) utilizing file storage at `database/master_stocks.db`.
-- **Distributed Configuration Management (`CONFIRMED`)**:
-  - Bootstrap integration with Spring Cloud Config server via `scc2go` during `init()` (`cmd/api/main.go#L31-L33`).
+- **Direct Environment Configuration (`CONFIRMED`)**:
+  - Configuration parameters (`DATABASE_URL`, `PORT`, `LOG_LEVEL`, `MASTER_STOCKS_DOWNLOAD_URL`) read directly via `os.Getenv(...)` with safe local defaults, without external config servers or Viper.
+- **Automated Database Snapshot Provisioning (`CONFIRMED`)**:
+  - Bootstrap check inside `func init()` in `cmd/api/main.go` that automatically retrieves and decompresses `master_stocks.db.zst` from GitHub Releases if missing locally.
 - **Automated OpenAPI / Swagger Integration (`CONFIRMED`)**:
   - Synchronized OpenAPI 2.0 specs generated into `docs/` via `swag init` and served interactively at `/swagger/*` via `swaggo`.
 

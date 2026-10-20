@@ -3,11 +3,12 @@
 ## `cmd/api`
 - **Responsibility**: Application entry point and runtime bootstrap.
 - **Entry / Key Files**:
-  - `cmd/api/main.go` — Service initialization, configuration loading (`scc2go`), logger setup, DB connection, broker seeding, Fiber HTTP web server startup, and Swagger annotation declarations (`//go:generate swag init ...`).
-- **Dependencies**: `github.com/gofiber/fiber/v3`, `github.com/KAnggara75/scc2go`, `github.com/sirupsen/logrus`, `internal/config`, `internal/database`, `internal/repositories`, `internal/routes`, `internal/services`.
+  - `cmd/api/main.go` — Service initialization, package `init()` lifecycle (logger initialization via `config.InitLogger()` and automated snapshot download via `ensureMasterDatabase()`), DB connection, broker seeding, Fiber HTTP web server startup, and Swagger annotation declarations (`//go:generate swag init ...`).
+  - `cmd/api/main_test.go` — Unit tests for port binding, Fiber app construction, seeder execution, runtime start, and `ensureMasterDatabase` snapshot retrieval.
+- **Dependencies**: `github.com/gofiber/fiber/v3`, `github.com/klauspost/compress/zstd`, `github.com/sirupsen/logrus`, `internal/config`, `internal/database`, `internal/repositories`, `internal/routes`, `internal/services`.
 - **Consumers**: Executable container / process entry point.
-- **External Integrations**: Spring Cloud Config server (via `scc2go`), SQLite database (`database/master_stocks.db`).
-- **Key Notes**: Reads `IDXSTOCK_CONFIG_URL` and `SCC_AUTH` during package `init()` to inject remote configurations into Viper before main runtime boots.
+- **External Integrations**: GitHub Releases (via HTTP for initial `master_stocks.db.zst` snapshot retrieval), SQLite database (`database/master_stocks.db`).
+- **Key Notes**: In `init()`, verifies presence of local database at `DATABASE_URL` / `database/master_stocks.db`. If absent, automatically pulls `master_stocks.db.zst` from GitHub releases and decompresses it into place before Fiber boots.
 
 ---
 
@@ -104,10 +105,10 @@
 - **Entry / Key Files**:
   - `internal/database/database.go` — Connects to SQLite (`modernc.org/sqlite`) using DSN from `DATABASE_URL` (fallback `database/master_stocks.db`), defines `DBExecutor`, and manages the thread-safe connection pool.
   - `internal/config/logger.go` — Configures `logrus` JSON logging and log levels based on `LOG_LEVEL` environment variable.
-- **Dependencies**: `modernc.org/sqlite`, `github.com/spf13/viper`, `github.com/sirupsen/logrus`.
+- **Dependencies**: `modernc.org/sqlite`, `github.com/sirupsen/logrus`.
 - **Consumers**: `cmd/api/main.go`, `internal/routes/routes.go`.
 - **External Integrations**: SQLite.
-- **Key Notes**: Pure Go CGO-free database driver with connection pooling.
+- **Key Notes**: Pure Go CGO-free database driver with connection pooling. Configuration is loaded directly via environment variables (`DATABASE_URL`, `LOG_LEVEL`).
 
 ---
 

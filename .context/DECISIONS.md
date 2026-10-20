@@ -28,7 +28,7 @@
 
 ## ADR-003: Centralize Remote Configuration via Spring Cloud Config (scc2go)
 
-- **Status**: Accepted
+- **Status**: Superseded by ADR-011
 - **Date**: 2026-10-12
 - **Source**: Codebase evidence (`cmd/api/main.go#L20-L22`, `go.mod`)
 - **Context**: Application deployments need decoupled configuration without hardcoding sensitive database credentials and API endpoints inside local repositories or image builds.
@@ -156,3 +156,39 @@
   - Provides a single, unified database schema for master company metadata, taxonomic classifications, broker data, and comprehensive historical price series.
   - Eliminates large binary artifacts from git history while providing automated, versioned release distribution on GitHub.
   - Consumers download and decompress a single portable artifact (`master_stocks.db.zst`) for immediate queryability.
+
+---
+
+## ADR-011: Direct Environment Configuration & Complete Viper Removal
+
+- **Status**: Accepted
+- **Date**: 2026-10-20
+- **Source**: Developer request & Codebase refactor (`internal/database/database.go`, `go.mod`)
+- **Context**: The application previously used `github.com/spf13/viper` (and legacy `scc2go`) for reading database DSN and configuration parameters. Since configuration needs were simplified to standard environment variables (`DATABASE_URL`, `PORT`, `LOG_LEVEL`, `MASTER_STOCKS_DOWNLOAD_URL`), retaining Viper introduced unnecessary transitive dependencies and binary bloat without operational benefit.
+- **Decision**: 
+  - Completely remove `github.com/spf13/viper` from `internal/database/database.go` and `internal/database/database_test.go`.
+  - Read configuration values directly via `os.Getenv(...)` with safe local defaults (e.g. `DATABASE_URL` defaulting to `database/master_stocks.db`).
+  - Purge `github.com/spf13/viper` and its unused transitive packages from `go.mod` and `go.sum` via `go mod tidy`.
+- **Consequences**:
+  - Drastically trimmed `go.mod` and `go.sum` dependencies, reducing compile times and attack surfaces.
+  - Configuration logic is explicit, transparent, and idiomatically aligned with standard Go patterns.
+  - Eliminates runtime dependency on external Spring Cloud Config server.
+
+---
+
+## ADR-012: Startup Initialization & Automated Database Snapshot Provisioning in `func init()`
+
+- **Status**: Accepted
+- **Date**: 2026-10-20
+- **Source**: Developer request & Codebase implementation (`cmd/api/main.go`)
+- **Context**: Newly cloned or containerized deployments lack the pre-populated SQLite database (`database/master_stocks.db`) because large database files are excluded from git. Previously, bootstrapping required manually executing scripts or downloading assets before starting the service. Furthermore, database download checks belonged in early process lifecycle initialization before application components boot.
+- **Decision**: 
+  - Implement process lifecycle initialization inside `func init()` in `cmd/api/main.go`:
+    1. Initialize structured logging (`config.InitLogger()`).
+    2. Check if local database (`DATABASE_URL` or `database/master_stocks.db`) exists via `ensureMasterDatabase()`.
+  - If missing (and not in-memory mode `:memory:`), automatically download `master_stocks.db.zst` from GitHub Releases (`https://github.com/KAnggara75/IDXStock/releases/latest/download/master_stocks.db.zst` or `MASTER_STOCKS_DOWNLOAD_URL`).
+  - Decompress the snapshot stream on-the-fly using `github.com/klauspost/compress/zstd` into a temporary file (`.tmp`) and finalize atomically via `os.Rename`.
+- **Consequences**:
+  - Zero-touch bootstrap for local developers and container deployments; running `go run ./cmd/api` automatically fetches the latest consolidated dataset if absent.
+  - Ensures atomic database file creation via temporary file renaming, preventing partial/corrupted database reads.
+  - Clean separation of concerns keeping `internal/database` pure and free of circular dependencies.

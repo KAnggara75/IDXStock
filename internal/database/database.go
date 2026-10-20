@@ -10,7 +10,6 @@ import (
 	"time"
 
 	"github.com/sirupsen/logrus"
-	"github.com/spf13/viper"
 	_ "modernc.org/sqlite"
 )
 
@@ -129,10 +128,7 @@ func (s *sqlTx) Rollback(ctx context.Context) error {
 var Pool DBExecutor
 
 func getDsn() (string, error) {
-	dsn := viper.GetString("db.idxstock.dsn")
-	if dsn == "" {
-		dsn = os.Getenv("DATABASE_URL")
-	}
+	dsn := os.Getenv("DATABASE_URL")
 	if dsn == "" {
 		dsn = "database/master_stocks.db"
 	}

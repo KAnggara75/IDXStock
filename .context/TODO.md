@@ -11,6 +11,6 @@ _Annotations found directly in source code._
 ## 3. Technical Debt & Structural Improvements
 _Long-term architectural and refactoring initiatives._
 - [x] **Test Coverage Expansion**: Project test coverage reached **91.7%** across all packages (`cmd/api`, `internal/handlers`, `internal/repositories`, `internal/usecases`, `internal/services`, `internal/routes`, `internal/utils`), surpassing the 80% threshold.
+- [x] **Viper & SCC Removal**: Deprecated and purged `viper` and `scc2go` in favor of standard direct environment variables and defaults (`ADR-011`).
 - [ ] **Standardized Error Handling**: Unify API error response schema across all handlers (some return `{"error": ...}`, others return `{"status": "error", "message": ...}`).
-- [ ] **Distributed Configuration Fallback**: If Spring Cloud Config (`scc2go`) is unreachable during `init()`, ensure deterministic fallback or informative warning logging rather than silent defaults.
 - [ ] **Rate Limiting & Anti-Scraping Resilience**: Outbound calls to `idx.co.id` and `pasardana.id` rely on hardcoded HTTP headers and cookie bypasses; consider implementing exponential backoff and rotating proxy/token support.

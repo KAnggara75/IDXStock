@@ -7,13 +7,11 @@ import (
 	"testing"
 
 	"github.com/DATA-DOG/go-sqlmock"
-	"github.com/spf13/viper"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestGetDsn(t *testing.T) {
 	t.Run("dsn_default", func(t *testing.T) {
-		viper.Set("db.idxstock.dsn", "")
 		os.Unsetenv("DATABASE_URL")
 		dsn, err := getDsn()
 		assert.NoError(t, err)
@@ -26,14 +24,6 @@ func TestGetDsn(t *testing.T) {
 		dsn, err := getDsn()
 		assert.NoError(t, err)
 		assert.Equal(t, "test.db", dsn)
-	})
-
-	t.Run("dsn_viper_set", func(t *testing.T) {
-		viper.Set("db.idxstock.dsn", "custom.db")
-		defer viper.Set("db.idxstock.dsn", "")
-		dsn, err := getDsn()
-		assert.NoError(t, err)
-		assert.Equal(t, "custom.db", dsn)
 	})
 }
 
@@ -54,6 +44,10 @@ func TestConnectWithConfig(t *testing.T) {
 		defer os.RemoveAll(tempDir)
 
 		dbPath := filepath.Join(tempDir, "subdir", "test.db")
+		// Pre-create an empty or valid sqlite db file so it won't trigger download in unit test
+		assert.NoError(t, os.MkdirAll(filepath.Dir(dbPath), 0755))
+		assert.NoError(t, os.WriteFile(dbPath, []byte(""), 0644))
+
 		pool, err := connectWithConfig(ctx, dbPath)
 		assert.NoError(t, err)
 		assert.NotNil(t, pool)

@@ -51,9 +51,8 @@ IDXStock is a specialized Golang backend microservice engineered to ingest, norm
 ## 5. External Integrations
 - **Indonesia Stock Exchange (`idx.co.id`)**: Upstream data source for delisted stocks and daily summaries. Accessed with custom HTTP headers and cookie management.
 - **Pasardana (`pasardana.id`)**: Upstream data source for sector, industry, company profile, and quote history feeds.
-- **Spring Cloud Config (`scc2go`)**: External configuration server providing database connection strings and environment parameters.
 - **External Logo CDNs**: Upstream image servers for company logos streamed via `/api/v1/assets/logos/companies/:code`.
-- **GitHub Releases (`gh`)**: Distribution channel for monthly historical SQLite databases (`database/history/YYYY-MM.db.zst`).
+- **GitHub Releases (`gh` / HTTP)**: Distribution channel for consolidated master dataset snapshot (`master_stocks.db.zst` attached to release `v2026-10`), fetched automatically by the service on startup if local database is missing.
 
 ---
 

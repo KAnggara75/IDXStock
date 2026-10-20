@@ -25,7 +25,7 @@ All comprehensive, ground-truth architectural documentation is maintained in the
 - **Web Framework**: Fiber v3 (`github.com/gofiber/fiber/v3`)
 - **API Documentation**: OpenAPI / Swagger 2.0 via `swaggo` (`/swagger/*`)
 - **Database Driver / Engine**: SQLite 3 via `modernc.org/sqlite` (pure Go, CGO-free, default `database/master_stocks.db`)
-- **Config Management**: Spring Cloud Config client via `github.com/KAnggara75/scc2go` + Viper
+- **Config Management**: Direct environment variables (`DATABASE_URL`, `PORT`, `LOG_LEVEL`, `MASTER_STOCKS_DOWNLOAD_URL`)
 - **Logging**: Logrus JSON formatted logger (`internal/config/logger.go`)
 - **Historical Datasets**: Consolidated master database snapshot (`master_stocks.db.zst`) compressed with Zstandard (`zstd -19`) and distributed via GitHub Releases (e.g. `v2026-10`)
 
@@ -35,12 +35,12 @@ All comprehensive, ground-truth architectural documentation is maintained in the
 
 ### Running Locally
 ```bash
-# Set required configuration variables
-export IDXSTOCK_CONFIG_URL="http://your-config-server:8888"
-export SCC_AUTH="Basic <credentials>"
+# Optional configuration variables (defaults to database/master_stocks.db & port 8080)
 export DATABASE_URL="database/master_stocks.db"
+export PORT="8080"
+export LOG_LEVEL="info"
 
-# Run with hot reloading
+# Run with hot reloading (will auto-download master_stocks.db.zst if missing locally)
 air
 
 # Or build & execute directly
