@@ -16,26 +16,6 @@ definitions:
       name:
         type: string
     type: object
-  models.BrokerActivity:
-    properties:
-      avg_price:
-        type: number
-      broker_code:
-        type: string
-      date:
-        type: string
-      freq:
-        type: integer
-      lot:
-        type: integer
-      side:
-        description: '"buy" or "sell"'
-        type: string
-      stock_code:
-        type: string
-      value:
-        type: integer
-    type: object
   models.ErrorResponse:
     properties:
       error:
@@ -54,18 +34,18 @@ definitions:
         items:
           $ref: '#/definitions/models.BasicResponse'
         type: array
-      sub_industries:
+      industry_sub:
         items:
           $ref: '#/definitions/models.BasicResponse'
         type: array
     type: object
   models.SectorSyncNewResponse:
     properties:
-      sectors:
+      sector_sub:
         items:
           $ref: '#/definitions/models.BasicResponseWithCode'
         type: array
-      sub_sectors:
+      sectors:
         items:
           $ref: '#/definitions/models.BasicResponseWithCode'
         type: array
@@ -88,17 +68,17 @@ definitions:
         type: integer
       industry_id:
         type: integer
+      industry_sub_id:
+        type: integer
       listing_board:
         type: string
       listing_date:
         type: string
       sector_id:
         type: integer
+      sector_sub_id:
+        type: integer
       shares:
-        type: integer
-      sub_industry_id:
-        type: integer
-      sub_sector_id:
         type: integer
       total_employees:
         type: string
@@ -119,6 +99,8 @@ definitions:
         type: string
       industry_id:
         type: integer
+      industry_sub_id:
+        type: integer
       last_modified:
         type: string
       listing_date:
@@ -127,11 +109,9 @@ definitions:
         type: string
       sector_id:
         type: integer
+      sector_sub_id:
+        type: integer
       shares:
-        type: integer
-      sub_industry_id:
-        type: integer
-      sub_sector_id:
         type: integer
       total_employees:
         type: string
@@ -221,66 +201,6 @@ paths:
       summary: Get company logo
       tags:
       - assets
-  /broker/sync:
-    get:
-      consumes:
-      - application/json
-      description: Fetches broker transaction activities from Exodus API using access
-        token
-      parameters:
-      - description: Bearer token
-        in: header
-        name: Authorization
-        required: true
-        type: string
-      - description: Broker code (e.g. CC)
-        in: query
-        name: broker_code
-        type: string
-      - description: Start date (YYYY-MM-DD)
-        in: query
-        name: from
-        type: string
-      - description: End date (YYYY-MM-DD)
-        in: query
-        name: to
-        type: string
-      - description: Transaction type (e.g. NET)
-        in: query
-        name: transaction_type
-        type: string
-      - description: Market board (e.g. RG)
-        in: query
-        name: market_board
-        type: string
-      - description: Investor type (e.g. ALL, D, F)
-        in: query
-        name: investor_type
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            items:
-              $ref: '#/definitions/models.BrokerActivity'
-            type: array
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/models.ErrorResponse'
-        "401":
-          description: Unauthorized
-          schema:
-            $ref: '#/definitions/models.ErrorResponse'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/models.ErrorResponse'
-      summary: Sync broker activity
-      tags:
-      - brokers
   /industries/sync:
     put:
       description: Fetches industries taxonomy from Pasardana and updates the database
@@ -298,30 +218,6 @@ paths:
       summary: Sync industries and sub-industries
       tags:
       - industries
-  /partition/broker-activity:
-    put:
-      description: Automatically detects and provisions monthly table partitions for
-        broker activity
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            additionalProperties: true
-            type: object
-        "201":
-          description: Created
-          schema:
-            additionalProperties: true
-            type: object
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/models.ErrorResponse'
-      summary: Manage broker activity table partitions
-      tags:
-      - partitions
   /sectors/sync:
     put:
       description: Fetches sectors and subsectors from Pasardana and updates the database

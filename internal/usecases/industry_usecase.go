@@ -30,9 +30,9 @@ func (u *industryUsecase) SyncIndustry(ctx context.Context) (*models.IndustrySyn
 		return nil, err
 	}
 
-	// Deduplicate industries and sub-industries
+	// Deduplicate industries and industry_sub
 	industryMap := make(map[int]models.Industry)
-	subIndustryMap := make(map[int]models.SubIndustry)
+	industrySubMap := make(map[int]models.IndustrySub)
 
 	for _, res := range results {
 		if res.NewIndustryId > 0 {
@@ -42,7 +42,7 @@ func (u *industryUsecase) SyncIndustry(ctx context.Context) (*models.IndustrySyn
 			}
 		}
 		if res.NewSubIndustryId > 0 {
-			subIndustryMap[res.NewSubIndustryId] = models.SubIndustry{
+			industrySubMap[res.NewSubIndustryId] = models.IndustrySub{
 				Id:         res.NewSubIndustryId,
 				Name:       res.NewSubIndustryName,
 				IndustryId: res.NewIndustryId,
@@ -55,9 +55,9 @@ func (u *industryUsecase) SyncIndustry(ctx context.Context) (*models.IndustrySyn
 		industries = append(industries, ind)
 	}
 
-	subIndustries := make([]models.SubIndustry, 0, len(subIndustryMap))
-	for _, sub := range subIndustryMap {
-		subIndustries = append(subIndustries, sub)
+	industrySubs := make([]models.IndustrySub, 0, len(industrySubMap))
+	for _, sub := range industrySubMap {
+		industrySubs = append(industrySubs, sub)
 	}
 
 	// Upsert industries first due to FK constraint
@@ -66,13 +66,13 @@ func (u *industryUsecase) SyncIndustry(ctx context.Context) (*models.IndustrySyn
 		return nil, err
 	}
 
-	updatedSubIndustries, err := u.repo.UpsertSubIndustries(ctx, subIndustries)
+	updatedIndustrySub, err := u.repo.UpsertIndustrySub(ctx, industrySubs)
 	if err != nil {
 		return nil, err
 	}
 
 	return &models.IndustrySyncResponse{
-		Industries:    updatedIndustries,
-		SubIndustries: updatedSubIndustries,
+		Industries:  updatedIndustries,
+		IndustrySub: updatedIndustrySub,
 	}, nil
 }

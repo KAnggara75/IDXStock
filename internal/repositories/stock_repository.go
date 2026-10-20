@@ -127,8 +127,8 @@ func (r *stockRepository) UpsertStocksDetail(ctx context.Context, data []models.
 	query := `
 		INSERT INTO stocks (
 			id, code, name, listing_date, total_employees, annual_dividend,
-			general_information, founding_date, sector_id, sub_sector_id,
-			industry_id, sub_industry_id, last_modified
+			general_information, founding_date, sector_id, sector_sub_id,
+			industry_id, industry_sub_id, last_modified
 		)
 		VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12, datetime('now'))
 		ON CONFLICT (code) DO UPDATE SET
@@ -140,9 +140,9 @@ func (r *stockRepository) UpsertStocksDetail(ctx context.Context, data []models.
 			general_information = excluded.general_information,
 			founding_date = excluded.founding_date,
 			sector_id = excluded.sector_id,
-			sub_sector_id = excluded.sub_sector_id,
+			sector_sub_id = excluded.sector_sub_id,
 			industry_id = excluded.industry_id,
-			sub_industry_id = excluded.sub_industry_id,
+			industry_sub_id = excluded.industry_sub_id,
 			last_modified = datetime('now')
 		WHERE
 			stocks.id IS NOT excluded.id OR
@@ -153,9 +153,9 @@ func (r *stockRepository) UpsertStocksDetail(ctx context.Context, data []models.
 			stocks.general_information IS NOT excluded.general_information OR
 			stocks.founding_date IS NOT excluded.founding_date OR
 			stocks.sector_id IS NOT excluded.sector_id OR
-			stocks.sub_sector_id IS NOT excluded.sub_sector_id OR
+			stocks.sector_sub_id IS NOT excluded.sector_sub_id OR
 			stocks.industry_id IS NOT excluded.industry_id OR
-			stocks.sub_industry_id IS NOT excluded.sub_industry_id
+			stocks.industry_sub_id IS NOT excluded.industry_sub_id
 		RETURNING id, code, name
 	`
 
@@ -235,7 +235,7 @@ func (r *stockRepository) GetAllStocks(ctx context.Context, filter models.GetAll
 		SELECT
 			code, name, listing_date, delisting_date, shares, board,
 			total_employees, annual_dividend, general_information, founding_date,
-			sector_id, sub_sector_id, industry_id, sub_industry_id, last_modified
+			sector_id, sector_sub_id, industry_id, industry_sub_id, last_modified
 		FROM stocks
 		WHERE (?1 = '' OR UPPER(board) = UPPER(?1))
 		  AND (?2 = '' OR UPPER(code) LIKE '%' || UPPER(?2) || '%' OR UPPER(name) LIKE '%' || UPPER(?2) || '%')
@@ -253,12 +253,12 @@ func (r *stockRepository) GetAllStocks(ctx context.Context, filter models.GetAll
 		var s models.StockDetailResponse
 		var delistingDate, totalEmployees, generalInfo, foundingDate sql.NullString
 		var annualDividend sql.NullFloat64
-		var sectorId, subSectorId, industryId, subIndustryId sql.NullInt64
+		var sectorId, sectorSubId, industryId, industrySubId sql.NullInt64
 
 		err := rows.Scan(
 			&s.Code, &s.Name, &s.ListingDate, &delistingDate, &s.Shares, &s.Board,
 			&totalEmployees, &annualDividend, &generalInfo, &foundingDate,
-			&sectorId, &subSectorId, &industryId, &subIndustryId, &s.LastModified,
+			&sectorId, &sectorSubId, &industryId, &industrySubId, &s.LastModified,
 		)
 		if err != nil {
 			return nil, fmt.Errorf("failed to scan stock row: %w", err)
@@ -283,17 +283,17 @@ func (r *stockRepository) GetAllStocks(ctx context.Context, filter models.GetAll
 			v := int(sectorId.Int64)
 			s.SectorId = &v
 		}
-		if subSectorId.Valid {
-			v := int(subSectorId.Int64)
-			s.SubSectorId = &v
+		if sectorSubId.Valid {
+			v := int(sectorSubId.Int64)
+			s.SectorSubId = &v
 		}
 		if industryId.Valid {
 			v := int(industryId.Int64)
 			s.IndustryId = &v
 		}
-		if subIndustryId.Valid {
-			v := int(subIndustryId.Int64)
-			s.SubIndustryId = &v
+		if industrySubId.Valid {
+			v := int(industrySubId.Int64)
+			s.IndustrySubId = &v
 		}
 
 		stocks = append(stocks, s)
@@ -307,7 +307,7 @@ func (r *stockRepository) GetStockByCode(ctx context.Context, code string) (*mod
 		SELECT
 			code, name, listing_date, delisting_date, shares, board,
 			total_employees, annual_dividend, general_information, founding_date,
-			sector_id, sub_sector_id, industry_id, sub_industry_id, last_modified
+			sector_id, sector_sub_id, industry_id, industry_sub_id, last_modified
 		FROM stocks
 		WHERE UPPER(code) = UPPER(?1)
 		LIMIT 1
@@ -316,12 +316,12 @@ func (r *stockRepository) GetStockByCode(ctx context.Context, code string) (*mod
 	var s models.StockDetailResponse
 	var delistingDate, totalEmployees, generalInfo, foundingDate sql.NullString
 	var annualDividend sql.NullFloat64
-	var sectorId, subSectorId, industryId, subIndustryId sql.NullInt64
+	var sectorId, sectorSubId, industryId, industrySubId sql.NullInt64
 
 	err := r.pool.QueryRow(ctx, query, strings.TrimSpace(code)).Scan(
 		&s.Code, &s.Name, &s.ListingDate, &delistingDate, &s.Shares, &s.Board,
 		&totalEmployees, &annualDividend, &generalInfo, &foundingDate,
-		&sectorId, &subSectorId, &industryId, &subIndustryId, &s.LastModified,
+		&sectorId, &sectorSubId, &industryId, &industrySubId, &s.LastModified,
 	)
 	if err != nil {
 		if err == sql.ErrNoRows {
@@ -349,17 +349,17 @@ func (r *stockRepository) GetStockByCode(ctx context.Context, code string) (*mod
 		v := int(sectorId.Int64)
 		s.SectorId = &v
 	}
-	if subSectorId.Valid {
-		v := int(subSectorId.Int64)
-		s.SubSectorId = &v
+	if sectorSubId.Valid {
+		v := int(sectorSubId.Int64)
+		s.SectorSubId = &v
 	}
 	if industryId.Valid {
 		v := int(industryId.Int64)
 		s.IndustryId = &v
 	}
-	if subIndustryId.Valid {
-		v := int(subIndustryId.Int64)
-		s.SubIndustryId = &v
+	if industrySubId.Valid {
+		v := int(industrySubId.Int64)
+		s.IndustrySubId = &v
 	}
 
 	return &s, nil

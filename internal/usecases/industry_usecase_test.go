@@ -22,8 +22,8 @@ func (m *mockIndustryRepo) UpsertIndustries(ctx context.Context, industries []mo
 	return args.Get(0).([]models.BasicResponse), args.Error(1)
 }
 
-func (m *mockIndustryRepo) UpsertSubIndustries(ctx context.Context, subIndustries []models.SubIndustry) ([]models.BasicResponse, error) {
-	args := m.Called(ctx, subIndustries)
+func (m *mockIndustryRepo) UpsertIndustrySub(ctx context.Context, industrySubs []models.IndustrySub) ([]models.BasicResponse, error) {
+	args := m.Called(ctx, industrySubs)
 	if args.Get(0) == nil {
 		return nil, args.Error(1)
 	}
@@ -71,7 +71,7 @@ func TestIndustryUsecase_SyncIndustry(t *testing.T) {
 		}, nil).Once()
 
 		repo.On("UpsertIndustries", ctx, mock.Anything).Return([]models.BasicResponse{{Id: 1, Name: "Tech"}}, nil).Once()
-		repo.On("UpsertSubIndustries", ctx, mock.Anything).Return(nil, assert.AnError).Once()
+		repo.On("UpsertIndustrySub", ctx, mock.Anything).Return(nil, assert.AnError).Once()
 
 		resp, err := u.SyncIndustry(ctx)
 		assert.Error(t, err)
@@ -88,12 +88,12 @@ func TestIndustryUsecase_SyncIndustry(t *testing.T) {
 		}, nil).Once()
 
 		repo.On("UpsertIndustries", ctx, mock.Anything).Return([]models.BasicResponse{{Id: 1, Name: "Tech"}}, nil).Once()
-		repo.On("UpsertSubIndustries", ctx, mock.Anything).Return([]models.BasicResponse{{Id: 2, Name: "Software"}}, nil).Once()
+		repo.On("UpsertIndustrySub", ctx, mock.Anything).Return([]models.BasicResponse{{Id: 2, Name: "Software"}}, nil).Once()
 
 		resp, err := u.SyncIndustry(ctx)
 		assert.NoError(t, err)
 		assert.NotNil(t, resp)
 		assert.Len(t, resp.Industries, 1)
-		assert.Len(t, resp.SubIndustries, 1)
+		assert.Len(t, resp.IndustrySub, 1)
 	})
 }

@@ -27,7 +27,7 @@ func TestIndustryRepository(t *testing.T) {
 		assert.NoError(t, err)
 		assert.Empty(t, res1)
 
-		res2, err := repo.UpsertSubIndustries(ctx, nil)
+		res2, err := repo.UpsertIndustrySub(ctx, nil)
 		assert.NoError(t, err)
 		assert.Empty(t, res2)
 	})
@@ -73,13 +73,13 @@ func TestIndustryRepository(t *testing.T) {
 		mockExec := database.NewDBExecutor(db)
 
 		mock.ExpectBegin()
-		mock.ExpectQuery("INSERT INTO sub_industry").
+		mock.ExpectQuery("INSERT INTO industry_sub").
 			WithArgs(1, "Software", 1).
 			WillReturnRows(sqlmock.NewRows([]string{"id", "name"}).AddRow(1, "Software"))
 		mock.ExpectCommit()
 
 		repo := NewIndustryRepository(mockExec)
-		res, err := repo.UpsertSubIndustries(ctx, []models.SubIndustry{{Id: 1, Name: "Software", IndustryId: 1}})
+		res, err := repo.UpsertIndustrySub(ctx, []models.IndustrySub{{Id: 1, Name: "Software", IndustryId: 1}})
 		assert.NoError(t, err)
 		assert.Len(t, res, 1)
 		assert.Equal(t, 1, res[0].Id)
@@ -101,7 +101,7 @@ func TestSectorSearchRepository(t *testing.T) {
 		assert.NoError(t, err)
 		assert.Empty(t, res1)
 
-		res2, err := repo.UpsertNewSubSectors(ctx, nil)
+		res2, err := repo.UpsertNewSectorSub(ctx, nil)
 		assert.NoError(t, err)
 		assert.Empty(t, res2)
 	})
@@ -147,13 +147,13 @@ func TestSectorSearchRepository(t *testing.T) {
 		mockExec := database.NewDBExecutor(db)
 
 		mock.ExpectBegin()
-		mock.ExpectQuery("INSERT INTO sub_sector").
-			WithArgs(1, (*string)(nil), "Bank", (*string)(nil), (*string)(nil), 1).
+		mock.ExpectQuery("INSERT INTO sector_sub").
+			WithArgs(1, (*string)(nil), "Bank", (*string)(nil), 1).
 			WillReturnRows(sqlmock.NewRows([]string{"id", "code", "name"}).AddRow(1, nil, "Bank"))
 		mock.ExpectCommit()
 
 		repo := NewSectorSearchRepository(mockExec)
-		res, err := repo.UpsertNewSubSectors(ctx, []models.SubSector{{Id: 1, Name: "Bank", SectorId: 1}})
+		res, err := repo.UpsertNewSectorSub(ctx, []models.SectorSub{{Id: 1, Name: "Bank", SectorId: 1}})
 		assert.NoError(t, err)
 		assert.Len(t, res, 1)
 		assert.Equal(t, 1, res[0].Id)
@@ -328,7 +328,7 @@ func TestStockRepository(t *testing.T) {
 			cols := []string{
 				"code", "name", "listing_date", "delisting_date", "shares", "board",
 				"total_employees", "annual_dividend", "general_information", "founding_date",
-				"sector_id", "sub_sector_id", "industry_id", "sub_industry_id", "last_modified",
+				"sector_id", "sector_sub_id", "industry_id", "industry_sub_id", "last_modified",
 			}
 			rows := sqlmock.NewRows(cols).
 				AddRow("BBCA", "Bank Central Asia", "2000-05-31", nil, int64(123456), "UTAMA",
@@ -540,7 +540,7 @@ func TestHistoryRepository(t *testing.T) {
 		columns := []string{
 			"code", "name", "listing_date", "delisting_date", "shares", "board",
 			"total_employees", "annual_dividend", "general_information", "founding_date",
-			"sector_id", "sub_sector_id", "industry_id", "sub_industry_id", "last_modified",
+			"sector_id", "sector_sub_id", "industry_id", "industry_sub_id", "last_modified",
 		}
 		rows := sqlmock.NewRows(columns).AddRow(
 			"BBCA", "Bank Central Asia Tbk", "1982-01-01", "2024-01-01", int64(1000000), "UTAMA",
@@ -569,12 +569,12 @@ func TestHistoryRepository(t *testing.T) {
 		assert.Equal(t, "1957-02-21", *stock.FoundingDate)
 		assert.NotNil(t, stock.SectorId)
 		assert.Equal(t, 1, *stock.SectorId)
-		assert.NotNil(t, stock.SubSectorId)
-		assert.Equal(t, 2, *stock.SubSectorId)
+		assert.NotNil(t, stock.SectorSubId)
+		assert.Equal(t, 2, *stock.SectorSubId)
 		assert.NotNil(t, stock.IndustryId)
 		assert.Equal(t, 3, *stock.IndustryId)
-		assert.NotNil(t, stock.SubIndustryId)
-		assert.Equal(t, 4, *stock.SubIndustryId)
+		assert.NotNil(t, stock.IndustrySubId)
+		assert.Equal(t, 4, *stock.IndustrySubId)
 		assert.NoError(t, mock.ExpectationsWereMet())
 	})
 

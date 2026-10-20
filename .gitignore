@@ -25,3 +25,4 @@ database/master_stocks.db
 database/master_stocks.db-shm
 database/master_stocks.db-wal
 database/master_stocks.db.zst
+cmd/api/database/

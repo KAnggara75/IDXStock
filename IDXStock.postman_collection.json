@@ -1,385 +1,401 @@
 {
-  "info": {
-    "_postman_id": "a918e952-b432-47f2-9c1a-7b3b4f910d51",
-    "name": "IDXStock API",
-    "description": "Comprehensive Postman collection for IDXStock — a Go microservice interfacing with Indonesia Stock Exchange (IDX) & Pasardana data.",
-    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
-  },
-  "variable": [
-    {
-      "key": "baseUrl",
-      "value": "http://localhost:3000",
-      "type": "string"
+    "info": {
+        "_postman_id": "a918e952-b432-47f2-9c1a-7b3b4f910d51",
+        "name": "IDXStock API",
+        "description": "Comprehensive Postman collection for IDXStock \u2014 a Go microservice interfacing with Indonesia Stock Exchange (IDX) & Pasardana data.",
+        "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
     },
-    {
-      "key": "brokerToken",
-      "value": "Bearer YOUR_BROKER_TOKEN_HERE",
-      "type": "string"
-    },
-    {
-      "key": "idxCookie",
-      "value": "",
-      "type": "string"
-    }
-  ],
-  "item": [
-    {
-      "name": "System",
-      "item": [
+    "variable": [
         {
-          "name": "Health Check",
-          "request": {
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{baseUrl}}/health",
-              "host": ["{{baseUrl}}"],
-              "path": ["health"]
-            },
-            "description": "Checks the health status of the API and active PostgreSQL connection pool."
-          },
-          "response": []
+            "key": "baseUrl",
+            "value": "http://localhost:3000",
+            "type": "string"
+        },
+        {
+            "key": "brokerToken",
+            "value": "Bearer YOUR_BROKER_TOKEN_HERE",
+            "type": "string"
+        },
+        {
+            "key": "idxCookie",
+            "value": "",
+            "type": "string"
         }
-      ]
-    },
-    {
-      "name": "Stocks Management",
-      "item": [
+    ],
+    "item": [
         {
-          "name": "Preview Stock Excel Upload",
-          "request": {
-            "method": "POST",
-            "header": [],
-            "body": {
-              "mode": "formdata",
-              "formdata": [
+            "name": "System",
+            "item": [
                 {
-                  "key": "file",
-                  "type": "file",
-                  "description": "Upload listing Excel file (.xlsx or .xls)"
+                    "name": "Health Check",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/health",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "health"
+                            ]
+                        },
+                        "description": "Checks the health status of the API and active PostgreSQL connection pool."
+                    },
+                    "response": []
                 }
-              ]
-            },
-            "url": {
-              "raw": "{{baseUrl}}/api/v1/stocks/upload",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "v1", "stocks", "upload"]
-            },
-            "description": "Parses and returns a JSON preview of stock list without persisting to database."
-          },
-          "response": []
+            ]
         },
         {
-          "name": "Upload & Save Stocks",
-          "request": {
-            "method": "PATCH",
-            "header": [],
-            "body": {
-              "mode": "formdata",
-              "formdata": [
+            "name": "Stocks Management",
+            "item": [
                 {
-                  "key": "file",
-                  "type": "file",
-                  "description": "Upload listing Excel file (.xlsx or .xls) to upsert into database"
-                }
-              ]
-            },
-            "url": {
-              "raw": "{{baseUrl}}/api/v1/stocks/upload",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "v1", "stocks", "upload"]
-            },
-            "description": "Parses and persists equities from the uploaded Excel file into idxstock.stocks."
-          },
-          "response": []
-        },
-        {
-          "name": "Sync Stock Details (Background)",
-          "request": {
-            "method": "PUT",
-            "header": [],
-            "url": {
-              "raw": "{{baseUrl}}/api/v1/stocks/sync",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "v1", "stocks", "sync"]
-            },
-            "description": "Triggers background synchronization of company details, listing shares, and board profiles."
-          },
-          "response": []
-        },
-        {
-          "name": "Sync Delisted Stocks",
-          "request": {
-            "method": "PUT",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              },
-              {
-                "key": "Cookie",
-                "value": "{{idxCookie}}",
-                "description": "Optional session cookie if required by IDX upstream"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"year\": 2026,\n  \"month\": 10\n}"
-            },
-            "url": {
-              "raw": "{{baseUrl}}/api/v1/stocks/delisting/sync",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "v1", "stocks", "delisting", "sync"]
-            },
-            "description": "Fetches delisted equities for a specific year and month from exchange source."
-          },
-          "response": []
-        },
-        {
-          "name": "Sync Stock EOD History",
-          "request": {
-            "method": "PUT",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              },
-              {
-                "key": "Cookie",
-                "value": "{{idxCookie}}"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"year\": 2026,\n  \"month\": 10,\n  \"day\": 12\n}"
-            },
-            "url": {
-              "raw": "{{baseUrl}}/api/v1/stocks/history/sync?source=idx",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "v1", "stocks", "history", "sync"],
-              "query": [
-                {
-                  "key": "source",
-                  "value": "idx",
-                  "description": "Data source: 'idx' (synchronous) or 'pasardana' (async background, <= 2019-07-28)"
-                }
-              ]
-            },
-            "description": "Downloads and ingests End-Of-Day (EOD) quote history for all stocks."
-          },
-          "response": []
-        },
-        {
-          "name": "Get Stock History (JSON)",
-          "request": {
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{baseUrl}}/api/v1/stocks/BBCA/history?start_date=2026-01-01&end_date=2026-10-12&fields=date,open_price,high,low,close,volume&output=json",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "v1", "stocks", "BBCA", "history"],
-              "query": [
-                {
-                  "key": "start_date",
-                  "value": "2026-01-01",
-                  "description": "Format YYYY-MM-DD"
+                    "name": "Preview Stock Excel Upload",
+                    "request": {
+                        "method": "POST",
+                        "header": [],
+                        "body": {
+                            "mode": "formdata",
+                            "formdata": [
+                                {
+                                    "key": "file",
+                                    "type": "file",
+                                    "description": "Upload listing Excel file (.xlsx or .xls)"
+                                }
+                            ]
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/api/v1/stocks/upload",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api",
+                                "v1",
+                                "stocks",
+                                "upload"
+                            ]
+                        },
+                        "description": "Parses and returns a JSON preview of stock list without persisting to database."
+                    },
+                    "response": []
                 },
                 {
-                  "key": "end_date",
-                  "value": "2026-10-12",
-                  "description": "Format YYYY-MM-DD (defaults to today if omitted)"
+                    "name": "Upload & Save Stocks",
+                    "request": {
+                        "method": "PATCH",
+                        "header": [],
+                        "body": {
+                            "mode": "formdata",
+                            "formdata": [
+                                {
+                                    "key": "file",
+                                    "type": "file",
+                                    "description": "Upload listing Excel file (.xlsx or .xls) to upsert into database"
+                                }
+                            ]
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/api/v1/stocks/upload",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api",
+                                "v1",
+                                "stocks",
+                                "upload"
+                            ]
+                        },
+                        "description": "Parses and persists equities from the uploaded Excel file into idxstock.stocks."
+                    },
+                    "response": []
                 },
                 {
-                  "key": "fields",
-                  "value": "date,open_price,high,low,close,volume",
-                  "description": "Comma-separated field selection"
+                    "name": "Sync Stock Details (Background)",
+                    "request": {
+                        "method": "PUT",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/api/v1/stocks/sync",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api",
+                                "v1",
+                                "stocks",
+                                "sync"
+                            ]
+                        },
+                        "description": "Triggers background synchronization of company details, listing shares, and board profiles."
+                    },
+                    "response": []
                 },
                 {
-                  "key": "output",
-                  "value": "json",
-                  "description": "'json' or 'csv'"
+                    "name": "Sync Delisted Stocks",
+                    "request": {
+                        "method": "PUT",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            },
+                            {
+                                "key": "Cookie",
+                                "value": "{{idxCookie}}",
+                                "description": "Optional session cookie if required by IDX upstream"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"year\": 2026,\n  \"month\": 10\n}"
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/api/v1/stocks/delisting/sync",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api",
+                                "v1",
+                                "stocks",
+                                "delisting",
+                                "sync"
+                            ]
+                        },
+                        "description": "Fetches delisted equities for a specific year and month from exchange source."
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Sync Stock EOD History",
+                    "request": {
+                        "method": "PUT",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            },
+                            {
+                                "key": "Cookie",
+                                "value": "{{idxCookie}}"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"year\": 2026,\n  \"month\": 10,\n  \"day\": 12\n}"
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/api/v1/stocks/history/sync?source=idx",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api",
+                                "v1",
+                                "stocks",
+                                "history",
+                                "sync"
+                            ],
+                            "query": [
+                                {
+                                    "key": "source",
+                                    "value": "idx",
+                                    "description": "Data source: 'idx' (synchronous) or 'pasardana' (async background, <= 2019-07-28)"
+                                }
+                            ]
+                        },
+                        "description": "Downloads and ingests End-Of-Day (EOD) quote history for all stocks."
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Get Stock History (JSON)",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/api/v1/stocks/BBCA/history?start_date=2026-01-01&end_date=2026-10-12&fields=date,open_price,high,low,close,volume&output=json",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api",
+                                "v1",
+                                "stocks",
+                                "BBCA",
+                                "history"
+                            ],
+                            "query": [
+                                {
+                                    "key": "start_date",
+                                    "value": "2026-01-01",
+                                    "description": "Format YYYY-MM-DD"
+                                },
+                                {
+                                    "key": "end_date",
+                                    "value": "2026-10-12",
+                                    "description": "Format YYYY-MM-DD (defaults to today if omitted)"
+                                },
+                                {
+                                    "key": "fields",
+                                    "value": "date,open_price,high,low,close,volume",
+                                    "description": "Comma-separated field selection"
+                                },
+                                {
+                                    "key": "output",
+                                    "value": "json",
+                                    "description": "'json' or 'csv'"
+                                }
+                            ]
+                        },
+                        "description": "Retrieves historical prices for a stock ticker with filtering."
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Get Stock History (CSV Export)",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/api/v1/stocks/BBCA/history?start_date=2026-01-01&end_date=2026-10-12&output=csv",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api",
+                                "v1",
+                                "stocks",
+                                "BBCA",
+                                "history"
+                            ],
+                            "query": [
+                                {
+                                    "key": "start_date",
+                                    "value": "2026-01-01"
+                                },
+                                {
+                                    "key": "end_date",
+                                    "value": "2026-10-12"
+                                },
+                                {
+                                    "key": "output",
+                                    "value": "csv"
+                                }
+                            ]
+                        },
+                        "description": "Exports historical quote series as downloadable CSV file."
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Apply Stock Split",
+                    "request": {
+                        "method": "PUT",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"stock_code\": \"BBCA\",\n  \"start_date\": \"2000-01-01\",\n  \"end_date\": \"2021-10-11\",\n  \"ratio\": \"1:5\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/api/v1/stocks/split",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api",
+                                "v1",
+                                "stocks",
+                                "split"
+                            ]
+                        },
+                        "description": "Recalculates historical prices and multiplies volume based on stock split ratio in an atomic transaction."
+                    },
+                    "response": []
                 }
-              ]
-            },
-            "description": "Retrieves historical prices for a stock ticker with filtering."
-          },
-          "response": []
+            ]
         },
         {
-          "name": "Get Stock History (CSV Export)",
-          "request": {
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{baseUrl}}/api/v1/stocks/BBCA/history?start_date=2026-01-01&end_date=2026-10-12&output=csv",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "v1", "stocks", "BBCA", "history"],
-              "query": [
+            "name": "Master Data",
+            "item": [
                 {
-                  "key": "start_date",
-                  "value": "2026-01-01"
+                    "name": "Sync Sectors & Sub-Sectors",
+                    "request": {
+                        "method": "PUT",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/api/v1/sectors/sync",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api",
+                                "v1",
+                                "sectors",
+                                "sync"
+                            ]
+                        },
+                        "description": "Synchronizes sector and sub-sector taxonomies from Pasardana."
+                    },
+                    "response": []
                 },
                 {
-                  "key": "end_date",
-                  "value": "2026-10-12"
-                },
-                {
-                  "key": "output",
-                  "value": "csv"
+                    "name": "Sync Industries & Sub-Industries",
+                    "request": {
+                        "method": "PUT",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/api/v1/industries/sync",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api",
+                                "v1",
+                                "industries",
+                                "sync"
+                            ]
+                        },
+                        "description": "Synchronizes industry classification mappings to the database."
+                    },
+                    "response": []
                 }
-              ]
-            },
-            "description": "Exports historical quote series as downloadable CSV file."
-          },
-          "response": []
+            ]
         },
         {
-          "name": "Apply Stock Split",
-          "request": {
-            "method": "PUT",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"stock_code\": \"BBCA\",\n  \"start_date\": \"2000-01-01\",\n  \"end_date\": \"2021-10-11\",\n  \"ratio\": \"1:5\"\n}"
-            },
-            "url": {
-              "raw": "{{baseUrl}}/api/v1/stocks/split",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "v1", "stocks", "split"]
-            },
-            "description": "Recalculates historical prices and multiplies volume based on stock split ratio in an atomic transaction."
-          },
-          "response": []
+            "name": "Assets & Media",
+            "item": [
+                {
+                    "name": "Get Company Logo",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/api/v1/assets/logos/companies/BBCA.png",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api",
+                                "v1",
+                                "assets",
+                                "logos",
+                                "companies",
+                                "BBCA.png"
+                            ]
+                        },
+                        "description": "Proxies and streams company logo image with client cache headers."
+                    },
+                    "response": []
+                }
+            ]
         }
-      ]
-    },
-    {
-      "name": "Master Data",
-      "item": [
-        {
-          "name": "Sync Sectors & Sub-Sectors",
-          "request": {
-            "method": "PUT",
-            "header": [],
-            "url": {
-              "raw": "{{baseUrl}}/api/v1/sectors/sync",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "v1", "sectors", "sync"]
-            },
-            "description": "Synchronizes sector and sub-sector taxonomies from Pasardana."
-          },
-          "response": []
-        },
-        {
-          "name": "Sync Industries & Sub-Industries",
-          "request": {
-            "method": "PUT",
-            "header": [],
-            "url": {
-              "raw": "{{baseUrl}}/api/v1/industries/sync",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "v1", "industries", "sync"]
-            },
-            "description": "Synchronizes industry classification mappings to the database."
-          },
-          "response": []
-        }
-      ]
-    },
-    {
-      "name": "Broker Activities",
-      "item": [
-        {
-          "name": "Sync Broker Activity",
-          "request": {
-            "method": "GET",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "{{brokerToken}}",
-                "description": "Bearer token for external broker API"
-              }
-            ],
-            "url": {
-              "raw": "{{baseUrl}}/api/v1/broker/sync?broker_code=YP&from=2026-10-01&to=2026-10-12&transaction_type=ALL&market_board=ALL&investor_type=ALL",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "v1", "broker", "sync"],
-              "query": [
-                {
-                  "key": "broker_code",
-                  "value": "YP",
-                  "description": "2-letter broker code (e.g. YP, CC, PD)"
-                },
-                {
-                  "key": "from",
-                  "value": "2026-10-01",
-                  "description": "Start date (YYYY-MM-DD)"
-                },
-                {
-                  "key": "to",
-                  "value": "2026-10-12",
-                  "description": "End date (YYYY-MM-DD)"
-                },
-                {
-                  "key": "transaction_type",
-                  "value": "ALL",
-                  "description": "ALL, BUY, SELL, NET_BUY, NET_SELL"
-                },
-                {
-                  "key": "market_board",
-                  "value": "ALL",
-                  "description": "ALL, REGULAR, NEGOTIATED, CASH"
-                },
-                {
-                  "key": "investor_type",
-                  "value": "ALL",
-                  "description": "ALL, DOMESTIC, FOREIGN"
-                }
-              ]
-            },
-            "description": "Fetches and ingests broker transaction summaries into partitioned broker_activity table."
-          },
-          "response": []
-        },
-        {
-          "name": "Manage Weekly Partitions",
-          "request": {
-            "method": "PUT",
-            "header": [],
-            "url": {
-              "raw": "{{baseUrl}}/api/v1/partition/broker-activity",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "v1", "partition", "broker-activity"]
-            },
-            "description": "Maintenance routine to prepare and allocate weekly PostgreSQL partitions for the next 2 ISO weeks."
-          },
-          "response": []
-        }
-      ]
-    },
-    {
-      "name": "Assets & Media",
-      "item": [
-        {
-          "name": "Get Company Logo",
-          "request": {
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{baseUrl}}/api/v1/assets/logos/companies/BBCA.png",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "v1", "assets", "logos", "companies", "BBCA.png"]
-            },
-            "description": "Proxies and streams company logo image with client cache headers."
-          },
-          "response": []
-        }
-      ]
-    }
-  ]
+    ]
 }

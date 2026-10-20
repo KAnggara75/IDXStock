@@ -44,31 +44,30 @@ func (u *sectorUsecase) SyncNewSectors(ctx context.Context) (*models.SectorSyncN
 		return nil, err
 	}
 
-	// Sync SubSectors
+	// Sync SectorSub
 	pasardanaSubSectors, err := u.pasardanaService.FetchNewSubSectors()
 	if err != nil {
 		return nil, err
 	}
 
-	subSectors := make([]models.SubSector, 0, len(pasardanaSubSectors))
+	sectorSubs := make([]models.SectorSub, 0, len(pasardanaSubSectors))
 	for _, ps := range pasardanaSubSectors {
-		subSectors = append(subSectors, models.SubSector{
-			Id:          ps.Id,
-			SectorId:    ps.FkNewSectorId,
-			Code:        ps.Code,
-			Name:        ps.Name,
-			NameEn:      ps.NameEn,
-			Description: ps.Description,
+		sectorSubs = append(sectorSubs, models.SectorSub{
+			Id:       ps.Id,
+			SectorId: ps.FkNewSectorId,
+			Code:     ps.Code,
+			Name:     ps.Name,
+			NameEn:   ps.NameEn,
 		})
 	}
 
-	updatedSubSectors, err := u.searchRepo.UpsertNewSubSectors(ctx, subSectors)
+	updatedSectorSub, err := u.searchRepo.UpsertNewSectorSub(ctx, sectorSubs)
 	if err != nil {
 		return nil, err
 	}
 
 	return &models.SectorSyncNewResponse{
-		Sectors:    updatedSectors,
-		SubSectors: updatedSubSectors,
+		Sectors:   updatedSectors,
+		SectorSub: updatedSectorSub,
 	}, nil
 }

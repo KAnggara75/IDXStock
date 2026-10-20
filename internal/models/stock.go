@@ -13,9 +13,9 @@ type Stock struct {
 	GeneralInformation *string  `json:"general_information,omitempty"`
 	FoundingDate       *string  `json:"founding_date,omitempty"`
 	SectorId           *int     `json:"sector_id,omitempty"`
-	SubSectorId        *int     `json:"sub_sector_id,omitempty"`
+	SectorSubId        *int     `json:"sector_sub_id,omitempty"`
 	IndustryId         *int     `json:"industry_id,omitempty"`
-	SubIndustryId      *int     `json:"sub_industry_id,omitempty"`
+	IndustrySubId      *int     `json:"industry_sub_id,omitempty"`
 }
 
 type PasardanaStockDetail struct {
@@ -76,8 +76,8 @@ type StockDetailResponse struct {
 	GeneralInformation *string  `json:"general_information,omitempty"`
 	FoundingDate       *string  `json:"founding_date,omitempty"`
 	SectorId           *int     `json:"sector_id,omitempty"`
-	SubSectorId        *int     `json:"sub_sector_id,omitempty"`
+	SectorSubId        *int     `json:"sector_sub_id,omitempty"`
 	IndustryId         *int     `json:"industry_id,omitempty"`
-	SubIndustryId      *int     `json:"sub_industry_id,omitempty"`
+	IndustrySubId      *int     `json:"industry_sub_id,omitempty"`
 	LastModified       string   `json:"last_modified"`
 }

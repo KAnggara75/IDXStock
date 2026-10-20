@@ -15,7 +15,7 @@
 
 ## ADR-002: PostgreSQL ISO-Week Partitioning for Broker Activity Records
 
-- **Status**: Accepted
+- **Status**: Deprecated & Removed (Superseded by ADR-013)
 - **Date**: 2026-10-12
 - **Source**: Codebase evidence (`migrations/006_create_broker_activity_table.sql`, `internal/repositories/broker_activity_repository.go`)
 - **Context**: Broker transactions (`broker_activity`) accumulate tens of thousands of rows daily across dozens of broker codes, causing performance bottlenecks and index bloat over time.
@@ -192,3 +192,23 @@
   - Zero-touch bootstrap for local developers and container deployments; running `go run ./cmd/api` automatically fetches the latest consolidated dataset if absent.
   - Ensures atomic database file creation via temporary file renaming, preventing partial/corrupted database reads.
   - Clean separation of concerns keeping `internal/database` pure and free of circular dependencies.
+
+---
+
+## ADR-013: Deprecation and Complete Removal of Broker Activity Tracking
+
+- **Status**: Accepted
+- **Date**: 2026-10-20
+- **Source**: Developer request ("hapus broker_activity") & Codebase refactor
+- **Context**: The `broker_activity` tracking mechanism ingested external high-volume broker transaction summaries and managed weekly table partitions (`broker_activity_p_YYYY_WW`). It introduced substantial maintenance overhead, complex partition logic, and was no longer needed for the core equities and taxonomy service. The master broker metadata (`brokers` table seeded via `seederService`) is retained for reference.
+- **Decision**: 
+  - Drop the `broker_activity` table from `database/master_stocks.db` and execute `VACUUM`.
+  - Remove all broker activity REST routes (`GET /api/v1/broker/sync` and `PUT /api/v1/partition/broker-activity`).
+  - Delete broker activity handlers, use cases, services, repositories, and models (`broker_handler.go`, `broker_usecase.go`, `broker_service.go`, `broker_activity_repository.go`, `broker_activity.go`).
+  - Retain `brokers` master table, `BrokerRepository`, and `SeederService.SeedBrokersData`.
+  - Recompress `database/master_stocks.db` to `database/master_stocks.db.zst` (`zstd -19`) and update the GitHub Release `v2026-10` asset.
+  - Regenerate Swagger OpenAPI specifications (`docs/`).
+- **Consequences**:
+  - Eliminates unnecessary upstream dependency on Exodus broker activity endpoints.
+  - Reduces codebase size, eliminates table partition complexity, and simplifies database maintenance.
+  - Releases distributed database assets without bloat.

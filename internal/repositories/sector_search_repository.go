@@ -11,7 +11,7 @@ import (
 
 type SectorSearchRepository interface {
 	UpsertNewSectors(ctx context.Context, sectors []models.SectorNew) ([]models.BasicResponseWithCode, error)
-	UpsertNewSubSectors(ctx context.Context, subSectors []models.SubSector) ([]models.BasicResponseWithCode, error)
+	UpsertNewSectorSub(ctx context.Context, sectorSubs []models.SectorSub) ([]models.BasicResponseWithCode, error)
 }
 
 type sectorSearchRepository struct {
@@ -69,8 +69,8 @@ func (r *sectorSearchRepository) UpsertNewSectors(ctx context.Context, sectors [
 	return updated, nil
 }
 
-func (r *sectorSearchRepository) UpsertNewSubSectors(ctx context.Context, subSectors []models.SubSector) ([]models.BasicResponseWithCode, error) {
-	if len(subSectors) == 0 {
+func (r *sectorSearchRepository) UpsertNewSectorSub(ctx context.Context, sectorSubs []models.SectorSub) ([]models.BasicResponseWithCode, error) {
+	if len(sectorSubs) == 0 {
 		return make([]models.BasicResponseWithCode, 0), nil
 	}
 
@@ -81,27 +81,25 @@ func (r *sectorSearchRepository) UpsertNewSubSectors(ctx context.Context, subSec
 	defer tx.Rollback(ctx)
 
 	query := `
-		INSERT INTO sub_sector (id, code, name, name_en, description, sector_id, last_modified)
-		VALUES (?1, ?2, ?3, ?4, ?5, ?6, datetime('now'))
+		INSERT INTO sector_sub (id, code, name, name_en, sector_id, last_modified)
+		VALUES (?1, ?2, ?3, ?4, ?5, datetime('now'))
 		ON CONFLICT (id) DO UPDATE SET
 			code = excluded.code,
 			name = excluded.name,
 			name_en = excluded.name_en,
-			description = excluded.description,
 			sector_id = excluded.sector_id,
 			last_modified = datetime('now')
-		WHERE (sub_sector.name IS NOT excluded.name OR
-		       sub_sector.code IS NOT excluded.code OR
-		       sub_sector.description IS NOT excluded.description OR
-		       sub_sector.name_en IS NOT excluded.name_en OR
-		       sub_sector.sector_id IS NOT excluded.sector_id)
+		WHERE (sector_sub.name IS NOT excluded.name OR
+		       sector_sub.code IS NOT excluded.code OR
+		       sector_sub.name_en IS NOT excluded.name_en OR
+		       sector_sub.sector_id IS NOT excluded.sector_id)
 		RETURNING id, code, name
 	`
 
 	updated := make([]models.BasicResponseWithCode, 0)
-	for _, sub := range subSectors {
+	for _, sub := range sectorSubs {
 		var res models.BasicResponseWithCode
-		err := tx.QueryRow(ctx, query, sub.Id, sub.Code, sub.Name, sub.NameEn, sub.Description, sub.SectorId).Scan(&res.Id, &res.Code, &res.Name)
+		err := tx.QueryRow(ctx, query, sub.Id, sub.Code, sub.Name, sub.NameEn, sub.SectorId).Scan(&res.Id, &res.Code, &res.Name)
 		if err != nil {
 			continue
 		}

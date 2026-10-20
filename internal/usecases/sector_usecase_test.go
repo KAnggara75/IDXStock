@@ -22,8 +22,8 @@ func (m *mockSectorSearchRepo) UpsertNewSectors(ctx context.Context, sectors []m
 	return args.Get(0).([]models.BasicResponseWithCode), args.Error(1)
 }
 
-func (m *mockSectorSearchRepo) UpsertNewSubSectors(ctx context.Context, subSectors []models.SubSector) ([]models.BasicResponseWithCode, error) {
-	args := m.Called(ctx, subSectors)
+func (m *mockSectorSearchRepo) UpsertNewSectorSub(ctx context.Context, sectorSubs []models.SectorSub) ([]models.BasicResponseWithCode, error) {
+	args := m.Called(ctx, sectorSubs)
 	if args.Get(0) == nil {
 		return nil, args.Error(1)
 	}
@@ -80,7 +80,7 @@ func TestSectorUsecase_SyncNewSectors(t *testing.T) {
 		pSvc.On("FetchNewSectors").Return([]models.PasardanaNewSector{{Id: 1, Name: "Fin"}}, nil).Once()
 		repo.On("UpsertNewSectors", ctx, mock.Anything).Return([]models.BasicResponseWithCode{{Id: 1, Name: "Fin"}}, nil).Once()
 		pSvc.On("FetchNewSubSectors").Return([]models.PasardanaNewSubSector{{Id: 2, Name: "Bank"}}, nil).Once()
-		repo.On("UpsertNewSubSectors", ctx, mock.Anything).Return(nil, assert.AnError).Once()
+		repo.On("UpsertNewSectorSub", ctx, mock.Anything).Return(nil, assert.AnError).Once()
 
 		resp, err := u.SyncNewSectors(ctx)
 		assert.Error(t, err)
@@ -95,12 +95,12 @@ func TestSectorUsecase_SyncNewSectors(t *testing.T) {
 		pSvc.On("FetchNewSectors").Return([]models.PasardanaNewSector{{Id: 1, Name: "Fin"}}, nil).Once()
 		repo.On("UpsertNewSectors", ctx, mock.Anything).Return([]models.BasicResponseWithCode{{Id: 1, Name: "Fin"}}, nil).Once()
 		pSvc.On("FetchNewSubSectors").Return([]models.PasardanaNewSubSector{{Id: 2, Name: "Bank"}}, nil).Once()
-		repo.On("UpsertNewSubSectors", ctx, mock.Anything).Return([]models.BasicResponseWithCode{{Id: 2, Name: "Bank"}}, nil).Once()
+		repo.On("UpsertNewSectorSub", ctx, mock.Anything).Return([]models.BasicResponseWithCode{{Id: 2, Name: "Bank"}}, nil).Once()
 
 		resp, err := u.SyncNewSectors(ctx)
 		assert.NoError(t, err)
 		assert.NotNil(t, resp)
 		assert.Len(t, resp.Sectors, 1)
-		assert.Len(t, resp.SubSectors, 1)
+		assert.Len(t, resp.SectorSub, 1)
 	})
 }

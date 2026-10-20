@@ -68,95 +68,6 @@ const docTemplate = `{
                 }
             }
         },
-        "/broker/sync": {
-            "get": {
-                "description": "Fetches broker transaction activities from Exodus API using access token",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "brokers"
-                ],
-                "summary": "Sync broker activity",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Bearer token",
-                        "name": "Authorization",
-                        "in": "header",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "Broker code (e.g. CC)",
-                        "name": "broker_code",
-                        "in": "query"
-                    },
-                    {
-                        "type": "string",
-                        "description": "Start date (YYYY-MM-DD)",
-                        "name": "from",
-                        "in": "query"
-                    },
-                    {
-                        "type": "string",
-                        "description": "End date (YYYY-MM-DD)",
-                        "name": "to",
-                        "in": "query"
-                    },
-                    {
-                        "type": "string",
-                        "description": "Transaction type (e.g. NET)",
-                        "name": "transaction_type",
-                        "in": "query"
-                    },
-                    {
-                        "type": "string",
-                        "description": "Market board (e.g. RG)",
-                        "name": "market_board",
-                        "in": "query"
-                    },
-                    {
-                        "type": "string",
-                        "description": "Investor type (e.g. ALL, D, F)",
-                        "name": "investor_type",
-                        "in": "query"
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/models.BrokerActivity"
-                            }
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/models.ErrorResponse"
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized",
-                        "schema": {
-                            "$ref": "#/definitions/models.ErrorResponse"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/models.ErrorResponse"
-                        }
-                    }
-                }
-            }
-        },
         "/industries/sync": {
             "put": {
                 "description": "Fetches industries taxonomy from Pasardana and updates the database",
@@ -172,40 +83,6 @@ const docTemplate = `{
                         "description": "OK",
                         "schema": {
                             "$ref": "#/definitions/models.IndustrySyncResponse"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/models.ErrorResponse"
-                        }
-                    }
-                }
-            }
-        },
-        "/partition/broker-activity": {
-            "put": {
-                "description": "Automatically detects and provisions monthly table partitions for broker activity",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "partitions"
-                ],
-                "summary": "Manage broker activity table partitions",
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": true
-                        }
-                    },
-                    "201": {
-                        "description": "Created",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": true
                         }
                     },
                     "500": {
@@ -790,36 +667,6 @@ const docTemplate = `{
                 }
             }
         },
-        "models.BrokerActivity": {
-            "type": "object",
-            "properties": {
-                "avg_price": {
-                    "type": "number"
-                },
-                "broker_code": {
-                    "type": "string"
-                },
-                "date": {
-                    "type": "string"
-                },
-                "freq": {
-                    "type": "integer"
-                },
-                "lot": {
-                    "type": "integer"
-                },
-                "side": {
-                    "description": "\"buy\" or \"sell\"",
-                    "type": "string"
-                },
-                "stock_code": {
-                    "type": "string"
-                },
-                "value": {
-                    "type": "integer"
-                }
-            }
-        },
         "models.ErrorResponse": {
             "type": "object",
             "properties": {
@@ -848,7 +695,7 @@ const docTemplate = `{
                         "$ref": "#/definitions/models.BasicResponse"
                     }
                 },
-                "sub_industries": {
+                "industry_sub": {
                     "type": "array",
                     "items": {
                         "$ref": "#/definitions/models.BasicResponse"
@@ -859,13 +706,13 @@ const docTemplate = `{
         "models.SectorSyncNewResponse": {
             "type": "object",
             "properties": {
-                "sectors": {
+                "sector_sub": {
                     "type": "array",
                     "items": {
                         "$ref": "#/definitions/models.BasicResponseWithCode"
                     }
                 },
-                "sub_sectors": {
+                "sectors": {
                     "type": "array",
                     "items": {
                         "$ref": "#/definitions/models.BasicResponseWithCode"
@@ -900,6 +747,9 @@ const docTemplate = `{
                 "industry_id": {
                     "type": "integer"
                 },
+                "industry_sub_id": {
+                    "type": "integer"
+                },
                 "listing_board": {
                     "type": "string"
                 },
@@ -909,13 +759,10 @@ const docTemplate = `{
                 "sector_id": {
                     "type": "integer"
                 },
+                "sector_sub_id": {
+                    "type": "integer"
+                },
                 "shares": {
-                    "type": "integer"
-                },
-                "sub_industry_id": {
-                    "type": "integer"
-                },
-                "sub_sector_id": {
                     "type": "integer"
                 },
                 "total_employees": {
@@ -947,6 +794,9 @@ const docTemplate = `{
                 "industry_id": {
                     "type": "integer"
                 },
+                "industry_sub_id": {
+                    "type": "integer"
+                },
                 "last_modified": {
                     "type": "string"
                 },
@@ -959,13 +809,10 @@ const docTemplate = `{
                 "sector_id": {
                     "type": "integer"
                 },
+                "sector_sub_id": {
+                    "type": "integer"
+                },
                 "shares": {
-                    "type": "integer"
-                },
-                "sub_industry_id": {
-                    "type": "integer"
-                },
-                "sub_sector_id": {
                     "type": "integer"
                 },
                 "total_employees": {

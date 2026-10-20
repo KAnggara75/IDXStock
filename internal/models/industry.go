@@ -19,15 +19,15 @@ type Industry struct {
 	Name string
 }
 
-type SubIndustry struct {
+type IndustrySub struct {
 	Id         int
 	Name       string
 	IndustryId int
 }
 
 type IndustrySyncResponse struct {
-	Industries    []BasicResponse `json:"industries"`
-	SubIndustries []BasicResponse `json:"sub_industries"`
+	Industries  []BasicResponse `json:"industries"`
+	IndustrySub []BasicResponse `json:"industry_sub"`
 }
 
 type BasicResponse struct {

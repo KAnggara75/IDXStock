@@ -11,7 +11,7 @@ import (
 
 type IndustryRepository interface {
 	UpsertIndustries(ctx context.Context, industries []models.Industry) ([]models.BasicResponse, error)
-	UpsertSubIndustries(ctx context.Context, subIndustries []models.SubIndustry) ([]models.BasicResponse, error)
+	UpsertIndustrySub(ctx context.Context, industrySubs []models.IndustrySub) ([]models.BasicResponse, error)
 }
 
 type industryRepository struct {
@@ -63,8 +63,8 @@ func (r *industryRepository) UpsertIndustries(ctx context.Context, industries []
 	return updated, nil
 }
 
-func (r *industryRepository) UpsertSubIndustries(ctx context.Context, subIndustries []models.SubIndustry) ([]models.BasicResponse, error) {
-	if len(subIndustries) == 0 {
+func (r *industryRepository) UpsertIndustrySub(ctx context.Context, industrySubs []models.IndustrySub) ([]models.BasicResponse, error) {
+	if len(industrySubs) == 0 {
 		return make([]models.BasicResponse, 0), nil
 	}
 
@@ -75,19 +75,19 @@ func (r *industryRepository) UpsertSubIndustries(ctx context.Context, subIndustr
 	defer tx.Rollback(ctx)
 
 	query := `
-		INSERT INTO sub_industry (id, name, industry_id, last_modified)
+		INSERT INTO industry_sub (id, name, industry_id, last_modified)
 		VALUES (?1, ?2, ?3, datetime('now'))
 		ON CONFLICT (id) DO UPDATE SET
 			name = excluded.name,
 			industry_id = excluded.industry_id,
 			last_modified = datetime('now')
-		WHERE (sub_industry.name IS NOT excluded.name OR
-		       sub_industry.industry_id IS NOT excluded.industry_id)
+		WHERE (industry_sub.name IS NOT excluded.name OR
+		       industry_sub.industry_id IS NOT excluded.industry_id)
 		RETURNING id, name
 	`
 
 	updated := make([]models.BasicResponse, 0)
-	for _, sub := range subIndustries {
+	for _, sub := range industrySubs {
 		var res models.BasicResponse
 		err := tx.QueryRow(ctx, query, sub.Id, sub.Name, sub.IndustryId).Scan(&res.Id, &res.Name)
 		if err != nil {

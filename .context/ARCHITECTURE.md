@@ -34,7 +34,6 @@ graph TD
     subgraph Handlers
         Routes --> StockH[StockHandler]
         Routes --> HistoryH[HistoryHandler]
-        Routes --> BrokerH[BrokerHandler]
         Routes --> SectorH[SectorHandler]
         Routes --> IndustryH[IndustryHandler]
         Routes --> AssetH[AssetHandler]
@@ -43,7 +42,6 @@ graph TD
     subgraph Use Cases
         StockH --> StockUC[StockUsecase]
         HistoryH --> HistoryUC[HistoryUsecase]
-        BrokerH --> BrokerUC[BrokerUsecase]
         SectorH --> SectorUC[SectorUsecase]
         IndustryH --> IndustryUC[IndustryUsecase]
     end
@@ -54,14 +52,12 @@ graph TD
         StockUC --> IdxSvc[IdxService]
         HistoryUC --> PasardanaSvc
         HistoryUC --> IdxSvc
-        BrokerUC --> BrokerSvc[BrokerService]
         AssetH -.->|Stream Proxy| ExternalCDNs[External Logo CDNs]
     end
 
     subgraph Persistence Layer
         StockUC --> StockRepo[StockRepository]
         HistoryUC --> HistoryRepo[HistoryRepository]
-        BrokerUC --> BrokerActRepo[BrokerActivityRepository]
         SectorUC --> SectorRepo[SectorSearchRepository]
         IndustryUC --> IndustryRepo[IndustryRepository]
     end
@@ -69,7 +65,6 @@ graph TD
     subgraph Storage & Datasets
         StockRepo --> SQLite[(SQLite: master_stocks.db)]
         HistoryRepo --> SQLite
-        BrokerActRepo --> SQLite
         SectorRepo --> SQLite
         IndustryRepo --> SQLite
         SQLite -.->|Monthly Archives| Zstd[Zstandard Compression zstd -19]
@@ -86,8 +81,8 @@ graph TD
 2. **Excel Ingestion**: `POST /api/v1/stocks/upload` or `PATCH /api/v1/stocks/upload` receives an `.xlsx` multipart file parsed by `StockService.ParseExcel` (`xuri/excelize/v2`), normalized via `internal/utils`, and batch-upserted into `stocks`.
 
 ### 3.2 Market Synchronization (Pasardana & IDX)
-1. **Trigger**: Synchronous `PUT` invocation (e.g., `/api/v1/stocks/history/sync` or `/api/v1/broker/sync`).
-2. **External Retrieval**: Service layers (`IdxService`, `PasardanaService`, `BrokerService`) perform HTTP requests:
+1. **Trigger**: Synchronous `PUT` invocation (e.g., `/api/v1/stocks/history/sync`).
+2. **External Retrieval**: Service layers (`IdxService`, `PasardanaService`) perform HTTP requests:
    - Sets custom User-Agents, Referers, Cookies (`internal/services/idx_service.go#L36-L55`) to navigate anti-scraping controls.
    - Decodes compressed or chunked JSON payloads.
 3. **Database Write**: Upserted into SQLite within atomic transactions (`ON CONFLICT (code) DO UPDATE`).
@@ -131,9 +126,9 @@ graph TD
 - **Database Tables**: Dedicated SQLite tables house application data:
   - `stocks`
   - `listing_board`
-  - `history`
+  - `stocks_history`
   - `brokers`
-  - `broker_activity`
-  - `sector`, `sub_sector`
-  - `industry`, `sub_industry`
+  - `sector`, `sector_sub`
+  - `industry`, `industry_sub`
+  - `pasardana_stock_mapping`
 - **Models vs Entities**: Models defined in `internal/models/` serve dual purposes as DTOs, API schema annotations, and database mapping entities.

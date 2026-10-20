@@ -28,7 +28,6 @@
 - **Entry / Key Files**:
   - `internal/handlers/stock_handler.go` — Get all stocks (`/api/v1/stocks`), get stock by ticker code (`/api/v1/stocks/:code`), get distinct trading boards (`/api/v1/stocks/boards`), get stocks filtered by board (`/api/v1/stocks/boards/:board`), preview and upload Excel stock lists (`/api/v1/stocks/upload`), sync company details (`/api/v1/stocks/sync`), and fetch delisted stocks (`/api/v1/stocks/delisting/sync`).
   - `internal/handlers/history_handler.go` — Query stock historical prices (`/api/v1/stocks/:code/history`), sync daily EOD history (`/api/v1/stocks/history/sync`), and execute stock split adjustments (`/api/v1/stocks/split`).
-  - `internal/handlers/broker_handler.go` — Sync broker activities and manage broker activity partition tables.
   - `internal/handlers/sector_handler.go` — Synchronize sector and sub-sector master data.
   - `internal/handlers/industry_handler.go` — Synchronize industry and sub-industry master data.
   - `internal/handlers/asset_handler.go` — Proxy company logos from external sources with HTTP stream piping and client caching.
@@ -44,12 +43,11 @@
 - **Entry / Key Files**:
   - `internal/usecases/stock_usecase.go` — Retrieving filtered stocks (`GetAllStocks`), lookup stock by code (`GetStockByCode`), listing distinct trading boards (`GetDistinctBoards`), query stocks by board (`GetStocksByBoard`), parsing Excel lists, validating stock data, and syncing company profiles.
   - `internal/usecases/history_usecase.go` — Processing historical market pricing, applying mathematical ratios for stock splits (`close`, `open_price`, `high`, `low`, and `volume`), and backfilling missing days.
-  - `internal/usecases/broker_usecase.go` — Orchestrates broker activity synchronization.
   - `internal/usecases/sector_usecase.go` — Fetching and updating sector taxonomies.
   - `internal/usecases/industry_usecase.go` — Fetching and updating industry classifications.
 - **Dependencies**: `internal/repositories`, `internal/services`, `internal/models`.
 - **Consumers**: `internal/handlers`.
-- **External Integrations**: Orchestrates `PasardanaService`, `IdxService`, and `BrokerService`.
+- **External Integrations**: Orchestrates `PasardanaService` and `IdxService`.
 - **Key Notes**: Encapsulates business transaction boundaries.
 
 ---
@@ -59,12 +57,11 @@
 - **Entry / Key Files**:
   - `internal/services/idx_service.go` — Direct integration with Indonesia Stock Exchange (`idx.co.id`) with custom stealth headers and cookie management to bypass anti-scraping / 403 filters.
   - `internal/services/pasardana_service.go` — Integration with `pasardana.id` REST endpoints (stocks, sectors, historical quotes).
-  - `internal/services/broker_service.go` — Fetching broker summary transactions from external market data endpoints.
   - `internal/services/stock_service.go` — Parsing Microsoft Excel (`.xlsx`) files containing official IDX listing reports using `excelize/v2`.
   - `internal/services/seeder_service.go` — Seeding master broker codes and broker names into SQLite on startup.
 - **Dependencies**: `net/http`, `github.com/xuri/excelize/v2`, `github.com/sirupsen/logrus`.
 - **Consumers**: `internal/usecases`, `cmd/api/main.go`.
-- **External Integrations**: `idx.co.id`, `pasardana.id`, external broker API.
+- **External Integrations**: `idx.co.id`, `pasardana.id`.
 - **Key Notes**: Implements resilient HTTP clients with timeout controls and custom response decoders.
 
 ---
@@ -74,10 +71,10 @@
 - **Entry / Key Files**:
   - `internal/repositories/stock_repository.go` — Master stock retrieval (`GetAllStocks`), stock detail by code (`GetStockByCode`), distinct boards retrieval (`GetDistinctBoards`), CRUD, and batch upserts for company profiles, board types, and delisting statuses.
   - `internal/repositories/history_repository.go` — Historical EOD price querying, bulk insert, and SQL-based stock split adjustments.
-  - `internal/repositories/broker_activity_repository.go` — Ingestion of broker transactions and partition operations.
   - `internal/repositories/broker_repository.go` — Query and upsert broker master records.
-  - `internal/repositories/sector_search_repository.go` — Upsert sector & sub-sector records.
-  - `internal/repositories/industry_repository.go` — Upsert industry & sub-industry records.
+  - `internal/repositories/sector_search_repository.go` — Upsert sector & sector_sub records.
+  - `internal/repositories/industry_repository.go` — Upsert industry & industry_sub records.
+  - `internal/repositories/db_executor.go` — Database executor type alias.
 - **Dependencies**: `modernc.org/sqlite`, `internal/database`, `internal/models`.
 - **Consumers**: `internal/usecases`, `internal/services/seeder_service`.
 - **External Integrations**: SQLite 3 database engine.
@@ -90,7 +87,6 @@
 - **Entry / Key Files**:
   - `internal/models/stock.go` — Stock profile entity, `GetAllStocksFilter`, `StockDetailResponse`, and Excel upload schemas.
   - `internal/models/history.go` — Stock price history entity, query filters, and stock split request models.
-  - `internal/models/broker_activity.go` — Broker transaction entity and sync parameters.
   - `internal/models/broker.go` — Broker master entity.
   - `internal/models/sector_new.go` & `internal/models/industry.go` — Classification hierarchy models.
 - **Dependencies**: Standard library.

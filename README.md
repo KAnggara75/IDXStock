@@ -24,8 +24,7 @@ This application interfaces with reliable financial and exchange data sources:
 - **Historical Stock Pricing**: Retrieve end-of-day (EOD) historical quotes with flexible date filtering (`start_date`, `end_date`) and sparse field selection (`fields`).
 - **Corporate Action Adjustments**: Dynamic stock split calculation endpoint (`PUT /api/v1/stocks/split`) that adjusts historical open, high, low, close prices and recalculates trading volume.
 - **Listing & Delisting Synchronization**: Ingest and track active listing profiles, sector mapping, and delisted stocks.
-- **High-Volume Broker Activities**: Automated weekly ISO partition management (`broker_activity_YYYY_WW`) for scalable broker summary transaction ingestion.
-- **Decoupled Architecture**: Spring Cloud Config remote configuration, standalone pure-Go SQLite persistence, and structured JSON telemetry.
+- **Decoupled Architecture**: Direct environment variable configuration, standalone pure-Go SQLite persistence, and structured JSON telemetry.
 
 ---
 

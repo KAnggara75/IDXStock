@@ -8,13 +8,12 @@ type SectorNew struct {
 	Description *string
 }
 
-type SubSector struct {
-	Id          int
-	SectorId    int
-	Code        *string
-	Name        string
-	NameEn      *string
-	Description *string
+type SectorSub struct {
+	Id       int
+	SectorId int
+	Code     *string
+	Name     string
+	NameEn   *string
 }
 
 type PasardanaNewSector struct {
@@ -41,6 +40,6 @@ type BasicResponseWithCode struct {
 }
 
 type SectorSyncNewResponse struct {
-	Sectors    []BasicResponseWithCode `json:"sectors"`
-	SubSectors []BasicResponseWithCode `json:"sub_sectors"`
+	Sectors   []BasicResponseWithCode `json:"sectors"`
+	SectorSub []BasicResponseWithCode `json:"sector_sub"`
 }
