@@ -19,7 +19,6 @@ type StockRepository interface {
 	GetAllStocks(ctx context.Context, filter models.GetAllStocksFilter) ([]models.StockDetailResponse, error)
 	GetStockByCode(ctx context.Context, code string) (*models.StockDetailResponse, error)
 	GetDistinctBoards(ctx context.Context) ([]string, error)
-	GetListingBoards(ctx context.Context) ([]models.ListingBoard, error)
 	GetStocksWithNullSectorOrIndustry(ctx context.Context) ([]string, error)
 	UpdateStockSectorAndIndustry(ctx context.Context, code string, sectorID, sectorSubID, industryID, industrySubID *int) (bool, error)
 }
@@ -344,35 +343,6 @@ func (r *stockRepository) GetDistinctBoards(ctx context.Context) ([]string, erro
 	}
 
 	return boards, nil
-}
-
-func (r *stockRepository) GetListingBoards(ctx context.Context) ([]models.ListingBoard, error) {
-	query := `
-		SELECT code, name, name_en
-		FROM listing_board
-		ORDER BY code ASC
-	`
-
-	rows, err := r.pool.Query(ctx, query)
-	if err != nil {
-		return nil, fmt.Errorf("failed to get listing boards: %w", err)
-	}
-	defer rows.Close()
-
-	listingBoards := make([]models.ListingBoard, 0)
-	for rows.Next() {
-		var lb models.ListingBoard
-		var nameEn sql.NullString
-		if err := rows.Scan(&lb.Code, &lb.Name, &nameEn); err != nil {
-			return nil, fmt.Errorf("failed to scan listing board: %w", err)
-		}
-		if nameEn.Valid {
-			lb.NameEn = &nameEn.String
-		}
-		listingBoards = append(listingBoards, lb)
-	}
-
-	return listingBoards, nil
 }
 
 func (r *stockRepository) GetStocksWithNullSectorOrIndustry(ctx context.Context) ([]string, error) {

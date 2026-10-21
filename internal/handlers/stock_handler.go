@@ -156,23 +156,3 @@ func (h *StockHandler) GetBoardsHandler(c fiber.Ctx) error {
 
 	return c.JSON(boards)
 }
-
-// GetListingBoardsHandler godoc
-// @Summary      Get master listing boards
-// @Description  Retrieves list of master listing boards (code, name, name_id, description)
-// @Tags         stocks
-// @Produce      json
-// @Success      200     {array}   models.ListingBoard
-// @Failure      500     {object}  models.ErrorResponse
-// @Router       /stocks/listing-boards [get]
-func (h *StockHandler) GetListingBoardsHandler(c fiber.Ctx) error {
-	boards, err := h.usecase.GetListingBoards(c.Context())
-	if err != nil {
-		logrus.Errorf("Failed to retrieve listing boards: %v", err)
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"error": err.Error(),
-		})
-	}
-
-	return c.JSON(boards)
-}

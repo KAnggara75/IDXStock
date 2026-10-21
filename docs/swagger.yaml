@@ -5,15 +5,6 @@ definitions:
       error:
         type: string
     type: object
-  models.ListingBoard:
-    properties:
-      code:
-        type: string
-      name:
-        type: string
-      name_en:
-        type: string
-    type: object
   models.StockDetailResponse:
     properties:
       board:
@@ -285,25 +276,6 @@ paths:
       summary: Sync stock history from data source
       tags:
       - history
-  /stocks/listing-boards:
-    get:
-      description: Retrieves list of master listing boards (code, name, name_id, description)
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            items:
-              $ref: '#/definitions/models.ListingBoard'
-            type: array
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/models.ErrorResponse'
-      summary: Get master listing boards
-      tags:
-      - stocks
   /stocks/sectors-industries/sync:
     put:
       description: Fetches fkNewSectorId, fkNewSubSectorId, fkNewIndustryId, and fkNewSubIndustryId

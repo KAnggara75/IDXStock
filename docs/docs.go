@@ -213,35 +213,6 @@ const docTemplate = `{
                 }
             }
         },
-        "/stocks/listing-boards": {
-            "get": {
-                "description": "Retrieves list of master listing boards (code, name, name_id, description)",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "stocks"
-                ],
-                "summary": "Get master listing boards",
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/models.ListingBoard"
-                            }
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/models.ErrorResponse"
-                        }
-                    }
-                }
-            }
-        },
         "/stocks/sectors-industries/sync": {
             "put": {
                 "description": "Fetches fkNewSectorId, fkNewSubSectorId, fkNewIndustryId, and fkNewSubIndustryId from Pasardana for stocks that currently have null sector or industry values",
@@ -452,20 +423,6 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "error": {
-                    "type": "string"
-                }
-            }
-        },
-        "models.ListingBoard": {
-            "type": "object",
-            "properties": {
-                "code": {
-                    "type": "string"
-                },
-                "name": {
-                    "type": "string"
-                },
-                "name_en": {
                     "type": "string"
                 }
             }

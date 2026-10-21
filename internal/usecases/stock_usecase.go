@@ -19,7 +19,6 @@ type StockUsecase interface {
 	GetAllStocks(ctx context.Context, filter models.GetAllStocksFilter) ([]models.StockDetailResponse, error)
 	GetStockByCode(ctx context.Context, code string) (*models.StockDetailResponse, error)
 	GetDistinctBoards(ctx context.Context) ([]string, error)
-	GetListingBoards(ctx context.Context) ([]models.ListingBoard, error)
 }
 
 type stockUsecase struct {
@@ -227,8 +226,4 @@ func (u *stockUsecase) GetStockByCode(ctx context.Context, code string) (*models
 
 func (u *stockUsecase) GetDistinctBoards(ctx context.Context) ([]string, error) {
 	return u.repo.GetDistinctBoards(ctx)
-}
-
-func (u *stockUsecase) GetListingBoards(ctx context.Context) ([]models.ListingBoard, error) {
-	return u.repo.GetListingBoards(ctx)
 }

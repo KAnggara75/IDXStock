@@ -35,12 +35,6 @@ type PasardanaStock struct {
 	Name string `json:"Name"`
 }
 
-type ListingBoard struct {
-	Code   string  `json:"code"`
-	Name   string  `json:"name"`
-	NameEn *string `json:"name_en,omitempty"`
-}
-
 type StockResponse struct {
 	Id   int    `json:"id"`
 	Code string `json:"code"`

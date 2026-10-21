@@ -78,7 +78,7 @@ graph TD
 
 ### 3.1 Master Equities Query & Ingestion
 1. **Query All Stocks**: `GET /api/v1/stocks?board=...&search=...` queries `stocks` table via `StockRepository.GetAllStocks` with case-insensitive filtering on board and ticker/name, returning `[]models.StockDetailResponse`.
-2. **Master Listing Boards**: `GET /api/v1/stocks/listing-boards` queries master classification boards from `listing_board`.
+2. **Trading Boards**: `GET /api/v1/stocks/boards` queries distinct board values from `stocks`.
 
 ### 3.2 Market Synchronization (Pasardana & IDX)
 1. **Trigger**: Synchronous `PUT` invocation (e.g., `/api/v1/stocks/history/sync`).

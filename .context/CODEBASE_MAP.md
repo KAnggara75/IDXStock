@@ -26,7 +26,7 @@
 ## `internal/handlers`
 - **Responsibility**: HTTP transport layer, request validation, query param binding, JSON response formatting, and OpenAPI Swagger documentation annotations.
 - **Entry / Key Files**:
-  - `internal/handlers/stock_handler.go` — Get all stocks (`/api/v1/stocks`), get stock by ticker code (`/api/v1/stocks/:code`), get distinct trading boards (`/api/v1/stocks/boards`), get master listing boards (`/api/v1/stocks/listing-boards`), sync company details (`/api/v1/stocks/sync`), and sync stock sectors and industries (`/api/v1/stocks/sectors-industries/sync`).
+  - `internal/handlers/stock_handler.go` — Get all stocks (`/api/v1/stocks`), get stock by ticker code (`/api/v1/stocks/:code`), get distinct trading boards (`/api/v1/stocks/boards`), sync company details (`/api/v1/stocks/sync`), and sync stock sectors and industries (`/api/v1/stocks/sectors-industries/sync`).
   - `internal/handlers/history_handler.go` — Query stock historical prices (`/api/v1/stocks/:code/history`), sync daily EOD history (`/api/v1/stocks/history/sync`), and execute stock split adjustments (`/api/v1/stocks/split`).
   - `internal/handlers/asset_handler.go` — Proxy company logos from external sources with HTTP stream piping and client caching.
 - **Dependencies**: `github.com/gofiber/fiber/v3`, `internal/usecases`, `internal/models`.
@@ -39,7 +39,7 @@
 ## `internal/usecases`
 - **Responsibility**: Core application business logic, orchestration of repositories, and external upstream APIs.
 - **Entry / Key Files**:
-  - `internal/usecases/stock_usecase.go` — Retrieving filtered stocks (`GetAllStocks`), lookup stock by code (`GetStockByCode`), listing distinct trading boards (`GetDistinctBoards`), query master listing boards (`GetListingBoards`), validating stock data, syncing company profiles, and parallel sync for missing sector/industry associations (`SyncStockSectorAndIndustry`).
+  - `internal/usecases/stock_usecase.go` — Retrieving filtered stocks (`GetAllStocks`), lookup stock by code (`GetStockByCode`), listing distinct trading boards (`GetDistinctBoards`), validating stock data, syncing company profiles, and parallel sync for missing sector/industry associations (`SyncStockSectorAndIndustry`).
   - `internal/usecases/history_usecase.go` — Processing historical market pricing, applying mathematical ratios for stock splits (`close`, `open_price`, `high`, `low`, and `volume`), and backfilling missing days.
 - **Dependencies**: `internal/repositories`, `internal/services`, `internal/models`.
 - **Consumers**: `internal/handlers`.
@@ -63,7 +63,7 @@
 ## `internal/repositories`
 - **Responsibility**: Persistence layer, executing SQL queries, transactional batches, and data operations on SQLite.
 - **Entry / Key Files**:
-  - `internal/repositories/stock_repository.go` — Master stock retrieval (`GetAllStocks`), stock detail by code (`GetStockByCode`), distinct boards retrieval (`GetDistinctBoards`), master listing boards retrieval (`GetListingBoards`), query stocks with null/empty taxonomy (`GetStocksWithNullSectorOrIndustry`), update sector/industry mappings (`UpdateStockSectorAndIndustry`), CRUD, and batch upserts for company profiles, board types, and delisting statuses.
+  - `internal/repositories/stock_repository.go` — Master stock retrieval (`GetAllStocks`), stock detail by code (`GetStockByCode`), distinct boards retrieval (`GetDistinctBoards`), query stocks with null/empty taxonomy (`GetStocksWithNullSectorOrIndustry`), update sector/industry mappings (`UpdateStockSectorAndIndustry`), CRUD, and batch upserts for company profiles, board types, and delisting statuses.
   - `internal/repositories/history_repository.go` — Historical EOD price querying, bulk insert, and SQL-based stock split adjustments.
   - `internal/repositories/sector_search_repository.go` — Upsert sector & sector_sub records.
   - `internal/repositories/industry_repository.go` — Upsert industry & industry_sub records.

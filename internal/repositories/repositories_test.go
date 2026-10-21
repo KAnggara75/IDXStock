@@ -524,48 +524,4 @@ func TestHistoryRepository(t *testing.T) {
 		assert.True(t, updated)
 		assert.NoError(t, mock.ExpectationsWereMet())
 	})
-
-	t.Run("GetListingBoards", func(t *testing.T) {
-		t.Run("success", func(t *testing.T) {
-			db, mock, err := sqlmock.New()
-			assert.NoError(t, err)
-			defer db.Close()
-			mockExec := database.NewDBExecutor(db)
-
-			repo := NewStockRepository(mockExec)
-
-			rows := sqlmock.NewRows([]string{"code", "name", "name_en"}).
-				AddRow("Main", "Utama", "Main").
-				AddRow("Development", "Pengembangan", "Development")
-			mock.ExpectQuery("SELECT code, name, name_en FROM listing_board ORDER BY code ASC").
-				WillReturnRows(rows)
-
-			boards, err := repo.GetListingBoards(ctx)
-			assert.NoError(t, err)
-			assert.Len(t, boards, 2)
-			assert.Equal(t, "Main", boards[0].Code)
-			assert.Equal(t, "Utama", boards[0].Name)
-			assert.NotNil(t, boards[0].NameEn)
-			assert.Equal(t, "Main", *boards[0].NameEn)
-			assert.Equal(t, "Development", boards[1].Code)
-			assert.NoError(t, mock.ExpectationsWereMet())
-		})
-
-		t.Run("query_error", func(t *testing.T) {
-			db, mock, err := sqlmock.New()
-			assert.NoError(t, err)
-			defer db.Close()
-			mockExec := database.NewDBExecutor(db)
-
-			repo := NewStockRepository(mockExec)
-
-			mock.ExpectQuery("SELECT code, name, name_en FROM listing_board ORDER BY code ASC").
-				WillReturnError(assert.AnError)
-
-			boards, err := repo.GetListingBoards(ctx)
-			assert.Error(t, err)
-			assert.Nil(t, boards)
-			assert.NoError(t, mock.ExpectationsWereMet())
-		})
-	})
 }
