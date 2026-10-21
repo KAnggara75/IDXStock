@@ -27,7 +27,7 @@
 - **Responsibility**: HTTP transport layer, request validation, query param binding, JSON response formatting, and OpenAPI Swagger documentation annotations.
 - **Entry / Key Files**:
   - `internal/handlers/stock_handler.go` — Get all stocks (`/api/v1/stocks`), get stock by ticker code (`/api/v1/stocks/:code`), get distinct trading boards (`/api/v1/stocks/boards`), sync company details (`/api/v1/stocks/sync`), and sync stock sectors and industries (`/api/v1/stocks/sectors-industries/sync`).
-  - `internal/handlers/history_handler.go` — Query stock historical prices (`/api/v1/stocks/:code/history`), sync daily EOD history (`/api/v1/stocks/history/sync`), and execute stock split adjustments (`/api/v1/stocks/split`).
+  - `internal/handlers/history_handler.go` — Query stock historical prices (`/api/v1/stocks/:code/history`), sync daily EOD history (`/api/v1/stocks/history/sync`), sync daily price history from Stockbit (`/api/v1/stocks/:code/history/sync`), and execute stock split adjustments (`/api/v1/stocks/split`).
   - `internal/handlers/asset_handler.go` — Proxy company logos from external sources with HTTP stream piping and client caching.
 - **Dependencies**: `github.com/gofiber/fiber/v3`, `internal/usecases`, `internal/models`.
 - **Consumers**: Fiber router in `internal/routes/routes.go`.
@@ -40,7 +40,7 @@
 - **Responsibility**: Core application business logic, orchestration of repositories, and external upstream APIs.
 - **Entry / Key Files**:
   - `internal/usecases/stock_usecase.go` — Retrieving filtered stocks (`GetAllStocks`), lookup stock by code (`GetStockByCode`), listing distinct trading boards (`GetDistinctBoards`), validating stock data, syncing company profiles, and parallel sync for missing sector/industry associations (`SyncStockSectorAndIndustry`).
-  - `internal/usecases/history_usecase.go` — Processing historical market pricing, applying mathematical ratios for stock splits (`close`, `open_price`, `high`, `low`, and `volume`), and backfilling missing days.
+  - `internal/usecases/history_usecase.go` — Processing historical market pricing, syncing historical price feeds from IDX, Pasardana, and Stockbit, applying mathematical ratios for stock splits (`close`, `open_price`, `high`, `low`, and `volume`), and backfilling missing days.
 - **Dependencies**: `internal/repositories`, `internal/services`, `internal/models`.
 - **Consumers**: `internal/handlers`.
 - **External Integrations**: Orchestrates `PasardanaService` and `IdxService`.
@@ -53,9 +53,10 @@
 - **Entry / Key Files**:
   - `internal/services/idx_service.go` — Direct integration with Indonesia Stock Exchange (`idx.co.id`) with custom stealth headers and cookie management to bypass anti-scraping / 403 filters.
   - `internal/services/pasardana_service.go` — Integration with `pasardana.id` REST endpoints (stocks and historical quotes).
+  - `internal/services/stockbit_service.go` — Integration with Stockbit (`exodus.stockbit.com`) chartbit daily price API.
 - **Dependencies**: `net/http`, `compress/gzip`, `github.com/sirupsen/logrus`.
 - **Consumers**: `internal/usecases`.
-- **External Integrations**: `idx.co.id`, `pasardana.id`.
+- **External Integrations**: `idx.co.id`, `pasardana.id`, `stockbit.com`.
 - **Key Notes**: Implements resilient HTTP clients with timeout controls and custom response decoders.
 
 ---

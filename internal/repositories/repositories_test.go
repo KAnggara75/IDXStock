@@ -277,7 +277,7 @@ func TestHistoryRepository(t *testing.T) {
 		mock.ExpectBegin()
 		date := time.Date(2024, 1, 1, 0, 0, 0, 0, time.UTC)
 		rec := models.StockHistory{Code: "BBCA", Date: date}
-		mock.ExpectExec("INSERT INTO history").
+		mock.ExpectExec("INSERT INTO stocks_history").
 			WithArgs(
 				rec.Code, "2024-01-01", rec.Previous, rec.OpenPrice, rec.FirstTrade,
 				rec.High, rec.Low, rec.Close, rec.Change, rec.Volume, rec.Value,
@@ -304,7 +304,7 @@ func TestHistoryRepository(t *testing.T) {
 		mock.ExpectBegin()
 		date := time.Date(2024, 1, 1, 0, 0, 0, 0, time.UTC)
 		rec := models.StockHistory{Code: "BBCA", Date: date}
-		mock.ExpectExec("INSERT INTO history").
+		mock.ExpectExec("INSERT INTO stocks_history").
 			WithArgs(
 				rec.Code, "2024-01-01", rec.Previous, rec.OpenPrice, rec.FirstTrade,
 				rec.High, rec.Low, rec.Close, rec.Change, rec.Volume, rec.Value,
@@ -344,7 +344,7 @@ func TestHistoryRepository(t *testing.T) {
 			nil, nil, lastModStr,
 		)
 
-		mock.ExpectQuery("SELECT (.+) FROM history").
+		mock.ExpectQuery("SELECT (.+) FROM stocks_history").
 			WithArgs("BBCA", nil, nil).
 			WillReturnRows(rows)
 
@@ -365,7 +365,7 @@ func TestHistoryRepository(t *testing.T) {
 		start := time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC)
 		end := time.Date(2021, 1, 1, 0, 0, 0, 0, time.UTC)
 
-		mock.ExpectExec("UPDATE history").
+		mock.ExpectExec("UPDATE stocks_history").
 			WithArgs("BBCA", 5.0, "2020-01-01", "2021-01-01").
 			WillReturnResult(sqlmock.NewResult(1, 10))
 

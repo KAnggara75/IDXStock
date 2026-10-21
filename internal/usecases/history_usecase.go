@@ -16,6 +16,7 @@ import (
 
 type HistoryUsecase interface {
 	SyncStockHistory(ctx context.Context, req models.SyncHistoryRequest, source string, cookie string) error
+	SyncStockHistoryFromStockbit(ctx context.Context, code string, from, to string, authorization string) (int, error)
 	GetStockHistory(ctx context.Context, code string, startDate, endDate *time.Time) ([]models.StockHistory, error)
 	ApplyStockSplit(ctx context.Context, req models.StockSplitRequest) error
 }
@@ -25,6 +26,7 @@ type historyUsecase struct {
 	stockRepo        repositories.StockRepository
 	pasardanaService services.PasardanaService
 	idxService       services.IdxService
+	stockbitService  services.StockbitService
 }
 
 func NewHistoryUsecase(
@@ -32,12 +34,14 @@ func NewHistoryUsecase(
 	stockRepo repositories.StockRepository,
 	pasardanaService services.PasardanaService,
 	idxService services.IdxService,
+	stockbitService services.StockbitService,
 ) HistoryUsecase {
 	return &historyUsecase{
 		repo:             repo,
 		stockRepo:        stockRepo,
 		pasardanaService: pasardanaService,
 		idxService:       idxService,
+		stockbitService:  stockbitService,
 	}
 }
 
@@ -260,4 +264,89 @@ func (u *historyUsecase) parseRatio(ratio string) (float64, error) {
 	}
 
 	return b / a, nil
+}
+
+func (u *historyUsecase) SyncStockHistoryFromStockbit(ctx context.Context, code string, from, to string, authorization string) (int, error) {
+	code = strings.ToUpper(strings.TrimSpace(code))
+	if code == "" {
+		return 0, fmt.Errorf("stock code is required")
+	}
+
+	if from == "" {
+		from = time.Now().Format("2006-01-02")
+	}
+	if to == "" {
+		to = "2000-01-01"
+	}
+
+	// Ensure stock exists in master stocks table to satisfy FK
+	missing, err := u.stockRepo.FindMissingCodes(ctx, []string{code})
+	if err == nil && len(missing) > 0 {
+		detail, errFetch := u.pasardanaService.FetchStockDetailByCode(code)
+		if errFetch == nil && detail != nil {
+			epoch0 := "1970-01-01"
+			if detail.ListingDate != nil && *detail.ListingDate != "" {
+				parsed := utils.NormalizeDate(*detail.ListingDate)
+				if parsed == "" {
+					parsed = epoch0
+				}
+				detail.ListingDate = &parsed
+			} else {
+				detail.ListingDate = &epoch0
+			}
+
+			if detail.FoundingDate != nil && *detail.FoundingDate != "" {
+				parsed := utils.NormalizeDate(*detail.FoundingDate)
+				if parsed == "" {
+					parsed = epoch0
+				}
+				detail.FoundingDate = &parsed
+			} else {
+				detail.FoundingDate = &epoch0
+			}
+
+			if _, errUpsert := u.stockRepo.UpsertStocksDetail(ctx, []models.PasardanaStockDetail{*detail}); errUpsert != nil {
+				logrus.Warnf("Failed to auto-upsert stock detail for %s: %v", code, errUpsert)
+			}
+		}
+	}
+
+	items, err := u.stockbitService.FetchDailyPrice(ctx, code, from, to, authorization)
+	if err != nil {
+		return 0, err
+	}
+
+	if len(items) == 0 {
+		return 0, nil
+	}
+
+	records := make([]models.StockHistory, 0, len(items))
+	for _, item := range items {
+		parsedDate, err := time.Parse("2006-01-02", item.Date)
+		if err != nil {
+			logrus.Warnf("Skipping item with invalid date format %s: %v", item.Date, err)
+			continue
+		}
+
+		records = append(records, models.StockHistory{
+			Code:         code,
+			Date:         parsedDate,
+			OpenPrice:    item.Open,
+			High:         item.High,
+			Low:          item.Low,
+			Close:        item.Close,
+			Volume:       item.Volume,
+			ForeignBuy:   item.ForeignBuy,
+			ForeignSell:  item.ForeignSell,
+			Frequency:    item.Frequency,
+			Value:        item.Value,
+			ListedShares: item.ShareOutstanding,
+		})
+	}
+
+	if err := u.repo.BatchUpsertStockHistory(ctx, records); err != nil {
+		return 0, fmt.Errorf("failed to persist history records: %w", err)
+	}
+
+	return len(records), nil
 }

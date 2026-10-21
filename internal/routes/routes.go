@@ -26,9 +26,10 @@ func Setup(app *fiber.App, db ...repositories.DBExecutor) {
 
 	pasardanaService := services.NewPasardanaService(nil)
 	idxService := services.NewIdxService(nil)
+	stockbitService := services.NewStockbitService(nil)
 
 	stockUsecase := usecases.NewStockUsecase(stockRepo, pasardanaService)
-	historyUsecase := usecases.NewHistoryUsecase(historyRepo, stockRepo, pasardanaService, idxService)
+	historyUsecase := usecases.NewHistoryUsecase(historyRepo, stockRepo, pasardanaService, idxService, stockbitService)
 
 	stockHandler := handlers.NewStockHandler(stockUsecase)
 	historyHandler := handlers.NewHistoryHandler(historyUsecase)
@@ -65,6 +66,7 @@ func Setup(app *fiber.App, db ...repositories.DBExecutor) {
 	v1.Put("/stocks/sync", stockHandler.SyncStockDetailHandler)
 	v1.Put("/stocks/sectors-industries/sync", stockHandler.SyncStockSectorAndIndustryHandler)
 	v1.Put("/stocks/history/sync", historyHandler.SyncStockHistoryHandler)
+	v1.Put("/stocks/:code/history/sync", historyHandler.SyncStockHistoryByCodeHandler)
 	v1.Get("/stocks/:code/history", historyHandler.GetStockHistoryHandler)
 	v1.Put("/stocks/split", historyHandler.ApplyStockSplitHandler)
 

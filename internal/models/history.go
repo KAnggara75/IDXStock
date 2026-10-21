@@ -38,6 +38,29 @@ type SyncHistoryRequest struct {
 	Day   int `json:"day"`
 }
 
+type StockbitDailyPriceItem struct {
+	Date             string   `json:"date"`
+	Open             *float64 `json:"open"`
+	High             *float64 `json:"high"`
+	Low              *float64 `json:"low"`
+	Close            *float64 `json:"close"`
+	Volume           *float64 `json:"volume"`
+	ForeignBuy       *float64 `json:"foreignbuy"`
+	ForeignSell      *float64 `json:"foreignsell"`
+	Frequency        *float64 `json:"frequency"`
+	Value            *float64 `json:"value"`
+	ShareOutstanding *float64 `json:"shareoutstanding"`
+}
+
+type StockbitDailyPriceData struct {
+	Chartbit []StockbitDailyPriceItem `json:"chartbit"`
+}
+
+type StockbitDailyPriceResponse struct {
+	Message string                 `json:"message"`
+	Data    StockbitDailyPriceData `json:"data"`
+}
+
 type PasardanaHistoryResponse struct {
 	Code                 string   `json:"Code"`
 	PrevClosingPrice     *float64 `json:"PrevClosingPrice"`

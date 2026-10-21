@@ -37,6 +37,11 @@ func (m *mockHistoryUsecase) ApplyStockSplit(ctx context.Context, req models.Sto
 	return args.Error(0)
 }
 
+func (m *mockHistoryUsecase) SyncStockHistoryFromStockbit(ctx context.Context, code string, from, to string, authorization string) (int, error) {
+	args := m.Called(ctx, code, from, to, authorization)
+	return args.Int(0), args.Error(1)
+}
+
 func TestSyncStockHistoryHandler(t *testing.T) {
 	app := fiber.New()
 	mockUsecase := new(mockHistoryUsecase)
@@ -238,6 +243,42 @@ func TestApplyStockSplitHandler(t *testing.T) {
 
 		req := httptest.NewRequest("POST", "/history/split", bytes.NewBufferString(`{"stock_code":"BBCA","start_date":"2020-01-01","end_date":"2021-01-01","ratio":"1:5"}`))
 		req.Header.Set("Content-Type", "application/json")
+		resp, _ := app.Test(req)
+		assert.Equal(t, fiber.StatusOK, resp.StatusCode)
+		mockUsecase.AssertExpectations(t)
+	})
+}
+
+func TestSyncStockHistoryByCodeHandler(t *testing.T) {
+	app := fiber.New()
+	mockUsecase := new(mockHistoryUsecase)
+	handler := NewHistoryHandler(mockUsecase)
+
+	app.Put("/stocks/:code/history/sync", handler.SyncStockHistoryByCodeHandler)
+
+	t.Run("missing_authorization", func(t *testing.T) {
+		req := httptest.NewRequest("PUT", "/stocks/BBCA/history/sync", nil)
+		resp, _ := app.Test(req)
+		assert.Equal(t, fiber.StatusUnauthorized, resp.StatusCode)
+	})
+
+	t.Run("usecase_error", func(t *testing.T) {
+		mockUsecase.On("SyncStockHistoryFromStockbit", mock.Anything, "BBCA", "", "", "Bearer tok").
+			Return(0, fmt.Errorf("sync err")).Once()
+
+		req := httptest.NewRequest("PUT", "/stocks/BBCA/history/sync", nil)
+		req.Header.Set("Authorization", "Bearer tok")
+		resp, _ := app.Test(req)
+		assert.Equal(t, fiber.StatusInternalServerError, resp.StatusCode)
+		mockUsecase.AssertExpectations(t)
+	})
+
+	t.Run("success", func(t *testing.T) {
+		mockUsecase.On("SyncStockHistoryFromStockbit", mock.Anything, "BBCA", "2026-10-20", "2000-01-01", "Bearer tok").
+			Return(100, nil).Once()
+
+		req := httptest.NewRequest("PUT", "/stocks/BBCA/history/sync?from=2026-10-20&to=2000-01-01", nil)
+		req.Header.Set("Authorization", "Bearer tok")
 		resp, _ := app.Test(req)
 		assert.Equal(t, fiber.StatusOK, resp.StatusCode)
 		mockUsecase.AssertExpectations(t)

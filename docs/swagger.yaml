@@ -206,6 +206,51 @@ paths:
       summary: Get stock history records
       tags:
       - history
+  /stocks/{code}/history/sync:
+    put:
+      description: Upserts daily stock price data for a single stock code from Stockbit
+      parameters:
+      - description: Stock Code (e.g. BBCA)
+        in: path
+        name: code
+        required: true
+        type: string
+      - description: Start/latest date (YYYY-MM-DD, defaults to today)
+        in: query
+        name: from
+        type: string
+      - description: End/earliest date (YYYY-MM-DD, defaults to 2000-01-01)
+        in: query
+        name: to
+        type: string
+      - description: Bearer JWT token for Stockbit
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+      summary: Sync daily stock price history from Stockbit
+      tags:
+      - history
   /stocks/boards:
     get:
       description: Retrieves list of all distinct trading boards available in IDX

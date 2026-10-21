@@ -148,6 +148,18 @@ func (m *mockIdxService) ParseIdxDate(dateStr string) (string, error) {
 	return args.String(0), args.Error(1)
 }
 
+type mockStockbitService struct {
+	mock.Mock
+}
+
+func (m *mockStockbitService) FetchDailyPrice(ctx context.Context, code string, from, to string, authorization string) ([]models.StockbitDailyPriceItem, error) {
+	args := m.Called(ctx, code, from, to, authorization)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).([]models.StockbitDailyPriceItem), args.Error(1)
+}
+
 func TestSyncStockHistory(t *testing.T) {
 	ctx := context.Background()
 
@@ -156,7 +168,8 @@ func TestSyncStockHistory(t *testing.T) {
 		sRepo := new(mockStockRepo)
 		pSvc := new(mockPasardanaService)
 		idxSvc := new(mockIdxService)
-		u := NewHistoryUsecase(hRepo, sRepo, pSvc, idxSvc)
+		sbSvc := new(mockStockbitService)
+		u := NewHistoryUsecase(hRepo, sRepo, pSvc, idxSvc, sbSvc)
 
 		err := u.SyncStockHistory(ctx, models.SyncHistoryRequest{Year: 2020, Month: 1, Day: 1}, "pasardana", "")
 		assert.Error(t, err)
@@ -168,7 +181,8 @@ func TestSyncStockHistory(t *testing.T) {
 		sRepo := new(mockStockRepo)
 		pSvc := new(mockPasardanaService)
 		idxSvc := new(mockIdxService)
-		u := NewHistoryUsecase(hRepo, sRepo, pSvc, idxSvc)
+		sbSvc := new(mockStockbitService)
+		u := NewHistoryUsecase(hRepo, sRepo, pSvc, idxSvc, sbSvc)
 
 		err := u.SyncStockHistory(ctx, models.SyncHistoryRequest{Year: 2018, Month: 1, Day: 1}, "unknown", "")
 		assert.Error(t, err)
@@ -180,7 +194,8 @@ func TestSyncStockHistory(t *testing.T) {
 		sRepo := new(mockStockRepo)
 		pSvc := new(mockPasardanaService)
 		idxSvc := new(mockIdxService)
-		u := NewHistoryUsecase(hRepo, sRepo, pSvc, idxSvc)
+		sbSvc := new(mockStockbitService)
+		u := NewHistoryUsecase(hRepo, sRepo, pSvc, idxSvc, sbSvc)
 
 		pSvc.On("FetchStockHistory", 2018, 1, 1).Return(nil, assert.AnError).Once()
 
@@ -193,7 +208,8 @@ func TestSyncStockHistory(t *testing.T) {
 		sRepo := new(mockStockRepo)
 		pSvc := new(mockPasardanaService)
 		idxSvc := new(mockIdxService)
-		u := NewHistoryUsecase(hRepo, sRepo, pSvc, idxSvc)
+		sbSvc := new(mockStockbitService)
+		u := NewHistoryUsecase(hRepo, sRepo, pSvc, idxSvc, sbSvc)
 
 		idxSvc.On("FetchStockSummary", ctx, 2024, 1, 1, "c").Return(nil, assert.AnError).Once()
 
@@ -206,7 +222,8 @@ func TestSyncStockHistory(t *testing.T) {
 		sRepo := new(mockStockRepo)
 		pSvc := new(mockPasardanaService)
 		idxSvc := new(mockIdxService)
-		u := NewHistoryUsecase(hRepo, sRepo, pSvc, idxSvc)
+		sbSvc := new(mockStockbitService)
+		u := NewHistoryUsecase(hRepo, sRepo, pSvc, idxSvc, sbSvc)
 
 		pSvc.On("FetchStockHistory", 2018, 1, 1).Return([]models.PasardanaHistoryResponse{}, nil).Once()
 
@@ -219,7 +236,8 @@ func TestSyncStockHistory(t *testing.T) {
 		sRepo := new(mockStockRepo)
 		pSvc := new(mockPasardanaService)
 		idxSvc := new(mockIdxService)
-		u := NewHistoryUsecase(hRepo, sRepo, pSvc, idxSvc)
+		sbSvc := new(mockStockbitService)
+		u := NewHistoryUsecase(hRepo, sRepo, pSvc, idxSvc, sbSvc)
 
 		lastDate := "2018-01-01T00:00:00"
 		listDate := "2010-01-01"
@@ -244,7 +262,8 @@ func TestSyncStockHistory(t *testing.T) {
 		sRepo := new(mockStockRepo)
 		pSvc := new(mockPasardanaService)
 		idxSvc := new(mockIdxService)
-		u := NewHistoryUsecase(hRepo, sRepo, pSvc, idxSvc)
+		sbSvc := new(mockStockbitService)
+		u := NewHistoryUsecase(hRepo, sRepo, pSvc, idxSvc, sbSvc)
 
 		idxSvc.On("FetchStockSummary", ctx, 2024, 1, 1, "").Return([]models.IdxSummaryData{
 			{StockCode: "BBRI", Date: "2024-01-01T00:00:00", DelistingDate: "2025-01-01"},
@@ -262,7 +281,8 @@ func TestSyncStockHistory(t *testing.T) {
 		sRepo := new(mockStockRepo)
 		pSvc := new(mockPasardanaService)
 		idxSvc := new(mockIdxService)
-		u := NewHistoryUsecase(hRepo, sRepo, pSvc, idxSvc)
+		sbSvc := new(mockStockbitService)
+		u := NewHistoryUsecase(hRepo, sRepo, pSvc, idxSvc, sbSvc)
 
 		idxSvc.On("FetchStockSummary", ctx, 2024, 1, 1, "").Return([]models.IdxSummaryData{
 			{StockCode: "BBRI", Date: "2024-01-01T00:00:00"},
@@ -281,7 +301,8 @@ func TestGetStockHistory(t *testing.T) {
 	sRepo := new(mockStockRepo)
 	pSvc := new(mockPasardanaService)
 	idxSvc := new(mockIdxService)
-	u := NewHistoryUsecase(hRepo, sRepo, pSvc, idxSvc)
+	sbSvc := new(mockStockbitService)
+	u := NewHistoryUsecase(hRepo, sRepo, pSvc, idxSvc, sbSvc)
 	ctx := context.Background()
 
 	hRepo.On("GetHistoryByCode", ctx, "BBCA", (*time.Time)(nil), (*time.Time)(nil)).
@@ -297,7 +318,8 @@ func TestApplyStockSplit(t *testing.T) {
 	sRepo := new(mockStockRepo)
 	pSvc := new(mockPasardanaService)
 	idxSvc := new(mockIdxService)
-	u := NewHistoryUsecase(hRepo, sRepo, pSvc, idxSvc)
+	sbSvc := new(mockStockbitService)
+	u := NewHistoryUsecase(hRepo, sRepo, pSvc, idxSvc, sbSvc)
 	ctx := context.Background()
 
 	t.Run("invalid_start_date", func(t *testing.T) {
@@ -340,5 +362,72 @@ func TestApplyStockSplit(t *testing.T) {
 			Ratio:     "1:5",
 		})
 		assert.NoError(t, err)
+	})
+}
+
+func TestSyncStockHistoryFromStockbit(t *testing.T) {
+	ctx := context.Background()
+
+	t.Run("empty_code_error", func(t *testing.T) {
+		hRepo := new(mockHistoryRepo)
+		sRepo := new(mockStockRepo)
+		pSvc := new(mockPasardanaService)
+		idxSvc := new(mockIdxService)
+		sbSvc := new(mockStockbitService)
+		u := NewHistoryUsecase(hRepo, sRepo, pSvc, idxSvc, sbSvc)
+
+		count, err := u.SyncStockHistoryFromStockbit(ctx, "", "", "", "")
+		assert.Error(t, err)
+		assert.Equal(t, 0, count)
+		assert.Contains(t, err.Error(), "code is required")
+	})
+
+	t.Run("fetch_error", func(t *testing.T) {
+		hRepo := new(mockHistoryRepo)
+		sRepo := new(mockStockRepo)
+		pSvc := new(mockPasardanaService)
+		idxSvc := new(mockIdxService)
+		sbSvc := new(mockStockbitService)
+		u := NewHistoryUsecase(hRepo, sRepo, pSvc, idxSvc, sbSvc)
+
+		sRepo.On("FindMissingCodes", ctx, []string{"BBCA"}).Return(nil, nil).Once()
+		sbSvc.On("FetchDailyPrice", ctx, "BBCA", mock.Anything, "2000-01-01", "Bearer tok").
+			Return(nil, assert.AnError).Once()
+
+		count, err := u.SyncStockHistoryFromStockbit(ctx, "BBCA", "", "", "Bearer tok")
+		assert.Error(t, err)
+		assert.Equal(t, 0, count)
+	})
+
+	t.Run("success_with_missing_code_auto_fetch", func(t *testing.T) {
+		hRepo := new(mockHistoryRepo)
+		sRepo := new(mockStockRepo)
+		pSvc := new(mockPasardanaService)
+		idxSvc := new(mockIdxService)
+		sbSvc := new(mockStockbitService)
+		u := NewHistoryUsecase(hRepo, sRepo, pSvc, idxSvc, sbSvc)
+
+		sRepo.On("FindMissingCodes", ctx, []string{"BBCA"}).Return([]string{"BBCA"}, nil).Once()
+		dateStr := "2020-01-01"
+		pSvc.On("FetchStockDetailByCode", "BBCA").Return(&models.PasardanaStockDetail{
+			Code:        "BBCA",
+			ListingDate: &dateStr,
+		}, nil).Once()
+		sRepo.On("UpsertStocksDetail", ctx, mock.Anything).Return([]models.StockResponse{{Code: "BBCA"}}, nil).Once()
+
+		openVal := 4740.0
+		items := []models.StockbitDailyPriceItem{
+			{Date: "2026-10-20", Open: &openVal},
+			{Date: "invalid-date", Open: &openVal}, // tests skipped branch
+		}
+		sbSvc.On("FetchDailyPrice", ctx, "BBCA", "2026-10-20", "2000-01-01", "Bearer tok").
+			Return(items, nil).Once()
+		hRepo.On("BatchUpsertStockHistory", ctx, mock.MatchedBy(func(recs []models.StockHistory) bool {
+			return len(recs) == 1 && recs[0].Code == "BBCA"
+		})).Return(nil).Once()
+
+		count, err := u.SyncStockHistoryFromStockbit(ctx, "BBCA", "2026-10-20", "2000-01-01", "Bearer tok")
+		assert.NoError(t, err)
+		assert.Equal(t, 1, count)
 	})
 }

@@ -115,6 +115,55 @@ func (h *HistoryHandler) SyncStockHistoryHandler(c fiber.Ctx) error {
 	})
 }
 
+// SyncStockHistoryByCodeHandler godoc
+// @Summary      Sync daily stock price history from Stockbit
+// @Description  Upserts daily stock price data for a single stock code from Stockbit
+// @Tags         history
+// @Produce      json
+// @Param        code           path      string  true   "Stock Code (e.g. BBCA)"
+// @Param        from           query     string  false  "Start/latest date (YYYY-MM-DD, defaults to today)"
+// @Param        to             query     string  false  "End/earliest date (YYYY-MM-DD, defaults to 2000-01-01)"
+// @Param        Authorization  header    string  true   "Bearer JWT token for Stockbit"
+// @Success      200            {object}  map[string]any
+// @Failure      400            {object}  models.ErrorResponse
+// @Failure      401            {object}  models.ErrorResponse
+// @Failure      500            {object}  models.ErrorResponse
+// @Router       /stocks/{code}/history/sync [put]
+func (h *HistoryHandler) SyncStockHistoryByCodeHandler(c fiber.Ctx) error {
+	code := strings.TrimSpace(c.Params("code"))
+	if code == "" {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"error": "Stock code is required",
+		})
+	}
+
+	auth := strings.TrimSpace(c.Get("Authorization"))
+	if auth == "" {
+		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
+			"error": "Authorization header is required",
+		})
+	}
+
+	from := strings.TrimSpace(c.Query("from"))
+	to := strings.TrimSpace(c.Query("to"))
+
+	count, err := h.usecase.SyncStockHistoryFromStockbit(c.Context(), code, from, to, auth)
+	if err != nil {
+		logrus.Errorf("Stockbit history sync failed for %s: %v", code, err)
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": err.Error(),
+		})
+	}
+
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{
+		"message":     "Stock history synchronization from Stockbit completed",
+		"code":        strings.ToUpper(code),
+		"rows_synced": count,
+		"from":        from,
+		"to":          to,
+	})
+}
+
 // GetStockHistoryHandler godoc
 // @Summary      Get stock history records
 // @Description  Queries historical trading data for a specific stock code with field filtering and CSV/JSON output support
