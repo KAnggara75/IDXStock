@@ -68,58 +68,6 @@ const docTemplate = `{
                 }
             }
         },
-        "/industries/sync": {
-            "put": {
-                "description": "Fetches industries taxonomy from Pasardana and updates the database",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "industries"
-                ],
-                "summary": "Sync industries and sub-industries",
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/models.IndustrySyncResponse"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/models.ErrorResponse"
-                        }
-                    }
-                }
-            }
-        },
-        "/sectors/sync": {
-            "put": {
-                "description": "Fetches sectors and subsectors from Pasardana and updates the database",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "sectors"
-                ],
-                "summary": "Sync new sectors and sub-sectors",
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/models.SectorSyncNewResponse"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/models.ErrorResponse"
-                        }
-                    }
-                }
-            }
-        },
         "/stocks": {
             "get": {
                 "description": "Retrieves list of all stocks/emiten with optional filter by board and search query",
@@ -691,31 +639,6 @@ const docTemplate = `{
         }
     },
     "definitions": {
-        "models.BasicResponse": {
-            "type": "object",
-            "properties": {
-                "id": {
-                    "type": "integer"
-                },
-                "name": {
-                    "type": "string"
-                }
-            }
-        },
-        "models.BasicResponseWithCode": {
-            "type": "object",
-            "properties": {
-                "code": {
-                    "type": "string"
-                },
-                "id": {
-                    "type": "integer"
-                },
-                "name": {
-                    "type": "string"
-                }
-            }
-        },
         "models.ErrorResponse": {
             "type": "object",
             "properties": {
@@ -735,23 +658,6 @@ const docTemplate = `{
                 }
             }
         },
-        "models.IndustrySyncResponse": {
-            "type": "object",
-            "properties": {
-                "industries": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/models.BasicResponse"
-                    }
-                },
-                "industry_sub": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/models.BasicResponse"
-                    }
-                }
-            }
-        },
         "models.ListingBoard": {
             "type": "object",
             "properties": {
@@ -763,23 +669,6 @@ const docTemplate = `{
                 },
                 "name_en": {
                     "type": "string"
-                }
-            }
-        },
-        "models.SectorSyncNewResponse": {
-            "type": "object",
-            "properties": {
-                "sector_sub": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/models.BasicResponseWithCode"
-                    }
-                },
-                "sectors": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/models.BasicResponseWithCode"
-                    }
                 }
             }
         },

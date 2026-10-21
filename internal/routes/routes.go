@@ -22,8 +22,6 @@ func Setup(app *fiber.App, db ...repositories.DBExecutor) {
 
 	// Dependency Injection
 	stockRepo := repositories.NewStockRepository(pool)
-	sectorSearchRepo := repositories.NewSectorSearchRepository(pool)
-	industryRepo := repositories.NewIndustryRepository(pool)
 	historyRepo := repositories.NewHistoryRepository(pool)
 
 	stockService := services.NewStockService()
@@ -31,13 +29,9 @@ func Setup(app *fiber.App, db ...repositories.DBExecutor) {
 	idxService := services.NewIdxService(nil)
 
 	stockUsecase := usecases.NewStockUsecase(stockRepo, stockService, pasardanaService, idxService)
-	industryUsecase := usecases.NewIndustryUsecase(industryRepo, pasardanaService)
-	sectorUsecase := usecases.NewSectorUsecase(sectorSearchRepo, pasardanaService)
 	historyUsecase := usecases.NewHistoryUsecase(historyRepo, stockRepo, pasardanaService, idxService)
 
 	stockHandler := handlers.NewStockHandler(stockUsecase)
-	industryHandler := handlers.NewIndustryHandler(industryUsecase)
-	sectorHandler := handlers.NewSectorHandler(sectorUsecase)
 	historyHandler := handlers.NewHistoryHandler(historyUsecase)
 	assetHandler := handlers.NewAssetHandler()
 
@@ -79,8 +73,6 @@ func Setup(app *fiber.App, db ...repositories.DBExecutor) {
 	v1.Put("/stocks/history/sync", historyHandler.SyncStockHistoryHandler)
 	v1.Get("/stocks/:code/history", historyHandler.GetStockHistoryHandler)
 	v1.Put("/stocks/split", historyHandler.ApplyStockSplitHandler)
-	v1.Put("/sectors/sync", sectorHandler.SyncNewSectorsHandler)
-	v1.Put("/industries/sync", industryHandler.IndustrySyncHandler)
 
 	// Asset Routes
 	v1.Get("/assets/logos/companies/:code", assetHandler.GetCompanyLogo)

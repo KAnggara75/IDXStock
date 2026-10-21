@@ -123,30 +123,6 @@ func (m *mockPasardanaService) FetchStockIDs() ([]models.PasardanaStock, error) 
 	return args.Get(0).([]models.PasardanaStock), args.Error(1)
 }
 
-func (m *mockPasardanaService) FetchStockSearchResult() ([]models.PasardanaSearchResult, error) {
-	args := m.Called()
-	if args.Get(0) == nil {
-		return nil, args.Error(1)
-	}
-	return args.Get(0).([]models.PasardanaSearchResult), args.Error(1)
-}
-
-func (m *mockPasardanaService) FetchNewSectors() ([]models.PasardanaNewSector, error) {
-	args := m.Called()
-	if args.Get(0) == nil {
-		return nil, args.Error(1)
-	}
-	return args.Get(0).([]models.PasardanaNewSector), args.Error(1)
-}
-
-func (m *mockPasardanaService) FetchNewSubSectors() ([]models.PasardanaNewSubSector, error) {
-	args := m.Called()
-	if args.Get(0) == nil {
-		return nil, args.Error(1)
-	}
-	return args.Get(0).([]models.PasardanaNewSubSector), args.Error(1)
-}
-
 func (m *mockPasardanaService) FetchStockDetailByCode(code string) (*models.PasardanaStockDetail, error) {
 	args := m.Called(code)
 	if args.Get(0) == nil {

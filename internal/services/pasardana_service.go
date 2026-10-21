@@ -13,9 +13,6 @@ import (
 
 type PasardanaService interface {
 	FetchStockIDs() ([]models.PasardanaStock, error)
-	FetchStockSearchResult() ([]models.PasardanaSearchResult, error)
-	FetchNewSectors() ([]models.PasardanaNewSector, error)
-	FetchNewSubSectors() ([]models.PasardanaNewSubSector, error)
 	FetchStockDetailByCode(code string) (*models.PasardanaStockDetail, error)
 	FetchStockHistory(year, month, day int) ([]models.PasardanaHistoryResponse, error)
 }
@@ -38,33 +35,6 @@ func NewPasardanaService(client *http.Client) PasardanaService {
 func (s *pasardanaService) FetchStockIDs() ([]models.PasardanaStock, error) {
 	url := "https://www.pasardana.id/api/Stock/GetAllSimpleStocks?username=anonymous"
 	var results []models.PasardanaStock
-	if err := s.fetch(url, &results); err != nil {
-		return nil, err
-	}
-	return results, nil
-}
-
-func (s *pasardanaService) FetchStockSearchResult() ([]models.PasardanaSearchResult, error) {
-	url := "https://www.pasardana.id/api/StockSearchResult/GetAll"
-	var results []models.PasardanaSearchResult
-	if err := s.fetch(url, &results); err != nil {
-		return nil, err
-	}
-	return results, nil
-}
-
-func (s *pasardanaService) FetchNewSectors() ([]models.PasardanaNewSector, error) {
-	url := "https://www.pasardana.id/api/StockNewSector/GetAll"
-	var results []models.PasardanaNewSector
-	if err := s.fetch(url, &results); err != nil {
-		return nil, err
-	}
-	return results, nil
-}
-
-func (s *pasardanaService) FetchNewSubSectors() ([]models.PasardanaNewSubSector, error) {
-	url := "https://www.pasardana.id/api/StockNewSubSector/GetAll"
-	var results []models.PasardanaNewSubSector
 	if err := s.fetch(url, &results); err != nil {
 		return nil, err
 	}

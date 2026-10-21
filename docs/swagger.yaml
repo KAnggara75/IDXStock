@@ -1,21 +1,5 @@
 basePath: /api/v1
 definitions:
-  models.BasicResponse:
-    properties:
-      id:
-        type: integer
-      name:
-        type: string
-    type: object
-  models.BasicResponseWithCode:
-    properties:
-      code:
-        type: string
-      id:
-        type: integer
-      name:
-        type: string
-    type: object
   models.ErrorResponse:
     properties:
       error:
@@ -28,17 +12,6 @@ definitions:
       code:
         type: string
     type: object
-  models.IndustrySyncResponse:
-    properties:
-      industries:
-        items:
-          $ref: '#/definitions/models.BasicResponse'
-        type: array
-      industry_sub:
-        items:
-          $ref: '#/definitions/models.BasicResponse'
-        type: array
-    type: object
   models.ListingBoard:
     properties:
       code:
@@ -47,17 +20,6 @@ definitions:
         type: string
       name_en:
         type: string
-    type: object
-  models.SectorSyncNewResponse:
-    properties:
-      sector_sub:
-        items:
-          $ref: '#/definitions/models.BasicResponseWithCode'
-        type: array
-      sectors:
-        items:
-          $ref: '#/definitions/models.BasicResponseWithCode'
-        type: array
     type: object
   models.Stock:
     properties:
@@ -192,40 +154,6 @@ paths:
       summary: Get company logo
       tags:
       - assets
-  /industries/sync:
-    put:
-      description: Fetches industries taxonomy from Pasardana and updates the database
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/models.IndustrySyncResponse'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/models.ErrorResponse'
-      summary: Sync industries and sub-industries
-      tags:
-      - industries
-  /sectors/sync:
-    put:
-      description: Fetches sectors and subsectors from Pasardana and updates the database
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/models.SectorSyncNewResponse'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/models.ErrorResponse'
-      summary: Sync new sectors and sub-sectors
-      tags:
-      - sectors
   /stocks:
     get:
       description: Retrieves list of all stocks/emiten with optional filter by board
