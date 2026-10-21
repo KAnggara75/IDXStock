@@ -283,7 +283,7 @@ func TestHistoryRepository(t *testing.T) {
 				rec.High, rec.Low, rec.Close, rec.Change, rec.Volume, rec.Value,
 				rec.Frequency, rec.IndexIndividual, rec.Offer, rec.OfferVolume,
 				rec.Bid, rec.BidVolume, rec.ListedShares, rec.TradebleShares,
-				rec.WeightForIndex, rec.ForeignSell, rec.ForeignBuy, (*string)(nil),
+				rec.WeightForIndex, rec.ForeignSell, rec.ForeignBuy,
 				rec.NonRegularVolume, rec.NonRegularValue, rec.NonRegularFrequency,
 			).
 			WillReturnResult(sqlmock.NewResult(1, 1))
@@ -310,7 +310,7 @@ func TestHistoryRepository(t *testing.T) {
 				rec.High, rec.Low, rec.Close, rec.Change, rec.Volume, rec.Value,
 				rec.Frequency, rec.IndexIndividual, rec.Offer, rec.OfferVolume,
 				rec.Bid, rec.BidVolume, rec.ListedShares, rec.TradebleShares,
-				rec.WeightForIndex, rec.ForeignSell, rec.ForeignBuy, (*string)(nil),
+				rec.WeightForIndex, rec.ForeignSell, rec.ForeignBuy,
 				rec.NonRegularVolume, rec.NonRegularValue, rec.NonRegularFrequency,
 			).
 			WillReturnError(assert.AnError)
@@ -336,11 +336,11 @@ func TestHistoryRepository(t *testing.T) {
 			"code", "date", "previous", "open_price", "first_trade", "high", "low", "close", "change",
 			"volume", "value", "frequency", "index_individual", "offer", "offer_volume", "bid", "bid_volume",
 			"listed_shares", "tradeble_shares", "weight_for_index", "foreign_sell", "foreign_buy",
-			"delisting_date", "non_regular_volume", "non_regular_value", "non_regular_frequency", "last_modified",
+			"non_regular_volume", "non_regular_value", "non_regular_frequency", "last_modified",
 		}).AddRow(
 			"BBCA", dateStr, nil, nil, nil, nil, nil, nil, nil,
 			nil, nil, nil, nil, nil, nil, nil, nil,
-			nil, nil, nil, nil, nil, nil, nil,
+			nil, nil, nil, nil, nil, nil,
 			nil, nil, lastModStr,
 		)
 

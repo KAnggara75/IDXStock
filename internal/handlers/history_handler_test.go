@@ -119,29 +119,26 @@ func TestGetStockHistoryHandler(t *testing.T) {
 	app.Get("/history/:code", handler.GetStockHistoryHandler)
 
 	val := 100.0
-	delist := "2024-01-01"
 	sampleHistory := []models.StockHistory{
 		{
-			Code:          "BBCA",
-			Date:          time.Date(2024, 1, 1, 0, 0, 0, 0, time.UTC),
-			Previous:      &val,
-			OpenPrice:     &val,
-			FirstTrade:    &val,
-			High:          &val,
-			Low:           &val,
-			Close:         &val,
-			Change:        &val,
-			Volume:        &val,
-			Value:         &val,
-			Frequency:     &val,
-			DelistingDate: &delist,
-			LastModified:  time.Date(2024, 1, 1, 12, 0, 0, 0, time.UTC),
+			Code:         "BBCA",
+			Date:         time.Date(2024, 1, 1, 0, 0, 0, 0, time.UTC),
+			Previous:     &val,
+			OpenPrice:    &val,
+			FirstTrade:   &val,
+			High:         &val,
+			Low:          &val,
+			Close:        &val,
+			Change:       &val,
+			Volume:       &val,
+			Value:        &val,
+			Frequency:    &val,
+			LastModified: time.Date(2024, 1, 1, 12, 0, 0, 0, time.UTC),
 		},
 		{
-			Code:          "BBCA",
-			Date:          time.Date(2024, 1, 2, 0, 0, 0, 0, time.UTC),
-			DelistingDate: nil,
-			Previous:      nil,
+			Code:     "BBCA",
+			Date:     time.Date(2024, 1, 2, 0, 0, 0, 0, time.UTC),
+			Previous: nil,
 		},
 	}
 
@@ -177,7 +174,7 @@ func TestGetStockHistoryHandler(t *testing.T) {
 		mockUsecase.On("GetStockHistory", mock.Anything, "BBCA", mock.Anything, mock.Anything).
 			Return(sampleHistory, nil).Once()
 
-		req := httptest.NewRequest("GET", "/history/BBCA?fields=code,date,previous,open_price,first_trade,high,low,close,change,volume,value,frequency,index_individual,offer,offer_volume,bid,bid_volume,listed_shares,tradeble_shares,weight_for_index,foreign_sell,foreign_buy,delisting_date,non_regular_volume,non_regular_value,non_regular_frequency,last_modified,unknown", nil)
+		req := httptest.NewRequest("GET", "/history/BBCA?fields=code,date,previous,open_price,first_trade,high,low,close,change,volume,value,frequency,index_individual,offer,offer_volume,bid,bid_volume,listed_shares,tradeble_shares,weight_for_index,foreign_sell,foreign_buy,non_regular_volume,non_regular_value,non_regular_frequency,last_modified,unknown", nil)
 		resp, _ := app.Test(req)
 		assert.Equal(t, fiber.StatusOK, resp.StatusCode)
 		mockUsecase.AssertExpectations(t)
@@ -187,7 +184,7 @@ func TestGetStockHistoryHandler(t *testing.T) {
 		mockUsecase.On("GetStockHistory", mock.Anything, "BBCA", mock.Anything, mock.Anything).
 			Return(sampleHistory, nil).Once()
 
-		req := httptest.NewRequest("GET", "/history/BBCA?output=csv&fields=code,date,previous,open_price,first_trade,high,low,close,change,volume,value,frequency,index_individual,offer,offer_volume,bid,bid_volume,listed_shares,tradeble_shares,weight_for_index,foreign_sell,foreign_buy,delisting_date,non_regular_volume,non_regular_value,non_regular_frequency,last_modified,unknown", nil)
+		req := httptest.NewRequest("GET", "/history/BBCA?output=csv&fields=code,date,previous,open_price,first_trade,high,low,close,change,volume,value,frequency,index_individual,offer,offer_volume,bid,bid_volume,listed_shares,tradeble_shares,weight_for_index,foreign_sell,foreign_buy,non_regular_volume,non_regular_value,non_regular_frequency,last_modified,unknown", nil)
 		resp, _ := app.Test(req)
 		assert.Equal(t, fiber.StatusOK, resp.StatusCode)
 		assert.Equal(t, "text/csv", resp.Header.Get("Content-Type"))

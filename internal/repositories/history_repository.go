@@ -42,12 +42,12 @@ func (r *historyRepository) BatchUpsertStockHistory(ctx context.Context, records
 			code, date, previous, open_price, first_trade, high, low, close, change,
 			volume, value, frequency, index_individual, offer, offer_volume,
 			bid, bid_volume, listed_shares, tradeble_shares, weight_for_index,
-			foreign_sell, foreign_buy, delisting_date, non_regular_volume,
+			foreign_sell, foreign_buy, non_regular_volume,
 			non_regular_value, non_regular_frequency, last_modified
 		)
 		VALUES (
 			?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12, ?13, ?14, ?15,
-			?16, ?17, ?18, ?19, ?20, ?21, ?22, ?23, ?24, ?25, ?26, datetime('now')
+			?16, ?17, ?18, ?19, ?20, ?21, ?22, ?23, ?24, ?25, datetime('now')
 		)
 		ON CONFLICT (code, date) DO UPDATE SET
 			previous = COALESCE(excluded.previous, stocks_history.previous),
@@ -70,7 +70,6 @@ func (r *historyRepository) BatchUpsertStockHistory(ctx context.Context, records
 			weight_for_index = COALESCE(excluded.weight_for_index, stocks_history.weight_for_index),
 			foreign_sell = COALESCE(excluded.foreign_sell, stocks_history.foreign_sell),
 			foreign_buy = COALESCE(excluded.foreign_buy, stocks_history.foreign_buy),
-			delisting_date = COALESCE(excluded.delisting_date, stocks_history.delisting_date),
 			non_regular_volume = COALESCE(excluded.non_regular_volume, stocks_history.non_regular_volume),
 			non_regular_value = COALESCE(excluded.non_regular_value, stocks_history.non_regular_value),
 			non_regular_frequency = COALESCE(excluded.non_regular_frequency, stocks_history.non_regular_frequency),
@@ -96,7 +95,6 @@ func (r *historyRepository) BatchUpsertStockHistory(ctx context.Context, records
 			(excluded.weight_for_index IS NOT NULL AND stocks_history.weight_for_index IS NOT excluded.weight_for_index) OR
 			(excluded.foreign_sell IS NOT NULL AND stocks_history.foreign_sell IS NOT excluded.foreign_sell) OR
 			(excluded.foreign_buy IS NOT NULL AND stocks_history.foreign_buy IS NOT excluded.foreign_buy) OR
-			(excluded.delisting_date IS NOT NULL AND stocks_history.delisting_date IS NOT excluded.delisting_date) OR
 			(excluded.non_regular_volume IS NOT NULL AND stocks_history.non_regular_volume IS NOT excluded.non_regular_volume) OR
 			(excluded.non_regular_value IS NOT NULL AND stocks_history.non_regular_value IS NOT excluded.non_regular_value) OR
 			(excluded.non_regular_frequency IS NOT NULL AND stocks_history.non_regular_frequency IS NOT excluded.non_regular_frequency)
@@ -104,18 +102,13 @@ func (r *historyRepository) BatchUpsertStockHistory(ctx context.Context, records
 
 	var affected int64
 	for _, rec := range records {
-		var dd *string
-		if rec.DelistingDate != nil && *rec.DelistingDate != "" {
-			dd = rec.DelistingDate
-		}
-
 		dateStr := rec.Date.Format("2006-01-02")
 		ct, err := tx.Exec(ctx, query,
 			rec.Code, dateStr, rec.Previous, rec.OpenPrice, rec.FirstTrade,
 			rec.High, rec.Low, rec.Close, rec.Change, rec.Volume, rec.Value,
 			rec.Frequency, rec.IndexIndividual, rec.Offer, rec.OfferVolume,
 			rec.Bid, rec.BidVolume, rec.ListedShares, rec.TradebleShares,
-			rec.WeightForIndex, rec.ForeignSell, rec.ForeignBuy, dd,
+			rec.WeightForIndex, rec.ForeignSell, rec.ForeignBuy,
 			rec.NonRegularVolume, rec.NonRegularValue, rec.NonRegularFrequency,
 		)
 		if err != nil {
@@ -147,7 +140,7 @@ func (r *historyRepository) GetHistoryByCode(ctx context.Context, code string, s
 			code, date, previous, open_price, first_trade, high, low, close, change,
 			volume, value, frequency, index_individual, offer, offer_volume,
 			bid, bid_volume, listed_shares, tradeble_shares, weight_for_index,
-			foreign_sell, foreign_buy, delisting_date, non_regular_volume,
+			foreign_sell, foreign_buy, non_regular_volume,
 			non_regular_value, non_regular_frequency, last_modified
 		FROM stocks_history
 		WHERE code = ?1
@@ -172,7 +165,7 @@ func (r *historyRepository) GetHistoryByCode(ctx context.Context, code string, s
 			&h.High, &h.Low, &h.Close, &h.Change, &h.Volume, &h.Value,
 			&h.Frequency, &h.IndexIndividual, &h.Offer, &h.OfferVolume,
 			&h.Bid, &h.BidVolume, &h.ListedShares, &h.TradebleShares,
-			&h.WeightForIndex, &h.ForeignSell, &h.ForeignBuy, &h.DelistingDate,
+			&h.WeightForIndex, &h.ForeignSell, &h.ForeignBuy,
 			&h.NonRegularVolume, &h.NonRegularValue, &h.NonRegularFrequency, &lastModifiedStr,
 		)
 		if err != nil {

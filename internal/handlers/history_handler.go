@@ -235,7 +235,7 @@ func (h *HistoryHandler) GetStockHistoryHandler(c fiber.Ctx) error {
 		"code", "date", "previous", "open_price", "first_trade", "high", "low", "close", "change",
 		"volume", "value", "frequency", "index_individual", "offer", "offer_volume", "bid", "bid_volume",
 		"listed_shares", "tradeble_shares", "weight_for_index", "foreign_sell", "foreign_buy",
-		"delisting_date", "non_regular_volume", "non_regular_value", "non_regular_frequency", "last_modified",
+		"non_regular_volume", "non_regular_value", "non_regular_frequency", "last_modified",
 	}
 
 	var requestedFields []string
@@ -376,8 +376,6 @@ func getFieldAsString(row models.StockHistory, field string) string {
 		return formatFloat(row.ForeignSell)
 	case "foreign_buy":
 		return formatFloat(row.ForeignBuy)
-	case "delisting_date":
-		return formatString(row.DelistingDate)
 	case "non_regular_volume":
 		return formatFloat(row.NonRegularVolume)
 	case "non_regular_value":
@@ -437,8 +435,6 @@ func getFieldValue(row models.StockHistory, field string) any {
 		return row.ForeignSell
 	case "foreign_buy":
 		return row.ForeignBuy
-	case "delisting_date":
-		return row.DelistingDate
 	case "non_regular_volume":
 		return row.NonRegularVolume
 	case "non_regular_value":

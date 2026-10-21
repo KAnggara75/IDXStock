@@ -109,12 +109,6 @@ func (u *historyUsecase) SyncStockHistory(ctx context.Context, req models.SyncHi
 				date = targetDate
 			}
 
-			// DelistingDate mapping
-			var dd *string
-			if d.DelistingDate != "" {
-				dd = &d.DelistingDate
-			}
-
 			records = append(records, models.StockHistory{
 				Code:                d.StockCode,
 				Date:                date,
@@ -138,7 +132,6 @@ func (u *historyUsecase) SyncStockHistory(ctx context.Context, req models.SyncHi
 				WeightForIndex:      d.WeightForIndex,
 				ForeignSell:         d.ForeignSell,
 				ForeignBuy:          d.ForeignBuy,
-				DelistingDate:       dd,
 				NonRegularVolume:    d.NonRegularVolume,
 				NonRegularValue:     d.NonRegularValue,
 				NonRegularFrequency: d.NonRegularFrequency,

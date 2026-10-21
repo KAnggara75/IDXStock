@@ -25,7 +25,6 @@ type StockHistory struct {
 	WeightForIndex      *float64  `json:"weight_for_index"`
 	ForeignSell         *float64  `json:"foreign_sell"`
 	ForeignBuy          *float64  `json:"foreign_buy"`
-	DelistingDate       *string   `json:"delisting_date"`
 	NonRegularVolume    *float64  `json:"non_regular_volume"`
 	NonRegularValue     *float64  `json:"non_regular_value"`
 	NonRegularFrequency *float64  `json:"non_regular_frequency"`
