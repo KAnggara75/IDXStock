@@ -145,7 +145,13 @@ func (h *HistoryHandler) SyncStockHistoryByCodeHandler(c fiber.Ctx) error {
 	}
 
 	from := strings.TrimSpace(c.Query("from"))
+	if from == "" {
+		from = time.Now().Format("2006-01-02")
+	}
 	to := strings.TrimSpace(c.Query("to"))
+	if to == "" {
+		to = "2000-01-01"
+	}
 
 	count, err := h.usecase.SyncStockHistoryFromStockbit(c.Context(), code, from, to, auth)
 	if err != nil {

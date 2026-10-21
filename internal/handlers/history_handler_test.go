@@ -260,7 +260,8 @@ func TestSyncStockHistoryByCodeHandler(t *testing.T) {
 	})
 
 	t.Run("usecase_error", func(t *testing.T) {
-		mockUsecase.On("SyncStockHistoryFromStockbit", mock.Anything, "BBCA", "", "", "Bearer tok").
+		today := time.Now().Format("2006-01-02")
+		mockUsecase.On("SyncStockHistoryFromStockbit", mock.Anything, "BBCA", today, "2000-01-01", "Bearer tok").
 			Return(0, fmt.Errorf("sync err")).Once()
 
 		req := httptest.NewRequest("PUT", "/stocks/BBCA/history/sync", nil)
@@ -270,7 +271,19 @@ func TestSyncStockHistoryByCodeHandler(t *testing.T) {
 		mockUsecase.AssertExpectations(t)
 	})
 
-	t.Run("success", func(t *testing.T) {
+	t.Run("success_with_defaults", func(t *testing.T) {
+		today := time.Now().Format("2006-01-02")
+		mockUsecase.On("SyncStockHistoryFromStockbit", mock.Anything, "BBCA", today, "2000-01-01", "Bearer tok").
+			Return(50, nil).Once()
+
+		req := httptest.NewRequest("PUT", "/stocks/BBCA/history/sync", nil)
+		req.Header.Set("Authorization", "Bearer tok")
+		resp, _ := app.Test(req)
+		assert.Equal(t, fiber.StatusOK, resp.StatusCode)
+		mockUsecase.AssertExpectations(t)
+	})
+
+	t.Run("success_with_custom_dates", func(t *testing.T) {
 		mockUsecase.On("SyncStockHistoryFromStockbit", mock.Anything, "BBCA", "2026-10-20", "2000-01-01", "Bearer tok").
 			Return(100, nil).Once()
 
