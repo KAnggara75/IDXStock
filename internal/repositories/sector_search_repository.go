@@ -36,25 +36,22 @@ func (r *sectorSearchRepository) UpsertNewSectors(ctx context.Context, sectors [
 	defer tx.Rollback(ctx)
 
 	query := `
-		INSERT INTO sector (id, code, name, name_en, description, last_modified)
-		VALUES (?1, ?2, ?3, ?4, ?5, datetime('now'))
+		INSERT INTO sector (id, name, name_en, description)
+		VALUES (?1, ?2, ?3, ?4)
 		ON CONFLICT (id) DO UPDATE SET
-			code = excluded.code,
 			name = excluded.name,
 			name_en = excluded.name_en,
-			description = excluded.description,
-			last_modified = datetime('now')
+			description = excluded.description
 		WHERE (sector.name IS NOT excluded.name OR
-		       sector.code IS NOT excluded.code OR
 		       sector.description IS NOT excluded.description OR
 		       sector.name_en IS NOT excluded.name_en)
-		RETURNING id, code, name
+		RETURNING id, name
 	`
 
 	updated := make([]models.BasicResponseWithCode, 0)
 	for _, s := range sectors {
 		var res models.BasicResponseWithCode
-		err := tx.QueryRow(ctx, query, s.Id, s.Code, s.Name, s.NameEn, s.Description).Scan(&res.Id, &res.Code, &res.Name)
+		err := tx.QueryRow(ctx, query, s.Id, s.Name, s.NameEn, s.Description).Scan(&res.Id, &res.Name)
 		if err != nil {
 			continue
 		}
@@ -81,25 +78,22 @@ func (r *sectorSearchRepository) UpsertNewSectorSub(ctx context.Context, sectorS
 	defer tx.Rollback(ctx)
 
 	query := `
-		INSERT INTO sector_sub (id, code, name, name_en, sector_id, last_modified)
-		VALUES (?1, ?2, ?3, ?4, ?5, datetime('now'))
+		INSERT INTO sector_sub (id, name, name_en, sector_id)
+		VALUES (?1, ?2, ?3, ?4)
 		ON CONFLICT (id) DO UPDATE SET
-			code = excluded.code,
 			name = excluded.name,
 			name_en = excluded.name_en,
-			sector_id = excluded.sector_id,
-			last_modified = datetime('now')
+			sector_id = excluded.sector_id
 		WHERE (sector_sub.name IS NOT excluded.name OR
-		       sector_sub.code IS NOT excluded.code OR
 		       sector_sub.name_en IS NOT excluded.name_en OR
 		       sector_sub.sector_id IS NOT excluded.sector_id)
-		RETURNING id, code, name
+		RETURNING id, name
 	`
 
 	updated := make([]models.BasicResponseWithCode, 0)
 	for _, sub := range sectorSubs {
 		var res models.BasicResponseWithCode
-		err := tx.QueryRow(ctx, query, sub.Id, sub.Code, sub.Name, sub.NameEn, sub.SectorId).Scan(&res.Id, &res.Code, &res.Name)
+		err := tx.QueryRow(ctx, query, sub.Id, sub.Name, sub.NameEn, sub.SectorId).Scan(&res.Id, &res.Name)
 		if err != nil {
 			continue
 		}

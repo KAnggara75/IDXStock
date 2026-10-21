@@ -39,6 +39,15 @@ definitions:
           $ref: '#/definitions/models.BasicResponse'
         type: array
     type: object
+  models.ListingBoard:
+    properties:
+      code:
+        type: string
+      name:
+        type: string
+      name_en:
+        type: string
+    type: object
   models.SectorSyncNewResponse:
     properties:
       sector_sub:
@@ -83,20 +92,20 @@ definitions:
         type: string
       delisting_date:
         type: string
-      industry_id:
-        type: integer
-      industry_sub_id:
-        type: integer
+      industry:
+        type: string
       listing_date:
         type: string
       name:
         type: string
-      sector_id:
-        type: integer
-      sector_sub_id:
-        type: integer
+      sector:
+        type: string
       shares:
         type: integer
+      sub_industry:
+        type: string
+      sub_sector:
+        type: string
     type: object
   models.StockResponse:
     properties:
@@ -463,6 +472,39 @@ paths:
       summary: Sync stock history from data source
       tags:
       - history
+  /stocks/listing-boards:
+    get:
+      description: Retrieves list of master listing boards (code, name, name_id, description)
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.ListingBoard'
+            type: array
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+      summary: Get master listing boards
+      tags:
+      - stocks
+  /stocks/sectors-industries/sync:
+    put:
+      description: Fetches fkNewSectorId, fkNewSubSectorId, fkNewIndustryId, and fkNewSubIndustryId
+        from Pasardana for stocks that currently have null sector or industry values
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.SuccessResponse'
+      summary: Sync stock sector and industry asynchronously
+      tags:
+      - stocks
   /stocks/split:
     put:
       consumes:

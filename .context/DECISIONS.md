@@ -212,3 +212,187 @@
   - Eliminates unnecessary upstream dependency on Exodus broker activity endpoints.
   - Reduces codebase size, eliminates table partition complexity, and simplifies database maintenance.
   - Releases distributed database assets without bloat.
+
+---
+
+## ADR-014: Targeted Sector and Industry Taxonomy Synchronization for Unmapped Equities
+
+- **Status**: Accepted
+- **Date**: 2026-10-21
+- **Source**: Developer request & Codebase implementation (`internal/routes/routes.go`, `internal/handlers/stock_handler.go`, `internal/usecases/stock_usecase.go`)
+- **Context**: Ingested stock entries frequently lack sector, sub-sector, industry, and sub-industry relational mappings (`sector_id`, `sector_sub_id`, `industry_id`, `industry_sub_id`). Querying all 1,100+ stocks sequentially or querying external endpoints indiscriminately creates unnecessary latency and rate-limit risks.
+- **Decision**: 
+  - Provide a dedicated synchronization endpoint: `PUT /api/v1/stocks/sectors-industries/sync`.
+  - Filter target stock codes at the repository level to only retrieve records where any of the four taxonomy keys are `NULL` or empty strings (`TRIM(CAST(... AS TEXT)) = ''`).
+  - Run concurrent worker pools (20 workers) to fetch individual stock profiles via `https://www.pasardana.id/api/Stock/GetByCode?code={code}`.
+  - Extract and update `fkNewSectorId`, `fkNewSubSectorId`, `fkNewIndustryId`, and `fkNewSubIndustryId` only when values change.
+  - Run `go generate ./...` automatically via `.pre-commit-config.yaml` on both `pre-commit` and `pre-push` hooks.
+- **Consequences**:
+  - Dramatically reduces sync execution time from full iterations to only unmapped equities (~104 stocks).
+  - Keeps SQLite relational taxonomy updated cleanly without blocking standard HTTP request threads.
+  - Guarantees OpenAPI documentation remains continuously in sync with codebase modifications.
+
+---
+
+## ADR-015: Master Listing Board REST Endpoint and Column Cleanup
+
+- **Status**: Accepted
+- **Date**: 2026-10-21
+- **Source**: Developer request & Database schema update (`database/master_stocks.db`, `internal/routes/routes.go`)
+- **Context**: The `listing_board` table in `database/master_stocks.db` contained a redundant timestamp column `last_modified` that provided no operational value for static board definitions (`Main`, `Development`, `Acceleration`, `Ekonomi Baru`, `Watchlist`). Additionally, clients required a dedicated REST endpoint to retrieve full master board metadata (`code`, `name`, `name_id`, `description`) distinct from `/api/v1/stocks/boards` which only returns string codes.
+- **Decision**:
+  - Drop column `last_modified` from table `listing_board` via SQLite schema migration.
+  - Introduce `models.ListingBoard` entity and expose `GET /api/v1/stocks/listing-boards` returning all 5 master board metadata entries sorted by `code ASC`.
+  - Retain `GET /api/v1/stocks/boards` for backwards compatibility with consumers expecting a flat `[]string`.
+- **Consequences**:
+  - Simplifies `listing_board` table structure to pure static metadata.
+  - Exposes localized Indonesian and English display names along with official descriptive blurbs for frontend UI selectors.
+
+---
+
+## ADR-016: Foreign Key Enforcement & Direct Taxonomic Resolution in Stock Details
+
+- **Status**: Accepted
+- **Date**: 2026-10-21
+- **Source**: Developer request & Database schema update (`database/master_stocks.db`, `internal/repositories/stock_repository.go`, `internal/models/stock.go`)
+- **Context**: Columns `sector_id`, `sector_sub_id`, `industry_id`, and `industry_sub_id` in the `stocks` table previously lacked explicit Foreign Key constraints to `sector(id)`, `sector_sub(id)`, `industry(id)`, and `industry_sub(id)`. Furthermore, clients requesting single stock details via `GET /api/v1/stocks/:code` or stock listings received raw foreign key integer IDs rather than meaningful, human-readable taxonomy names (`sector`, `sub_sector`, `industry`, `sub_industry`).
+- **Decision**:
+  - Recreate the `stocks` table schema with explicit `REFERENCES` foreign keys on `sector_id`, `sector_sub_id`, `industry_id`, and `industry_sub_id`. Ensure zero foreign key violations via `PRAGMA foreign_key_check`.
+  - Populate missing taxonomy definitions (`industry` and `industry_sub`) via `PUT /api/v1/industries/sync`.
+  - Refactor `StockDetailResponse` in `internal/models/stock.go` to return concise named fields: `sector`, `sub_sector`, `industry`, and `sub_industry` (`*string`).
+  - Update `GetAllStocks` and `GetStockByCode` queries in `internal/repositories/stock_repository.go` to join `sector`, `sector_sub`, `industry`, and `industry_sub` via `LEFT JOIN`.
+- **Consequences**:
+  - Enforces strict relational integrity across the SQLite master stocks database.
+  - Delivers complete, self-describing JSON responses directly to clients without requiring downstream consumers to perform manual ID lookups.
+
+---
+
+## ADR-017: Brokers Table Schema Simplification to Pure Master Metadata
+
+- **Status**: Accepted
+- **Date**: 2026-10-21
+- **Source**: Developer request & Database schema update (`database/master_stocks.db`, `internal/models/broker.go`, `internal/repositories/broker_repository.go`)
+- **Context**: The `brokers` table previously retained legacy transactional and activity columns (`investor_type`, `total_value`, `net_value`, `buy_value`, `sell_value`, `total_volume`, `total_frequency`, `created_at`) from earlier broker activity tracking prototypes. Since broker activity tracking was deprecated and removed (ADR-013), `brokers` now functions strictly as a master reference entity for broker codes, names, and groups.
+- **Decision**:
+  - Migrate table `brokers` in `database/master_stocks.db` to only include columns `code` (TEXT PRIMARY KEY), `name` (TEXT NOT NULL), and `broker_group` (TEXT).
+  - Drop columns `investor_type`, `total_value`, `net_value`, `buy_value`, `sell_value`, `total_volume`, `total_frequency`, and `created_at`.
+  - Simplify `models.Broker` struct to `Code`, `Name`, and `Group`.
+  - Update `BatchInsertBrokers` query and unit tests in `internal/repositories/broker_repository.go` and `internal/repositories/broker_repository_test.go`.
+- **Consequences**:
+  - Eliminates unused columns and storage footprint from the master database.
+  - Aligns database entity definitions directly with application models and domain boundaries.
+
+---
+
+## ADR-018: Elimination of Redundant `last_modified` Timestamps in Taxonomy Tables
+
+- **Status**: Accepted
+- **Date**: 2026-10-21
+- **Source**: Developer request & Database schema update (`database/master_stocks.db`, `internal/repositories/industry_repository.go`, `internal/repositories/sector_search_repository.go`)
+- **Context**: Taxonomy tables (`industry`, `industry_sub`, `sector`, `sector_sub`) previously contained `last_modified` timestamp columns. Because these taxonomic classifications represent static financial classifications whose timestamps are never consumed by client APIs or cache invalidators, retaining them introduced unnecessary schema overhead and redundant SQL writes on every upsert.
+- **Decision**:
+  - Drop column `last_modified` from tables `industry`, `industry_sub`, `sector`, and `sector_sub` in `database/master_stocks.db`.
+  - Update SQL queries in `internal/repositories/industry_repository.go` and `internal/repositories/sector_search_repository.go` to remove references to `last_modified`.
+  - Confirm table `stocks_history` retains its operational `last_modified` column.
+- **Consequences**:
+  - Simplifies taxonomy table DDL and eliminates unnecessary timestamp writes during upserts.
+  - Preserves relational integrity verified via `PRAGMA foreign_key_check`.
+
+---
+
+## ADR-019: Broker Group Normalization to Clean Categorical Literals
+
+- **Status**: Accepted
+- **Date**: 2026-10-21
+- **Source**: Developer request & Database migration (`database/master_stocks.db`, `internal/services/seeder_service.go`)
+- **Context**: The `broker_group` column in the `brokers` master table used verbose string constants prefixed with `BROKER_GROUP_` (e.g. `BROKER_GROUP_FOREIGN`, `BROKER_GROUP_LOCAL`, `BROKER_GROUP_GOVERNMENT`). Clients and internal logic require cleaner, concise categorical literals without technical enum prefixes.
+- **Decision**:
+  - Normalize existing values in `database/master_stocks.db`:
+    - `BROKER_GROUP_FOREIGN` → `FOREIGN`
+    - `BROKER_GROUP_LOCAL` → `LOCAL`
+    - `BROKER_GROUP_GOVERNMENT` → `GOVERNMENT`
+  - Enhance `SeederService.SeedBrokersData` in `internal/services/seeder_service.go` to automatically strip `BROKER_GROUP_` prefixes when seeding data from upstream JSON.
+  - Update repository and seeder unit test suites.
+- **Consequences**:
+  - Standardizes broker categorization values across database and API payloads.
+  - Ensures newly seeded broker data adheres to normalized conventions.
+
+---
+
+## ADR-020: Listing Board Column Internationalization and Description Removal
+
+- **Status**: Accepted
+- **Date**: 2026-10-21
+- **Source**: Developer request & Database schema update (`database/master_stocks.db`, `internal/models/stock.go`, `internal/repositories/stock_repository.go`)
+- **Context**: In table `listing_board`, columns were inconsistently named compared to `sector` and `sector_sub` (`name` contained English, `name_id` contained Indonesian). To align with the existing schema pattern across the repository, the Indonesian name should be `name` and English name should be `name_en`. Additionally, the redundant `description` column provided no operational value for board lookups and was dropped.
+- **Decision**:
+  - Restructure `listing_board` table schema to: `code` (TEXT PRIMARY KEY), `name` (TEXT NOT NULL), and `name_en` (TEXT).
+  - Migrate data: copy previous `name_id` to `name`, copy previous `name` to `name_en`, and drop `description`.
+  - Update `models.ListingBoard` struct and `GetListingBoards` repository query.
+  - Regenerate Swagger OpenAPI specifications.
+- **Consequences**:
+  - Unifies multi-language column conventions (`name`, `name_en`) across all reference metadata tables.
+  - Streamlines `listing_board` schema to essential identifying attributes.
+
+---
+
+## ADR-021: Code Column Removal from Sector and Sub-Sector Reference Tables
+
+- **Status**: Accepted
+- **Date**: 2026-10-21
+- **Source**: Developer request & Database schema update (`database/master_stocks.db`, `internal/models/sector_new.go`, `internal/repositories/sector_search_repository.go`)
+- **Context**: The `code` column in `sector` and `sector_sub` tables was deprecated by upstream data feeds and is no longer used for securities classification. Primary keys (`id`) and textual names (`name`, `name_en`) provide sufficient taxonomic identity.
+- **Decision**:
+  - Drop column `code` from tables `sector` and `sector_sub` in `database/master_stocks.db`.
+  - Remove `Code` field from `models.SectorNew` and `models.SectorSub`.
+  - Adjust SQL `INSERT/UPDATE` queries in `internal/repositories/sector_search_repository.go` and `internal/usecases/sector_usecase.go`.
+- **Consequences**:
+  - Eliminates unused column storage in classification tables.
+  - Retains full foreign key reference integrity (`stocks.sector_id` -> `sector.id`, `stocks.sector_sub_id` -> `sector_sub.id`).
+
+---
+
+## ADR-022: Relational Foreign Key Binding Between `pasardana_stock_mapping` and `stocks`
+
+- **Status**: Accepted
+- **Date**: 2026-10-21
+- **Source**: Developer request & Database schema update (`database/master_stocks.db`)
+- **Context**: Table `pasardana_stock_mapping` lacked a formal database Foreign Key constraint to table `stocks` on column `code`. As a strict constraint, the developer mandated adding the foreign key constraint directly on `pasardana_stock_mapping` without modifying the `stocks` table.
+- **Decision**:
+  - Recreate table `pasardana_stock_mapping` with column definition `code TEXT NOT NULL UNIQUE REFERENCES stocks(code)`.
+  - Purge orphaned non-equity entries (`XSPI`, `GOTOM`) from `pasardana_stock_mapping` that do not exist in `stocks`.
+  - Confirm table `stocks` schema remains completely unaltered.
+  - Verify relational integrity via `PRAGMA foreign_key_check`.
+- **Consequences**:
+  - Prevents orphaned stock mapping entries from entering the database.
+  - Leaves the `stocks` primary entity untouched as required.
+
+---
+
+## ADR-023: Deletion of Legacy `sector_old` Table
+
+- **Status**: Accepted
+- **Date**: 2026-10-21
+- **Source**: Developer request & Database cleanup (`database/master_stocks.db`)
+- **Context**: Table `sector_old` was an obsolete artifact from earlier migration stages and was neither referenced by foreign keys nor used by any active application code.
+- **Decision**:
+  - Drop table `sector_old` from `database/master_stocks.db`.
+  - Update `.context/ARCHITECTURE.md` table inventory.
+- **Consequences**:
+  - Removes dead database schema artifacts and prevents developer confusion.
+
+---
+
+## ADR-024: Foreign Key Enforcement Between `stocks_history` and `stocks`
+
+- **Status**: Accepted
+- **Date**: 2026-10-21
+- **Source**: Developer request & Database schema update (`database/master_stocks.db`)
+- **Context**: High-volume historical EOD pricing table `stocks_history` (1.34M+ records) identified equities solely by plain text `code` without a formal database foreign key pointing to `stocks(code)`. Enforcing relational integrity ensures that price histories can only belong to valid master listed equities.
+- **Decision**:
+  - Recreate table `stocks_history` with `code TEXT NOT NULL REFERENCES stocks(code)` while preserving composite primary key `(code, date)` and B-tree indexes (`idx_stocks_history_code`, `idx_stocks_history_date`, `idx_stocks_history_code_date`).
+  - Clean up 347 orphaned records belonging to unlisted symbol `GOTOM` before migrating.
+  - Verify zero foreign key violations across all 1.34+ million rows via `PRAGMA foreign_key_check`.
+- **Consequences**:
+  - Guarantees strict database-level referential integrity between master equity definitions and EOD historical price series.
+  - Sub-millisecond composite index query performance remains preserved.

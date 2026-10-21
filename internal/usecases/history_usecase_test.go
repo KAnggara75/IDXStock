@@ -90,6 +90,27 @@ func (m *mockStockRepo) GetDistinctBoards(ctx context.Context) ([]string, error)
 	return args.Get(0).([]string), args.Error(1)
 }
 
+func (m *mockStockRepo) GetListingBoards(ctx context.Context) ([]models.ListingBoard, error) {
+	args := m.Called(ctx)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).([]models.ListingBoard), args.Error(1)
+}
+
+func (m *mockStockRepo) GetStocksWithNullSectorOrIndustry(ctx context.Context) ([]string, error) {
+	args := m.Called(ctx)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).([]string), args.Error(1)
+}
+
+func (m *mockStockRepo) UpdateStockSectorAndIndustry(ctx context.Context, code string, sectorID, sectorSubID, industryID, industrySubID *int) (bool, error) {
+	args := m.Called(ctx, code, sectorID, sectorSubID, industryID, industrySubID)
+	return args.Bool(0), args.Error(1)
+}
+
 type mockPasardanaService struct {
 	mock.Mock
 }

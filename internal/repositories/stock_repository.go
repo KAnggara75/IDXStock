@@ -19,6 +19,9 @@ type StockRepository interface {
 	GetAllStocks(ctx context.Context, filter models.GetAllStocksFilter) ([]models.StockDetailResponse, error)
 	GetStockByCode(ctx context.Context, code string) (*models.StockDetailResponse, error)
 	GetDistinctBoards(ctx context.Context) ([]string, error)
+	GetListingBoards(ctx context.Context) ([]models.ListingBoard, error)
+	GetStocksWithNullSectorOrIndustry(ctx context.Context) ([]string, error)
+	UpdateStockSectorAndIndustry(ctx context.Context, code string, sectorID, sectorSubID, industryID, industrySubID *int) (bool, error)
 }
 
 type stockRepository struct {
@@ -211,12 +214,19 @@ func (r *stockRepository) FindMissingCodes(ctx context.Context, codes []string) 
 func (r *stockRepository) GetAllStocks(ctx context.Context, filter models.GetAllStocksFilter) ([]models.StockDetailResponse, error) {
 	query := `
 		SELECT
-			code, name, listing_date, delisting_date, shares, board,
-			sector_id, sector_sub_id, industry_id, industry_sub_id
-		FROM stocks
-		WHERE (?1 = '' OR UPPER(board) = UPPER(?1))
-		  AND (?2 = '' OR UPPER(code) LIKE '%' || UPPER(?2) || '%' OR UPPER(name) LIKE '%' || UPPER(?2) || '%')
-		ORDER BY code ASC
+			s.code, s.name, s.listing_date, s.delisting_date, s.shares, s.board,
+			sec.name AS sector_name,
+			sec_sub.name AS sector_sub_name,
+			ind.name AS industry_name,
+			ind_sub.name AS industry_sub_name
+		FROM stocks s
+		LEFT JOIN sector sec ON sec.id = s.sector_id
+		LEFT JOIN sector_sub sec_sub ON sec_sub.id = s.sector_sub_id
+		LEFT JOIN industry ind ON ind.id = s.industry_id
+		LEFT JOIN industry_sub ind_sub ON ind_sub.id = s.industry_sub_id
+		WHERE (?1 = '' OR UPPER(s.board) = UPPER(?1))
+		  AND (?2 = '' OR UPPER(s.code) LIKE '%' || UPPER(?2) || '%' OR UPPER(s.name) LIKE '%' || UPPER(?2) || '%')
+		ORDER BY s.code ASC
 	`
 
 	rows, err := r.pool.Query(ctx, query, strings.TrimSpace(filter.Board), strings.TrimSpace(filter.Search))
@@ -228,12 +238,11 @@ func (r *stockRepository) GetAllStocks(ctx context.Context, filter models.GetAll
 	stocks := make([]models.StockDetailResponse, 0)
 	for rows.Next() {
 		var s models.StockDetailResponse
-		var delistingDate sql.NullString
-		var sectorId, sectorSubId, industryId, industrySubId sql.NullInt64
+		var delistingDate, sectorName, sectorSubName, industryName, industrySubName sql.NullString
 
 		err := rows.Scan(
 			&s.Code, &s.Name, &s.ListingDate, &delistingDate, &s.Shares, &s.Board,
-			&sectorId, &sectorSubId, &industryId, &industrySubId,
+			&sectorName, &sectorSubName, &industryName, &industrySubName,
 		)
 		if err != nil {
 			return nil, fmt.Errorf("failed to scan stock row: %w", err)
@@ -242,21 +251,17 @@ func (r *stockRepository) GetAllStocks(ctx context.Context, filter models.GetAll
 		if delistingDate.Valid {
 			s.DelistingDate = &delistingDate.String
 		}
-		if sectorId.Valid {
-			v := int(sectorId.Int64)
-			s.SectorId = &v
+		if sectorName.Valid {
+			s.Sector = &sectorName.String
 		}
-		if sectorSubId.Valid {
-			v := int(sectorSubId.Int64)
-			s.SectorSubId = &v
+		if sectorSubName.Valid {
+			s.SubSector = &sectorSubName.String
 		}
-		if industryId.Valid {
-			v := int(industryId.Int64)
-			s.IndustryId = &v
+		if industryName.Valid {
+			s.Industry = &industryName.String
 		}
-		if industrySubId.Valid {
-			v := int(industrySubId.Int64)
-			s.IndustrySubId = &v
+		if industrySubName.Valid {
+			s.SubIndustry = &industrySubName.String
 		}
 
 		stocks = append(stocks, s)
@@ -268,20 +273,26 @@ func (r *stockRepository) GetAllStocks(ctx context.Context, filter models.GetAll
 func (r *stockRepository) GetStockByCode(ctx context.Context, code string) (*models.StockDetailResponse, error) {
 	query := `
 		SELECT
-			code, name, listing_date, delisting_date, shares, board,
-			sector_id, sector_sub_id, industry_id, industry_sub_id
-		FROM stocks
-		WHERE UPPER(code) = UPPER(?1)
+			s.code, s.name, s.listing_date, s.delisting_date, s.shares, s.board,
+			sec.name AS sector_name,
+			sec_sub.name AS sector_sub_name,
+			ind.name AS industry_name,
+			ind_sub.name AS industry_sub_name
+		FROM stocks s
+		LEFT JOIN sector sec ON sec.id = s.sector_id
+		LEFT JOIN sector_sub sec_sub ON sec_sub.id = s.sector_sub_id
+		LEFT JOIN industry ind ON ind.id = s.industry_id
+		LEFT JOIN industry_sub ind_sub ON ind_sub.id = s.industry_sub_id
+		WHERE UPPER(s.code) = UPPER(?1)
 		LIMIT 1
 	`
 
 	var s models.StockDetailResponse
-	var delistingDate sql.NullString
-	var sectorId, sectorSubId, industryId, industrySubId sql.NullInt64
+	var delistingDate, sectorName, sectorSubName, industryName, industrySubName sql.NullString
 
 	err := r.pool.QueryRow(ctx, query, strings.TrimSpace(code)).Scan(
 		&s.Code, &s.Name, &s.ListingDate, &delistingDate, &s.Shares, &s.Board,
-		&sectorId, &sectorSubId, &industryId, &industrySubId,
+		&sectorName, &sectorSubName, &industryName, &industrySubName,
 	)
 	if err != nil {
 		if err == sql.ErrNoRows {
@@ -293,21 +304,17 @@ func (r *stockRepository) GetStockByCode(ctx context.Context, code string) (*mod
 	if delistingDate.Valid {
 		s.DelistingDate = &delistingDate.String
 	}
-	if sectorId.Valid {
-		v := int(sectorId.Int64)
-		s.SectorId = &v
+	if sectorName.Valid {
+		s.Sector = &sectorName.String
 	}
-	if sectorSubId.Valid {
-		v := int(sectorSubId.Int64)
-		s.SectorSubId = &v
+	if sectorSubName.Valid {
+		s.SubSector = &sectorSubName.String
 	}
-	if industryId.Valid {
-		v := int(industryId.Int64)
-		s.IndustryId = &v
+	if industryName.Valid {
+		s.Industry = &industryName.String
 	}
-	if industrySubId.Valid {
-		v := int(industrySubId.Int64)
-		s.IndustrySubId = &v
+	if industrySubName.Valid {
+		s.SubIndustry = &industrySubName.String
 	}
 
 	return &s, nil
@@ -337,4 +344,87 @@ func (r *stockRepository) GetDistinctBoards(ctx context.Context) ([]string, erro
 	}
 
 	return boards, nil
+}
+
+func (r *stockRepository) GetListingBoards(ctx context.Context) ([]models.ListingBoard, error) {
+	query := `
+		SELECT code, name, name_en
+		FROM listing_board
+		ORDER BY code ASC
+	`
+
+	rows, err := r.pool.Query(ctx, query)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get listing boards: %w", err)
+	}
+	defer rows.Close()
+
+	listingBoards := make([]models.ListingBoard, 0)
+	for rows.Next() {
+		var lb models.ListingBoard
+		var nameEn sql.NullString
+		if err := rows.Scan(&lb.Code, &lb.Name, &nameEn); err != nil {
+			return nil, fmt.Errorf("failed to scan listing board: %w", err)
+		}
+		if nameEn.Valid {
+			lb.NameEn = &nameEn.String
+		}
+		listingBoards = append(listingBoards, lb)
+	}
+
+	return listingBoards, nil
+}
+
+func (r *stockRepository) GetStocksWithNullSectorOrIndustry(ctx context.Context) ([]string, error) {
+	query := `
+		SELECT code
+		FROM stocks
+		WHERE sector_id IS NULL OR TRIM(CAST(sector_id AS TEXT)) = ''
+		   OR sector_sub_id IS NULL OR TRIM(CAST(sector_sub_id AS TEXT)) = ''
+		   OR industry_id IS NULL OR TRIM(CAST(industry_id AS TEXT)) = ''
+		   OR industry_sub_id IS NULL OR TRIM(CAST(industry_sub_id AS TEXT)) = ''
+		ORDER BY code ASC
+	`
+
+	rows, err := r.pool.Query(ctx, query)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get stocks with null sector or industry: %w", err)
+	}
+	defer rows.Close()
+
+	codes := make([]string, 0)
+	for rows.Next() {
+		var code string
+		if err := rows.Scan(&code); err != nil {
+			return nil, fmt.Errorf("failed to scan stock code: %w", err)
+		}
+		codes = append(codes, code)
+	}
+
+	return codes, nil
+}
+
+func (r *stockRepository) UpdateStockSectorAndIndustry(ctx context.Context, code string, sectorID, sectorSubID, industryID, industrySubID *int) (bool, error) {
+	query := `
+		UPDATE stocks
+		SET
+			sector_id = ?1,
+			sector_sub_id = ?2,
+			industry_id = ?3,
+			industry_sub_id = ?4
+		WHERE code = ?5
+		  AND (
+			sector_id IS NOT ?1 OR
+			sector_sub_id IS NOT ?2 OR
+			industry_id IS NOT ?3 OR
+			industry_sub_id IS NOT ?4
+		  )
+	`
+
+	res, err := r.pool.Exec(ctx, query, sectorID, sectorSubID, industryID, industrySubID, code)
+	if err != nil {
+		return false, fmt.Errorf("failed to update stock sector/industry for %s: %w", code, err)
+	}
+
+	return res.RowsAffected() > 0, nil
 }

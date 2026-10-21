@@ -128,8 +128,8 @@ func TestSectorSearchRepository(t *testing.T) {
 
 		mock.ExpectBegin()
 		mock.ExpectQuery("INSERT INTO sector").
-			WithArgs(1, (*string)(nil), "Finance", (*string)(nil), (*string)(nil)).
-			WillReturnRows(sqlmock.NewRows([]string{"id", "code", "name"}).AddRow(1, nil, "Finance"))
+			WithArgs(1, "Finance", (*string)(nil), (*string)(nil)).
+			WillReturnRows(sqlmock.NewRows([]string{"id", "name"}).AddRow(1, "Finance"))
 		mock.ExpectCommit()
 
 		repo := NewSectorSearchRepository(mockExec)
@@ -148,8 +148,8 @@ func TestSectorSearchRepository(t *testing.T) {
 
 		mock.ExpectBegin()
 		mock.ExpectQuery("INSERT INTO sector_sub").
-			WithArgs(1, (*string)(nil), "Bank", (*string)(nil), 1).
-			WillReturnRows(sqlmock.NewRows([]string{"id", "code", "name"}).AddRow(1, nil, "Bank"))
+			WithArgs(1, "Bank", (*string)(nil), 1).
+			WillReturnRows(sqlmock.NewRows([]string{"id", "name"}).AddRow(1, "Bank"))
 		mock.ExpectCommit()
 
 		repo := NewSectorSearchRepository(mockExec)
@@ -326,15 +326,15 @@ func TestStockRepository(t *testing.T) {
 
 			cols := []string{
 				"code", "name", "listing_date", "delisting_date", "shares", "board",
-				"sector_id", "sector_sub_id", "industry_id", "industry_sub_id",
+				"sector_name", "sector_sub_name", "industry_name", "industry_sub_name",
 			}
 			rows := sqlmock.NewRows(cols).
 				AddRow("BBCA", "Bank Central Asia", "2000-05-31", nil, int64(123456), "UTAMA",
-					1, 2, 3, 4).
+					"Keuangan", "Bank", "Bank", "Bank").
 				AddRow("AADI", "Adaro Andalan", "2024-12-05", "2025-01-01", int64(7890), "PENGEMBANGAN",
 					nil, nil, nil, nil)
 
-			mock.ExpectQuery("SELECT (.+) FROM stocks WHERE").
+			mock.ExpectQuery("SELECT (.+) FROM stocks s").
 				WithArgs("UTAMA", "BCA").
 				WillReturnRows(rows)
 
@@ -342,7 +342,7 @@ func TestStockRepository(t *testing.T) {
 			assert.NoError(t, err)
 			assert.Len(t, stocks, 2)
 			assert.Equal(t, "BBCA", stocks[0].Code)
-			assert.Equal(t, 1, *stocks[0].SectorId)
+			assert.Equal(t, "Keuangan", *stocks[0].Sector)
 			assert.Equal(t, "AADI", stocks[1].Code)
 			assert.NoError(t, mock.ExpectationsWereMet())
 		})
@@ -355,7 +355,7 @@ func TestStockRepository(t *testing.T) {
 
 			repo := NewStockRepository(mockExec)
 
-			mock.ExpectQuery("SELECT (.+) FROM stocks WHERE").
+			mock.ExpectQuery("SELECT (.+) FROM stocks s").
 				WithArgs("", "").
 				WillReturnError(assert.AnError)
 
@@ -376,7 +376,7 @@ func TestStockRepository(t *testing.T) {
 			cols := []string{"code"} // missing columns will cause scan error
 			rows := sqlmock.NewRows(cols).AddRow("BBCA")
 
-			mock.ExpectQuery("SELECT (.+) FROM stocks WHERE").
+			mock.ExpectQuery("SELECT (.+) FROM stocks s").
 				WithArgs("", "").
 				WillReturnRows(rows)
 
@@ -532,14 +532,14 @@ func TestHistoryRepository(t *testing.T) {
 
 		columns := []string{
 			"code", "name", "listing_date", "delisting_date", "shares", "board",
-			"sector_id", "sector_sub_id", "industry_id", "industry_sub_id",
+			"sector_name", "sector_sub_name", "industry_name", "industry_sub_name",
 		}
 		rows := sqlmock.NewRows(columns).AddRow(
 			"BBCA", "Bank Central Asia Tbk", "1982-01-01", "2024-01-01", int64(1000000), "UTAMA",
-			1, 2, 3, 4,
+			"Keuangan", "Bank", "Bank", "Bank",
 		)
 
-		mock.ExpectQuery("SELECT (.+) FROM stocks WHERE UPPER\\(code\\) = UPPER\\(\\?1\\) LIMIT 1").
+		mock.ExpectQuery("SELECT (.+) FROM stocks s").
 			WithArgs("BBCA").
 			WillReturnRows(rows)
 
@@ -550,14 +550,14 @@ func TestHistoryRepository(t *testing.T) {
 		assert.Equal(t, "Bank Central Asia Tbk", stock.Name)
 		assert.NotNil(t, stock.DelistingDate)
 		assert.Equal(t, "2024-01-01", *stock.DelistingDate)
-		assert.NotNil(t, stock.SectorId)
-		assert.Equal(t, 1, *stock.SectorId)
-		assert.NotNil(t, stock.SectorSubId)
-		assert.Equal(t, 2, *stock.SectorSubId)
-		assert.NotNil(t, stock.IndustryId)
-		assert.Equal(t, 3, *stock.IndustryId)
-		assert.NotNil(t, stock.IndustrySubId)
-		assert.Equal(t, 4, *stock.IndustrySubId)
+		assert.NotNil(t, stock.Sector)
+		assert.Equal(t, "Keuangan", *stock.Sector)
+		assert.NotNil(t, stock.SubSector)
+		assert.Equal(t, "Bank", *stock.SubSector)
+		assert.NotNil(t, stock.Industry)
+		assert.Equal(t, "Bank", *stock.Industry)
+		assert.NotNil(t, stock.SubIndustry)
+		assert.Equal(t, "Bank", *stock.SubIndustry)
 		assert.NoError(t, mock.ExpectationsWereMet())
 	})
 
@@ -569,7 +569,7 @@ func TestHistoryRepository(t *testing.T) {
 
 		repo := NewStockRepository(mockExec)
 
-		mock.ExpectQuery("SELECT (.+) FROM stocks WHERE UPPER\\(code\\) = UPPER\\(\\?1\\) LIMIT 1").
+		mock.ExpectQuery("SELECT (.+) FROM stocks s").
 			WithArgs("UNKN").
 			WillReturnError(sql.ErrNoRows)
 
@@ -587,7 +587,7 @@ func TestHistoryRepository(t *testing.T) {
 
 		repo := NewStockRepository(mockExec)
 
-		mock.ExpectQuery("SELECT (.+) FROM stocks WHERE UPPER\\(code\\) = UPPER\\(\\?1\\) LIMIT 1").
+		mock.ExpectQuery("SELECT (.+) FROM stocks s").
 			WithArgs("BBCA").
 			WillReturnError(assert.AnError)
 
@@ -634,5 +634,86 @@ func TestHistoryRepository(t *testing.T) {
 		assert.Error(t, err)
 		assert.Nil(t, boards)
 		assert.NoError(t, mock.ExpectationsWereMet())
+	})
+
+	t.Run("GetStocksWithNullSectorOrIndustry", func(t *testing.T) {
+		db, mock, err := sqlmock.New()
+		assert.NoError(t, err)
+		defer db.Close()
+		mockExec := database.NewDBExecutor(db)
+
+		repo := NewStockRepository(mockExec)
+
+		rows := sqlmock.NewRows([]string{"code"}).AddRow("BBCA").AddRow("PTBA")
+		mock.ExpectQuery("SELECT code FROM stocks WHERE").
+			WillReturnRows(rows)
+
+		codes, err := repo.GetStocksWithNullSectorOrIndustry(ctx)
+		assert.NoError(t, err)
+		assert.Equal(t, []string{"BBCA", "PTBA"}, codes)
+		assert.NoError(t, mock.ExpectationsWereMet())
+	})
+
+	t.Run("UpdateStockSectorAndIndustry", func(t *testing.T) {
+		db, mock, err := sqlmock.New()
+		assert.NoError(t, err)
+		defer db.Close()
+		mockExec := database.NewDBExecutor(db)
+
+		repo := NewStockRepository(mockExec)
+		secID, subSecID, indID, subIndID := 1, 1, 2, 3
+
+		mock.ExpectExec("UPDATE stocks SET").
+			WithArgs(&secID, &subSecID, &indID, &subIndID, "PTBA").
+			WillReturnResult(sqlmock.NewResult(1, 1))
+
+		updated, err := repo.UpdateStockSectorAndIndustry(ctx, "PTBA", &secID, &subSecID, &indID, &subIndID)
+		assert.NoError(t, err)
+		assert.True(t, updated)
+		assert.NoError(t, mock.ExpectationsWereMet())
+	})
+
+	t.Run("GetListingBoards", func(t *testing.T) {
+		t.Run("success", func(t *testing.T) {
+			db, mock, err := sqlmock.New()
+			assert.NoError(t, err)
+			defer db.Close()
+			mockExec := database.NewDBExecutor(db)
+
+			repo := NewStockRepository(mockExec)
+
+			rows := sqlmock.NewRows([]string{"code", "name", "name_en"}).
+				AddRow("Main", "Utama", "Main").
+				AddRow("Development", "Pengembangan", "Development")
+			mock.ExpectQuery("SELECT code, name, name_en FROM listing_board ORDER BY code ASC").
+				WillReturnRows(rows)
+
+			boards, err := repo.GetListingBoards(ctx)
+			assert.NoError(t, err)
+			assert.Len(t, boards, 2)
+			assert.Equal(t, "Main", boards[0].Code)
+			assert.Equal(t, "Utama", boards[0].Name)
+			assert.NotNil(t, boards[0].NameEn)
+			assert.Equal(t, "Main", *boards[0].NameEn)
+			assert.Equal(t, "Development", boards[1].Code)
+			assert.NoError(t, mock.ExpectationsWereMet())
+		})
+
+		t.Run("query_error", func(t *testing.T) {
+			db, mock, err := sqlmock.New()
+			assert.NoError(t, err)
+			defer db.Close()
+			mockExec := database.NewDBExecutor(db)
+
+			repo := NewStockRepository(mockExec)
+
+			mock.ExpectQuery("SELECT code, name, name_en FROM listing_board ORDER BY code ASC").
+				WillReturnError(assert.AnError)
+
+			boards, err := repo.GetListingBoards(ctx)
+			assert.Error(t, err)
+			assert.Nil(t, boards)
+			assert.NoError(t, mock.ExpectationsWereMet())
+		})
 	})
 }

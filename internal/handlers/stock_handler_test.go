@@ -45,6 +45,14 @@ func (m *mockStockUsecase) SyncStockDetail(ctx context.Context) ([]models.StockR
 	return args.Get(0).([]models.StockResponse), args.Error(1)
 }
 
+func (m *mockStockUsecase) SyncStockSectorAndIndustry(ctx context.Context) (*models.SyncSectorIndustryResponse, error) {
+	args := m.Called(ctx)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*models.SyncSectorIndustryResponse), args.Error(1)
+}
+
 func (m *mockStockUsecase) SyncDelistingStocks(ctx context.Context, year, month int, cookie string) ([]models.StockResponse, error) {
 	args := m.Called(ctx, year, month, cookie)
 	if args.Get(0) == nil {
@@ -75,6 +83,14 @@ func (m *mockStockUsecase) GetDistinctBoards(ctx context.Context) ([]string, err
 		return nil, args.Error(1)
 	}
 	return args.Get(0).([]string), args.Error(1)
+}
+
+func (m *mockStockUsecase) GetListingBoards(ctx context.Context) ([]models.ListingBoard, error) {
+	args := m.Called(ctx)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).([]models.ListingBoard), args.Error(1)
 }
 
 func (m *mockStockUsecase) GetStocksByBoard(ctx context.Context, board string) ([]models.StockDetailResponse, error) {
@@ -190,6 +206,22 @@ func TestStockHandler_SyncStockDetailHandler(t *testing.T) {
 	mockUsecase.On("SyncStockDetail", mock.Anything).Return([]models.StockResponse{}, nil).Maybe()
 
 	req := httptest.NewRequest("POST", "/stocks/sync-detail", nil)
+	resp, err := app.Test(req)
+	assert.NoError(t, err)
+	assert.Equal(t, fiber.StatusOK, resp.StatusCode)
+}
+
+func TestStockHandler_SyncStockSectorAndIndustryHandler(t *testing.T) {
+	app := fiber.New()
+	mockUsecase := new(mockStockUsecase)
+	handler := NewStockHandler(mockUsecase)
+
+	app.Put("/stocks/sectors-industries/sync", handler.SyncStockSectorAndIndustryHandler)
+
+	mockUsecase.On("SyncStockSectorAndIndustry", mock.Anything).
+		Return(&models.SyncSectorIndustryResponse{TotalChecked: 1, TotalUpdated: 1}, nil).Maybe()
+
+	req := httptest.NewRequest("PUT", "/stocks/sectors-industries/sync", nil)
 	resp, err := app.Test(req)
 	assert.NoError(t, err)
 	assert.Equal(t, fiber.StatusOK, resp.StatusCode)
@@ -344,6 +376,38 @@ func TestStockHandler_GetBoardsHandler(t *testing.T) {
 		mockUsecase.On("GetDistinctBoards", mock.Anything).Return(nil, fmt.Errorf("db error")).Once()
 
 		req := httptest.NewRequest("GET", "/stocks/boards", nil)
+		resp, err := app.Test(req)
+		assert.NoError(t, err)
+		assert.Equal(t, fiber.StatusInternalServerError, resp.StatusCode)
+		mockUsecase.AssertExpectations(t)
+	})
+}
+
+func TestStockHandler_GetListingBoardsHandler(t *testing.T) {
+	mockUsecase := new(mockStockUsecase)
+	handler := NewStockHandler(mockUsecase)
+
+	app := fiber.New()
+	app.Get("/stocks/listing-boards", handler.GetListingBoardsHandler)
+
+	t.Run("success", func(t *testing.T) {
+		nameEn := "Main"
+		expected := []models.ListingBoard{
+			{Code: "Main", Name: "Utama", NameEn: &nameEn},
+		}
+		mockUsecase.On("GetListingBoards", mock.Anything).Return(expected, nil).Once()
+
+		req := httptest.NewRequest("GET", "/stocks/listing-boards", nil)
+		resp, err := app.Test(req)
+		assert.NoError(t, err)
+		assert.Equal(t, fiber.StatusOK, resp.StatusCode)
+		mockUsecase.AssertExpectations(t)
+	})
+
+	t.Run("usecase_error", func(t *testing.T) {
+		mockUsecase.On("GetListingBoards", mock.Anything).Return(nil, fmt.Errorf("db error")).Once()
+
+		req := httptest.NewRequest("GET", "/stocks/listing-boards", nil)
 		resp, err := app.Test(req)
 		assert.NoError(t, err)
 		assert.Equal(t, fiber.StatusInternalServerError, resp.StatusCode)

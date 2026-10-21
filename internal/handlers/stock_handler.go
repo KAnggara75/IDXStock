@@ -129,6 +129,33 @@ func (h *StockHandler) SyncStockDetailHandler(c fiber.Ctx) error {
 	})
 }
 
+// SyncStockSectorAndIndustryHandler godoc
+// @Summary      Sync stock sector and industry asynchronously
+// @Description  Fetches fkNewSectorId, fkNewSubSectorId, fkNewIndustryId, and fkNewSubIndustryId from Pasardana for stocks that currently have null sector or industry values
+// @Tags         stocks
+// @Produce      json
+// @Success      200  {object}  models.SuccessResponse
+// @Router       /stocks/sectors-industries/sync [put]
+func (h *StockHandler) SyncStockSectorAndIndustryHandler(c fiber.Ctx) error {
+	go func(ctx context.Context) {
+		res, err := h.usecase.SyncStockSectorAndIndustry(ctx)
+		if err != nil {
+			logrus.Errorf("Background sector and industry sync failed: %v", err)
+			return
+		}
+		if res != nil {
+			logrus.Infof("Background sector and industry sync finished: TotalChecked=%d, TotalUpdated=%d", res.TotalChecked, res.TotalUpdated)
+		} else {
+			logrus.Info("Background sector and industry sync finished")
+		}
+	}(context.WithoutCancel(c.Context()))
+
+	return c.JSON(fiber.Map{
+		"status":  "success",
+		"message": "Stock sector and industry synchronization process started in the background",
+	})
+}
+
 // SyncDelistingStocksHandler godoc
 // @Summary      Sync delisted stocks
 // @Description  Fetches delisted stocks for specific year/month from IDX and updates the database
@@ -245,6 +272,26 @@ func (h *StockHandler) GetBoardsHandler(c fiber.Ctx) error {
 	boards, err := h.usecase.GetDistinctBoards(c.Context())
 	if err != nil {
 		logrus.Errorf("Failed to retrieve boards: %v", err)
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": err.Error(),
+		})
+	}
+
+	return c.JSON(boards)
+}
+
+// GetListingBoardsHandler godoc
+// @Summary      Get master listing boards
+// @Description  Retrieves list of master listing boards (code, name, name_id, description)
+// @Tags         stocks
+// @Produce      json
+// @Success      200     {array}   models.ListingBoard
+// @Failure      500     {object}  models.ErrorResponse
+// @Router       /stocks/listing-boards [get]
+func (h *StockHandler) GetListingBoardsHandler(c fiber.Ctx) error {
+	boards, err := h.usecase.GetListingBoards(c.Context())
+	if err != nil {
+		logrus.Errorf("Failed to retrieve listing boards: %v", err)
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"error": err.Error(),
 		})

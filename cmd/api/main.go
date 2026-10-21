@@ -20,7 +20,6 @@ import (
 	"github.com/KAnggara75/IDXStock/internal/database"
 	"github.com/KAnggara75/IDXStock/internal/repositories"
 	"github.com/KAnggara75/IDXStock/internal/routes"
-	"github.com/KAnggara75/IDXStock/internal/services"
 )
 
 // @title                      IDXStock API
@@ -157,18 +156,6 @@ func buildApp(pool ...repositories.DBExecutor) *fiber.App {
 	return app
 }
 
-// runSeeder executes initial data seeders.
-func runSeeder(pool repositories.DBExecutor) {
-	if pool == nil {
-		return
-	}
-	brokerRepo := repositories.NewBrokerRepository(pool)
-	seederService := services.NewSeederService(brokerRepo, nil)
-	if err := seederService.SeedBrokersData(context.Background()); err != nil {
-		logrus.Errorf("Failed to run brokers seeder: %v", err)
-	}
-}
-
 // getPort retrieves the port from environment variable or defaults to 3000.
 func getPort() string {
 	port := os.Getenv("PORT")
@@ -196,7 +183,6 @@ func runMain(connectDB func(), listen func(app *fiber.App, port string) error, p
 		dbPool = database.Pool
 	}
 
-	runSeeder(dbPool)
 	app := buildApp(dbPool)
 	port := getPort()
 	if err := listen(app, port); err != nil {

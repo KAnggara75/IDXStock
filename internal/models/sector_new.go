@@ -2,7 +2,6 @@ package models
 
 type SectorNew struct {
 	Id          int
-	Code        *string
 	Name        string
 	NameEn      *string
 	Description *string
@@ -11,7 +10,6 @@ type SectorNew struct {
 type SectorSub struct {
 	Id       int
 	SectorId int
-	Code     *string
 	Name     string
 	NameEn   *string
 }

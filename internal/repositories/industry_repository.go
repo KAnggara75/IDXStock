@@ -36,11 +36,10 @@ func (r *industryRepository) UpsertIndustries(ctx context.Context, industries []
 	defer tx.Rollback(ctx)
 
 	query := `
-		INSERT INTO industry (id, name, last_modified)
-		VALUES (?1, ?2, datetime('now'))
+		INSERT INTO industry (id, name)
+		VALUES (?1, ?2)
 		ON CONFLICT (id) DO UPDATE SET
-			name = excluded.name,
-			last_modified = datetime('now')
+			name = excluded.name
 		WHERE (industry.name IS NOT excluded.name)
 		RETURNING id, name
 	`
@@ -75,12 +74,11 @@ func (r *industryRepository) UpsertIndustrySub(ctx context.Context, industrySubs
 	defer tx.Rollback(ctx)
 
 	query := `
-		INSERT INTO industry_sub (id, name, industry_id, last_modified)
-		VALUES (?1, ?2, ?3, datetime('now'))
+		INSERT INTO industry_sub (id, name, industry_id)
+		VALUES (?1, ?2, ?3)
 		ON CONFLICT (id) DO UPDATE SET
 			name = excluded.name,
-			industry_id = excluded.industry_id,
-			last_modified = datetime('now')
+			industry_id = excluded.industry_id
 		WHERE (industry_sub.name IS NOT excluded.name OR
 		       industry_sub.industry_id IS NOT excluded.industry_id)
 		RETURNING id, name

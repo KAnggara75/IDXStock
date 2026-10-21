@@ -9,7 +9,7 @@ IDXStock is a specialized Golang backend microservice engineered to ingest, norm
 - **In-Scope**:
   - Ingesting and validating official IDX listing reports from Excel files (`.xlsx`).
   - Serving master listed equities via `GET /api/v1/stocks` with board filtering and text search.
-  - Serving stock detail by ticker code (`/api/v1/stocks/:code`), distinct trading boards (`/api/v1/stocks/boards`), and stocks filtered by board (`/api/v1/stocks/boards/:board`).
+  - Serving stock detail by ticker code (`/api/v1/stocks/:code`), distinct trading boards (`/api/v1/stocks/boards`), master listing board definitions (`/api/v1/stocks/listing-boards`), and stocks filtered by board (`/api/v1/stocks/boards/:board`).
   - Maintaining Pasardana ID to ticker code mapping (`pasardana_stock_mapping`).
   - Synchronizing company profiles, sectors, sub-sectors, industries, and sub-industries.
   - Tracking delisted securities.
@@ -26,7 +26,7 @@ IDXStock is a specialized Golang backend microservice engineered to ingest, norm
 ---
 
 ## 3. Main Actors & Consumers
-- **Automated Schedulers / Cron Jobs**: Invoke periodic synchronization endpoints (`/api/v1/stocks/history/sync`, `/api/v1/stocks/sync`, `/api/v1/stocks/delisting/sync`).
+- **Automated Schedulers / Cron Jobs**: Invoke periodic synchronization endpoints (`/api/v1/stocks/history/sync`, `/api/v1/stocks/sync`, `/api/v1/stocks/sectors-industries/sync`, `/api/v1/stocks/delisting/sync`).
 - **Internal Analysts / Developers**: Query master stocks (`/api/v1/stocks`), upload listing spreadsheets (`/api/v1/stocks/upload`), trigger corporate stock splits, and explore API documentation via Swagger UI (`/swagger/*`).
 - **Client Applications / Dashboard Services**: Query historical prices (`/api/v1/stocks/:code/history`) and company logos.
 

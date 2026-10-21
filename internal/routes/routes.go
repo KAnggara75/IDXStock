@@ -68,11 +68,13 @@ func Setup(app *fiber.App, db ...repositories.DBExecutor) {
 
 	v1.Get("/stocks", stockHandler.GetAllStocksHandler)
 	v1.Get("/stocks/boards", stockHandler.GetBoardsHandler)
+	v1.Get("/stocks/listing-boards", stockHandler.GetListingBoardsHandler)
 	v1.Get("/stocks/boards/:board", stockHandler.GetStocksByBoardHandler)
 	v1.Get("/stocks/:code", stockHandler.GetStockByCodeHandler)
 	v1.Post("/stocks/upload", stockHandler.PreviewHandler)
 	v1.Patch("/stocks/upload", stockHandler.UploadHandler)
 	v1.Put("/stocks/sync", stockHandler.SyncStockDetailHandler)
+	v1.Put("/stocks/sectors-industries/sync", stockHandler.SyncStockSectorAndIndustryHandler)
 	v1.Put("/stocks/delisting/sync", stockHandler.SyncDelistingStocksHandler)
 	v1.Put("/stocks/history/sync", historyHandler.SyncStockHistoryHandler)
 	v1.Get("/stocks/:code/history", historyHandler.GetStockHistoryHandler)

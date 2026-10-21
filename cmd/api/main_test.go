@@ -48,25 +48,6 @@ func TestBuildApp(t *testing.T) {
 	assert.NoError(t, mock.ExpectationsWereMet())
 }
 
-func TestRunSeeder(t *testing.T) {
-	t.Run("nil_pool", func(t *testing.T) {
-		assert.NotPanics(t, func() {
-			runSeeder(nil)
-		})
-	})
-
-	t.Run("mock_pool", func(t *testing.T) {
-		db, _, err := sqlmock.New()
-		assert.NoError(t, err)
-		defer db.Close()
-		mockExec := database.NewDBExecutor(db)
-
-		assert.NotPanics(t, func() {
-			runSeeder(mockExec)
-		})
-	})
-}
-
 func TestRunMain(t *testing.T) {
 	t.Run("successful_execution", func(t *testing.T) {
 		db, _, err := sqlmock.New()

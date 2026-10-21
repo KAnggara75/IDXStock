@@ -364,6 +364,55 @@ const docTemplate = `{
                 }
             }
         },
+        "/stocks/listing-boards": {
+            "get": {
+                "description": "Retrieves list of master listing boards (code, name, name_id, description)",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "stocks"
+                ],
+                "summary": "Get master listing boards",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/models.ListingBoard"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/models.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/stocks/sectors-industries/sync": {
+            "put": {
+                "description": "Fetches fkNewSectorId, fkNewSubSectorId, fkNewIndustryId, and fkNewSubIndustryId from Pasardana for stocks that currently have null sector or industry values",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "stocks"
+                ],
+                "summary": "Sync stock sector and industry asynchronously",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.SuccessResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/stocks/split": {
             "put": {
                 "description": "Adjusts historical price, volume, and shares records for a given stock code over a date range",
@@ -703,6 +752,20 @@ const docTemplate = `{
                 }
             }
         },
+        "models.ListingBoard": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "name_en": {
+                    "type": "string"
+                }
+            }
+        },
         "models.SectorSyncNewResponse": {
             "type": "object",
             "properties": {
@@ -770,11 +833,8 @@ const docTemplate = `{
                 "delisting_date": {
                     "type": "string"
                 },
-                "industry_id": {
-                    "type": "integer"
-                },
-                "industry_sub_id": {
-                    "type": "integer"
+                "industry": {
+                    "type": "string"
                 },
                 "listing_date": {
                     "type": "string"
@@ -782,14 +842,17 @@ const docTemplate = `{
                 "name": {
                     "type": "string"
                 },
-                "sector_id": {
-                    "type": "integer"
-                },
-                "sector_sub_id": {
-                    "type": "integer"
+                "sector": {
+                    "type": "string"
                 },
                 "shares": {
                     "type": "integer"
+                },
+                "sub_industry": {
+                    "type": "string"
+                },
+                "sub_sector": {
+                    "type": "string"
                 }
             }
         },

@@ -45,7 +45,7 @@ repos:
         entry: go generate ./...
         language: system
         pass_filenames: false
-        stages: [pre-push]
+        stages: [pre-commit, pre-push]
 
       - id: gotest
         name: go test (unit tests)

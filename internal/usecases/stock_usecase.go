@@ -2,8 +2,8 @@ package usecases
 
 import (
 	"context"
+	"fmt"
 	"io"
-
 	"sync"
 
 	"github.com/sirupsen/logrus"
@@ -18,10 +18,12 @@ type StockUsecase interface {
 	PreviewStocks(ctx context.Context, file io.Reader) ([]models.Stock, error)
 	UploadStocks(ctx context.Context, file io.Reader) ([]models.Stock, error)
 	SyncStockDetail(ctx context.Context) ([]models.StockResponse, error)
+	SyncStockSectorAndIndustry(ctx context.Context) (*models.SyncSectorIndustryResponse, error)
 	SyncDelistingStocks(ctx context.Context, year, month int, cookie string) ([]models.StockResponse, error)
 	GetAllStocks(ctx context.Context, filter models.GetAllStocksFilter) ([]models.StockDetailResponse, error)
 	GetStockByCode(ctx context.Context, code string) (*models.StockDetailResponse, error)
 	GetDistinctBoards(ctx context.Context) ([]string, error)
+	GetListingBoards(ctx context.Context) ([]models.ListingBoard, error)
 	GetStocksByBoard(ctx context.Context, board string) ([]models.StockDetailResponse, error)
 }
 
@@ -150,6 +152,101 @@ func (u *stockUsecase) SyncStockDetail(ctx context.Context) ([]models.StockRespo
 	return allUpdated, nil
 }
 
+func (u *stockUsecase) SyncStockSectorAndIndustry(ctx context.Context) (*models.SyncSectorIndustryResponse, error) {
+	// 1. Get stock codes with null sector or industry IDs
+	codes, err := u.repo.GetStocksWithNullSectorOrIndustry(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get target stocks: %w", err)
+	}
+
+	totalStocks := len(codes)
+	logrus.Infof("Starting sector and industry sync for %d stocks with null fields", totalStocks)
+	if totalStocks == 0 {
+		return &models.SyncSectorIndustryResponse{
+			TotalChecked: 0,
+			TotalUpdated: 0,
+		}, nil
+	}
+
+	// 2. Setup Worker Pool
+	const numWorkers = 20
+	jobs := make(chan string, totalStocks)
+	results := make(chan bool, totalStocks)
+
+	var wg sync.WaitGroup
+
+	for w := 1; w <= numWorkers; w++ {
+		wg.Add(1)
+		// #nosec G204
+		// #nosec G118
+		go func(workerID int) {
+			defer wg.Done()
+			for code := range jobs {
+				detail, err := u.pasardanaService.FetchStockDetailByCode(code)
+				if err != nil {
+					logrus.Errorf("[Worker %d] Failed to fetch Pasardana detail for %s: %v", workerID, code, err)
+					results <- false
+					continue
+				}
+
+				if detail == nil || detail.Code == "" {
+					results <- false
+					continue
+				}
+
+				updated, err := u.repo.UpdateStockSectorAndIndustry(
+					context.Background(),
+					code,
+					detail.FkNewSectorId,
+					detail.FkNewSubSectorId,
+					detail.FkNewIndustryId,
+					detail.FkNewSubIndustryId,
+				)
+				if err != nil {
+					logrus.Errorf("[Worker %d] Failed to update sector/industry for %s: %v", workerID, code, err)
+					results <- false
+					continue
+				}
+
+				if updated {
+					formatID := func(v *int) string {
+						if v == nil {
+							return "null"
+						}
+						return fmt.Sprintf("%d", *v)
+					}
+					logrus.Infof("[Worker %d] Updated sector/industry for %s: sector=%s, sub_sector=%s, industry=%s, sub_industry=%s",
+						workerID, code, formatID(detail.FkNewSectorId), formatID(detail.FkNewSubSectorId), formatID(detail.FkNewIndustryId), formatID(detail.FkNewSubIndustryId))
+				}
+				results <- updated
+			}
+		}(w)
+	}
+
+	for _, code := range codes {
+		jobs <- code
+	}
+	close(jobs)
+
+	go func() {
+		wg.Wait()
+		close(results)
+	}()
+
+	totalUpdated := 0
+	for res := range results {
+		if res {
+			totalUpdated++
+		}
+	}
+
+	logrus.Infof("Sector and industry sync finished. Checked: %d, Updated: %d", totalStocks, totalUpdated)
+	return &models.SyncSectorIndustryResponse{
+		TotalChecked: totalStocks,
+		TotalUpdated: totalUpdated,
+	}, nil
+}
+
 func (u *stockUsecase) SyncDelistingStocks(ctx context.Context, year, month int, cookie string) ([]models.StockResponse, error) {
 	// 1. Fetch from IDX
 	idxStocks, err := u.idxService.FetchDelistedStocks(ctx, year, month, cookie)
@@ -244,6 +341,10 @@ func (u *stockUsecase) GetStockByCode(ctx context.Context, code string) (*models
 
 func (u *stockUsecase) GetDistinctBoards(ctx context.Context) ([]string, error) {
 	return u.repo.GetDistinctBoards(ctx)
+}
+
+func (u *stockUsecase) GetListingBoards(ctx context.Context) ([]models.ListingBoard, error) {
+	return u.repo.GetListingBoards(ctx)
 }
 
 func (u *stockUsecase) GetStocksByBoard(ctx context.Context, board string) ([]models.StockDetailResponse, error) {
