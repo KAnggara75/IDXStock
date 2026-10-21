@@ -5,13 +5,6 @@ definitions:
       error:
         type: string
     type: object
-  models.IdxDelistedStock:
-    properties:
-      DeListingDate:
-        type: string
-      code:
-        type: string
-    type: object
   models.ListingBoard:
     properties:
       code:
@@ -61,13 +54,6 @@ definitions:
         type: string
       status:
         type: string
-    type: object
-  models.SyncDelistingRequest:
-    properties:
-      month:
-        type: integer
-      year:
-        type: integer
     type: object
   models.SyncHistoryRequest:
     properties:
@@ -277,43 +263,6 @@ paths:
           schema:
             $ref: '#/definitions/models.ErrorResponse'
       summary: Get stocks / emiten by board
-      tags:
-      - stocks
-  /stocks/delisting/sync:
-    put:
-      consumes:
-      - application/json
-      description: Fetches delisted stocks for specific year/month from IDX and updates
-        the database
-      parameters:
-      - description: Delisting sync request
-        in: body
-        name: request
-        required: true
-        schema:
-          $ref: '#/definitions/models.SyncDelistingRequest'
-      - description: IDX Session Cookie
-        in: header
-        name: Cookie
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            items:
-              $ref: '#/definitions/models.IdxDelistedStock'
-            type: array
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/models.ErrorResponse'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/models.ErrorResponse'
-      summary: Sync delisted stocks
       tags:
       - stocks
   /stocks/history/sync:

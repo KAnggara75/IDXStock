@@ -16,7 +16,6 @@ import (
 type StockUsecase interface {
 	SyncStockDetail(ctx context.Context) ([]models.StockResponse, error)
 	SyncStockSectorAndIndustry(ctx context.Context) (*models.SyncSectorIndustryResponse, error)
-	SyncDelistingStocks(ctx context.Context, year, month int, cookie string) ([]models.StockResponse, error)
 	GetAllStocks(ctx context.Context, filter models.GetAllStocksFilter) ([]models.StockDetailResponse, error)
 	GetStockByCode(ctx context.Context, code string) (*models.StockDetailResponse, error)
 	GetDistinctBoards(ctx context.Context) ([]string, error)
@@ -27,18 +26,15 @@ type StockUsecase interface {
 type stockUsecase struct {
 	repo             repositories.StockRepository
 	pasardanaService services.PasardanaService
-	idxService       services.IdxService
 }
 
 func NewStockUsecase(
 	repo repositories.StockRepository,
 	pasardanaService services.PasardanaService,
-	idxService services.IdxService,
 ) StockUsecase {
 	return &stockUsecase{
 		repo:             repo,
 		pasardanaService: pasardanaService,
-		idxService:       idxService,
 	}
 }
 func (u *stockUsecase) SyncStockDetail(ctx context.Context) ([]models.StockResponse, error) {
@@ -220,90 +216,6 @@ func (u *stockUsecase) SyncStockSectorAndIndustry(ctx context.Context) (*models.
 		TotalChecked: totalStocks,
 		TotalUpdated: totalUpdated,
 	}, nil
-}
-
-func (u *stockUsecase) SyncDelistingStocks(ctx context.Context, year, month int, cookie string) ([]models.StockResponse, error) {
-	// 1. Fetch from IDX
-	idxStocks, err := u.idxService.FetchDelistedStocks(ctx, year, month, cookie)
-	if err != nil {
-		return nil, err
-	}
-
-	updatedStocks := make([]models.StockResponse, 0)
-
-	// 2. Loop and Update
-	for _, s := range idxStocks {
-		// Parse date
-		formattedDate := utils.NormalizeDate(s.DeListingDate)
-		if formattedDate == "" {
-			logrus.Warnf("Skipping stock %s: invalid delisting date format %s", s.Code, s.DeListingDate)
-			continue
-		}
-
-		// Update DB
-		updated, err := u.repo.UpdateDelistingDate(ctx, s.Code, formattedDate)
-		if err != nil {
-			logrus.Errorf("Failed to update delisting date for %s: %v", s.Code, err)
-			continue
-		}
-
-		// Enhancement: If stock doesn't exist in DB, fetch from Pasardana and insert
-		if updated == nil {
-			logrus.Infof("Stock %s not found in DB, fetching from Pasardana...", s.Code)
-
-			detail, err := u.pasardanaService.FetchStockDetailByCode(s.Code)
-			if err != nil {
-				logrus.Errorf("Failed to fetch detail for %s from Pasardana: %v", s.Code, err)
-				continue
-			}
-
-			if detail != nil {
-				// Normalize dates with fallback to Epoch 0
-				epoch0 := "1970-01-01"
-				if detail.ListingDate != nil && *detail.ListingDate != "" {
-					parsed := utils.NormalizeDate(*detail.ListingDate)
-					if parsed == "" {
-						parsed = epoch0
-					}
-					detail.ListingDate = &parsed
-				} else {
-					detail.ListingDate = &epoch0
-				}
-
-				if detail.FoundingDate != nil && *detail.FoundingDate != "" {
-					parsed := utils.NormalizeDate(*detail.FoundingDate)
-					if parsed == "" {
-						parsed = epoch0
-					}
-					detail.FoundingDate = &parsed
-				} else {
-					detail.FoundingDate = &epoch0
-				}
-
-				// Insert new stock
-				_, err = u.repo.UpsertStocksDetail(ctx, []models.PasardanaStockDetail{*detail})
-				if err != nil {
-					logrus.Errorf("Failed to insert new stock %s: %v", s.Code, err)
-					continue
-				}
-
-				logrus.Infof("Inserted new delisted stock from Pasardana: %s", s.Code)
-
-				// Retry update delisting date
-				updated, err = u.repo.UpdateDelistingDate(ctx, s.Code, formattedDate)
-				if err != nil {
-					logrus.Errorf("Failed to update delisting date for %s after insert: %v", s.Code, err)
-					continue
-				}
-			}
-		}
-
-		if updated != nil {
-			updatedStocks = append(updatedStocks, *updated)
-		}
-	}
-
-	return updatedStocks, nil
 }
 
 func (u *stockUsecase) GetAllStocks(ctx context.Context, filter models.GetAllStocksFilter) ([]models.StockDetailResponse, error) {

@@ -16,8 +16,7 @@ func TestStockUsecase_SyncStockDetail(t *testing.T) {
 	t.Run("fetch_stock_ids_error", func(t *testing.T) {
 		repo := new(mockStockRepo)
 		pSvc := new(mockPasardanaService)
-		idxSvc := new(mockIdxService)
-		u := NewStockUsecase(repo, pSvc, idxSvc)
+		u := NewStockUsecase(repo, pSvc)
 
 		pSvc.On("FetchStockIDs").Return(nil, assert.AnError).Once()
 
@@ -29,8 +28,7 @@ func TestStockUsecase_SyncStockDetail(t *testing.T) {
 	t.Run("success_sync_stock_detail", func(t *testing.T) {
 		repo := new(mockStockRepo)
 		pSvc := new(mockPasardanaService)
-		idxSvc := new(mockIdxService)
-		u := NewStockUsecase(repo, pSvc, idxSvc)
+		u := NewStockUsecase(repo, pSvc)
 
 		pSvc.On("FetchStockIDs").Return([]models.PasardanaStock{
 			{Code: "BBCA"},
@@ -58,8 +56,7 @@ func TestStockUsecase_SyncStockSectorAndIndustry(t *testing.T) {
 	t.Run("get_null_stocks_error", func(t *testing.T) {
 		repo := new(mockStockRepo)
 		pSvc := new(mockPasardanaService)
-		idxSvc := new(mockIdxService)
-		u := NewStockUsecase(repo, pSvc, idxSvc)
+		u := NewStockUsecase(repo, pSvc)
 
 		repo.On("GetStocksWithNullSectorOrIndustry", ctx).Return(nil, assert.AnError).Once()
 
@@ -71,8 +68,7 @@ func TestStockUsecase_SyncStockSectorAndIndustry(t *testing.T) {
 	t.Run("empty_null_stocks", func(t *testing.T) {
 		repo := new(mockStockRepo)
 		pSvc := new(mockPasardanaService)
-		idxSvc := new(mockIdxService)
-		u := NewStockUsecase(repo, pSvc, idxSvc)
+		u := NewStockUsecase(repo, pSvc)
 
 		repo.On("GetStocksWithNullSectorOrIndustry", ctx).Return([]string{}, nil).Once()
 
@@ -85,8 +81,7 @@ func TestStockUsecase_SyncStockSectorAndIndustry(t *testing.T) {
 	t.Run("success_sync_sector_and_industry", func(t *testing.T) {
 		repo := new(mockStockRepo)
 		pSvc := new(mockPasardanaService)
-		idxSvc := new(mockIdxService)
-		u := NewStockUsecase(repo, pSvc, idxSvc)
+		u := NewStockUsecase(repo, pSvc)
 
 		repo.On("GetStocksWithNullSectorOrIndustry", ctx).Return([]string{"PTBA"}, nil).Once()
 
@@ -109,115 +104,13 @@ func TestStockUsecase_SyncStockSectorAndIndustry(t *testing.T) {
 	})
 }
 
-func TestStockUsecase_SyncDelistingStocks(t *testing.T) {
-	ctx := context.Background()
-
-	t.Run("fetch_delisted_error", func(t *testing.T) {
-		repo := new(mockStockRepo)
-		pSvc := new(mockPasardanaService)
-		idxSvc := new(mockIdxService)
-		u := NewStockUsecase(repo, pSvc, idxSvc)
-
-		idxSvc.On("FetchDelistedStocks", ctx, 2024, 4, "c").Return(nil, assert.AnError).Once()
-
-		res, err := u.SyncDelistingStocks(ctx, 2024, 4, "c")
-		assert.Error(t, err)
-		assert.Nil(t, res)
-	})
-
-	t.Run("success_existing_stock", func(t *testing.T) {
-		repo := new(mockStockRepo)
-		pSvc := new(mockPasardanaService)
-		idxSvc := new(mockIdxService)
-		u := NewStockUsecase(repo, pSvc, idxSvc)
-
-		idxSvc.On("FetchDelistedStocks", ctx, 2024, 4, "c").Return([]models.IdxDelistedStock{
-			{Code: "BBCA", DeListingDate: "2024-04-17"},
-		}, nil).Once()
-
-		repo.On("UpdateDelistingDate", ctx, "BBCA", "2024-04-17").
-			Return(&models.StockResponse{Code: "BBCA"}, nil).Once()
-
-		res, err := u.SyncDelistingStocks(ctx, 2024, 4, "c")
-		assert.NoError(t, err)
-		assert.Len(t, res, 1)
-	})
-
-	t.Run("stock_not_found_in_db_fetches_pasardana_and_inserts", func(t *testing.T) {
-		repo := new(mockStockRepo)
-		pSvc := new(mockPasardanaService)
-		idxSvc := new(mockIdxService)
-		u := NewStockUsecase(repo, pSvc, idxSvc)
-
-		idxSvc.On("FetchDelistedStocks", ctx, 2024, 4, "c").Return([]models.IdxDelistedStock{
-			{Code: "NEWC", DeListingDate: "2024-04-17"},
-		}, nil).Once()
-
-		// First update returns nil (stock not found in DB)
-		repo.On("UpdateDelistingDate", ctx, "NEWC", "2024-04-17").Return(nil, nil).Once()
-
-		d := "2020-01-01"
-		pSvc.On("FetchStockDetailByCode", "NEWC").Return(&models.PasardanaStockDetail{
-			Code:         "NEWC",
-			ListingDate:  &d,
-			FoundingDate: &d,
-		}, nil).Once()
-
-		repo.On("UpsertStocksDetail", ctx, mock.Anything).Return([]models.StockResponse{{Code: "NEWC"}}, nil).Once()
-		// Retry update
-		repo.On("UpdateDelistingDate", ctx, "NEWC", "2024-04-17").Return(&models.StockResponse{Code: "NEWC"}, nil).Once()
-
-		res, err := u.SyncDelistingStocks(ctx, 2024, 4, "c")
-		assert.NoError(t, err)
-		assert.Len(t, res, 1)
-	})
-
-	t.Run("skip_invalid_date_and_update_error", func(t *testing.T) {
-		repo := new(mockStockRepo)
-		pSvc := new(mockPasardanaService)
-		idxSvc := new(mockIdxService)
-		u := NewStockUsecase(repo, pSvc, idxSvc)
-
-		idxSvc.On("FetchDelistedStocks", ctx, 2024, 4, "c").Return([]models.IdxDelistedStock{
-			{Code: "INV", DeListingDate: ""},
-			{Code: "ERR", DeListingDate: "2024-04-17"},
-		}, nil).Once()
-
-		repo.On("UpdateDelistingDate", ctx, "ERR", "2024-04-17").
-			Return(nil, assert.AnError).Once()
-
-		res, err := u.SyncDelistingStocks(ctx, 2024, 4, "c")
-		assert.NoError(t, err)
-		assert.Empty(t, res)
-	})
-
-	t.Run("stock_not_found_in_db_fetches_pasardana_errors", func(t *testing.T) {
-		repo := new(mockStockRepo)
-		pSvc := new(mockPasardanaService)
-		idxSvc := new(mockIdxService)
-		u := NewStockUsecase(repo, pSvc, idxSvc)
-
-		idxSvc.On("FetchDelistedStocks", ctx, 2024, 4, "c").Return([]models.IdxDelistedStock{
-			{Code: "FAIL", DeListingDate: "2024-04-17"},
-		}, nil).Once()
-
-		repo.On("UpdateDelistingDate", ctx, "FAIL", "2024-04-17").Return(nil, nil).Once()
-		pSvc.On("FetchStockDetailByCode", "FAIL").Return(nil, assert.AnError).Once()
-
-		res, err := u.SyncDelistingStocks(ctx, 2024, 4, "c")
-		assert.NoError(t, err)
-		assert.Empty(t, res)
-	})
-}
-
 func TestStockUsecase_GetAllStocks(t *testing.T) {
 	ctx := context.Background()
 
 	t.Run("success", func(t *testing.T) {
 		repo := new(mockStockRepo)
 		pSvc := new(mockPasardanaService)
-		idxSvc := new(mockIdxService)
-		u := NewStockUsecase(repo, pSvc, idxSvc)
+		u := NewStockUsecase(repo, pSvc)
 
 		filter := models.GetAllStocksFilter{Board: "UTAMA", Search: "BBCA"}
 		expected := []models.StockDetailResponse{
@@ -235,8 +128,7 @@ func TestStockUsecase_GetAllStocks(t *testing.T) {
 	t.Run("error", func(t *testing.T) {
 		repo := new(mockStockRepo)
 		pSvc := new(mockPasardanaService)
-		idxSvc := new(mockIdxService)
-		u := NewStockUsecase(repo, pSvc, idxSvc)
+		u := NewStockUsecase(repo, pSvc)
 
 		filter := models.GetAllStocksFilter{}
 		repo.On("GetAllStocks", ctx, filter).Return(nil, assert.AnError).Once()
@@ -254,8 +146,7 @@ func TestStockUsecase_GetStockByCode(t *testing.T) {
 	t.Run("success", func(t *testing.T) {
 		repo := new(mockStockRepo)
 		pSvc := new(mockPasardanaService)
-		idxSvc := new(mockIdxService)
-		u := NewStockUsecase(repo, pSvc, idxSvc)
+		u := NewStockUsecase(repo, pSvc)
 
 		expected := &models.StockDetailResponse{
 			Code:  "BBCA",
@@ -274,8 +165,7 @@ func TestStockUsecase_GetStockByCode(t *testing.T) {
 	t.Run("not_found", func(t *testing.T) {
 		repo := new(mockStockRepo)
 		pSvc := new(mockPasardanaService)
-		idxSvc := new(mockIdxService)
-		u := NewStockUsecase(repo, pSvc, idxSvc)
+		u := NewStockUsecase(repo, pSvc)
 
 		repo.On("GetStockByCode", ctx, "UNKN").Return((*models.StockDetailResponse)(nil), nil).Once()
 
@@ -288,8 +178,7 @@ func TestStockUsecase_GetStockByCode(t *testing.T) {
 	t.Run("error", func(t *testing.T) {
 		repo := new(mockStockRepo)
 		pSvc := new(mockPasardanaService)
-		idxSvc := new(mockIdxService)
-		u := NewStockUsecase(repo, pSvc, idxSvc)
+		u := NewStockUsecase(repo, pSvc)
 
 		repo.On("GetStockByCode", ctx, "BBCA").Return((*models.StockDetailResponse)(nil), assert.AnError).Once()
 
@@ -306,8 +195,7 @@ func TestStockUsecase_GetDistinctBoards(t *testing.T) {
 	t.Run("success", func(t *testing.T) {
 		repo := new(mockStockRepo)
 		pSvc := new(mockPasardanaService)
-		idxSvc := new(mockIdxService)
-		u := NewStockUsecase(repo, pSvc, idxSvc)
+		u := NewStockUsecase(repo, pSvc)
 
 		expected := []string{"Acceleration", "Development", "Main"}
 		repo.On("GetDistinctBoards", ctx).Return(expected, nil).Once()
@@ -321,8 +209,7 @@ func TestStockUsecase_GetDistinctBoards(t *testing.T) {
 	t.Run("error", func(t *testing.T) {
 		repo := new(mockStockRepo)
 		pSvc := new(mockPasardanaService)
-		idxSvc := new(mockIdxService)
-		u := NewStockUsecase(repo, pSvc, idxSvc)
+		u := NewStockUsecase(repo, pSvc)
 
 		repo.On("GetDistinctBoards", ctx).Return(nil, assert.AnError).Once()
 
@@ -339,8 +226,7 @@ func TestStockUsecase_GetStocksByBoard(t *testing.T) {
 	t.Run("success", func(t *testing.T) {
 		repo := new(mockStockRepo)
 		pSvc := new(mockPasardanaService)
-		idxSvc := new(mockIdxService)
-		u := NewStockUsecase(repo, pSvc, idxSvc)
+		u := NewStockUsecase(repo, pSvc)
 
 		expected := []models.StockDetailResponse{
 			{Code: "BBCA", Name: "Bank Central Asia Tbk", Board: "Main"},
@@ -356,8 +242,7 @@ func TestStockUsecase_GetStocksByBoard(t *testing.T) {
 	t.Run("error", func(t *testing.T) {
 		repo := new(mockStockRepo)
 		pSvc := new(mockPasardanaService)
-		idxSvc := new(mockIdxService)
-		u := NewStockUsecase(repo, pSvc, idxSvc)
+		u := NewStockUsecase(repo, pSvc)
 
 		repo.On("GetAllStocks", ctx, models.GetAllStocksFilter{Board: "Main"}).Return(nil, assert.AnError).Once()
 
@@ -374,8 +259,7 @@ func TestStockUsecase_GetListingBoards(t *testing.T) {
 	t.Run("success", func(t *testing.T) {
 		repo := new(mockStockRepo)
 		pSvc := new(mockPasardanaService)
-		idxSvc := new(mockIdxService)
-		u := NewStockUsecase(repo, pSvc, idxSvc)
+		u := NewStockUsecase(repo, pSvc)
 
 		nameEn := "Main"
 		expected := []models.ListingBoard{
@@ -392,8 +276,7 @@ func TestStockUsecase_GetListingBoards(t *testing.T) {
 	t.Run("error", func(t *testing.T) {
 		repo := new(mockStockRepo)
 		pSvc := new(mockPasardanaService)
-		idxSvc := new(mockIdxService)
-		u := NewStockUsecase(repo, pSvc, idxSvc)
+		u := NewStockUsecase(repo, pSvc)
 
 		repo.On("GetListingBoards", ctx).Return(nil, assert.AnError).Once()
 

@@ -1,7 +1,6 @@
 package handlers
 
 import (
-	"bytes"
 	"context"
 	"fmt"
 	"net/http/httptest"
@@ -32,14 +31,6 @@ func (m *mockStockUsecase) SyncStockSectorAndIndustry(ctx context.Context) (*mod
 		return nil, args.Error(1)
 	}
 	return args.Get(0).(*models.SyncSectorIndustryResponse), args.Error(1)
-}
-
-func (m *mockStockUsecase) SyncDelistingStocks(ctx context.Context, year, month int, cookie string) ([]models.StockResponse, error) {
-	args := m.Called(ctx, year, month, cookie)
-	if args.Get(0) == nil {
-		return nil, args.Error(1)
-	}
-	return args.Get(0).([]models.StockResponse), args.Error(1)
 }
 
 func (m *mockStockUsecase) GetAllStocks(ctx context.Context, filter models.GetAllStocksFilter) ([]models.StockDetailResponse, error) {
@@ -111,55 +102,6 @@ func TestStockHandler_SyncStockSectorAndIndustryHandler(t *testing.T) {
 	resp, err := app.Test(req)
 	assert.NoError(t, err)
 	assert.Equal(t, fiber.StatusOK, resp.StatusCode)
-}
-
-func TestStockHandler_SyncDelistingStocksHandler(t *testing.T) {
-	app := fiber.New()
-	mockUsecase := new(mockStockUsecase)
-	handler := NewStockHandler(mockUsecase)
-
-	app.Post("/stocks/sync-delisting", handler.SyncDelistingStocksHandler)
-
-	t.Run("invalid_json", func(t *testing.T) {
-		req := httptest.NewRequest("POST", "/stocks/sync-delisting", bytes.NewBufferString("{invalid"))
-		req.Header.Set("Content-Type", "application/json")
-		resp, err := app.Test(req)
-		assert.NoError(t, err)
-		assert.Equal(t, fiber.StatusBadRequest, resp.StatusCode)
-	})
-
-	t.Run("missing_year_or_month", func(t *testing.T) {
-		req := httptest.NewRequest("POST", "/stocks/sync-delisting", bytes.NewBufferString(`{"year":0,"month":5}`))
-		req.Header.Set("Content-Type", "application/json")
-		resp, err := app.Test(req)
-		assert.NoError(t, err)
-		assert.Equal(t, fiber.StatusBadRequest, resp.StatusCode)
-	})
-
-	t.Run("success", func(t *testing.T) {
-		mockUsecase.On("SyncDelistingStocks", mock.Anything, 2024, 4, "test-cookie").
-			Return([]models.StockResponse{{Code: "BBCA"}}, nil).Once()
-
-		req := httptest.NewRequest("POST", "/stocks/sync-delisting", bytes.NewBufferString(`{"year":2024,"month":4}`))
-		req.Header.Set("Content-Type", "application/json")
-		req.Header.Set("Cookie", "test-cookie")
-		resp, err := app.Test(req)
-		assert.NoError(t, err)
-		assert.Equal(t, fiber.StatusOK, resp.StatusCode)
-		mockUsecase.AssertExpectations(t)
-	})
-
-	t.Run("usecase_error", func(t *testing.T) {
-		mockUsecase.On("SyncDelistingStocks", mock.Anything, 2024, 4, "").
-			Return(nil, fmt.Errorf("sync err")).Once()
-
-		req := httptest.NewRequest("POST", "/stocks/sync-delisting", bytes.NewBufferString(`{"year":2024,"month":4}`))
-		req.Header.Set("Content-Type", "application/json")
-		resp, err := app.Test(req)
-		assert.NoError(t, err)
-		assert.Equal(t, fiber.StatusInternalServerError, resp.StatusCode)
-		mockUsecase.AssertExpectations(t)
-	})
 }
 
 func TestStockHandler_GetAllStocksHandler(t *testing.T) {

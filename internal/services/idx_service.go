@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"io"
 	"net/http"
 	"os"
 	"strings"
@@ -16,7 +15,6 @@ import (
 )
 
 type IdxService interface {
-	FetchDelistedStocks(ctx context.Context, year, month int, cookie string) ([]models.IdxDelistedStock, error)
 	FetchStockSummary(ctx context.Context, year, month, day int, cookie string) ([]models.IdxSummaryData, error)
 	ParseIdxDate(dateStr string) (string, error)
 }
@@ -34,47 +32,6 @@ func NewIdxService(client *http.Client) IdxService {
 	return &idxService{
 		client: client,
 	}
-}
-
-func (s *idxService) FetchDelistedStocks(ctx context.Context, year, month int, cookie string) ([]models.IdxDelistedStock, error) {
-	url := fmt.Sprintf("https://idx.co.id/primary/DigitalStatistic/GetApiDataPaginated?urlName=LINK_DELISTING&periodYear=%d&periodMonth=%d", year, month)
-
-	req, err := http.NewRequestWithContext(ctx, "GET", url, nil)
-	if err != nil {
-		return nil, fmt.Errorf("failed to create request: %w", err)
-	}
-
-	s.setHeaders(req, cookie)
-
-	// Log request URL only
-	logrus.Infof("Requesting IDX: %s", url)
-
-	// #nosec G107
-	resp, err := s.client.Do(req)
-	if err != nil {
-		return nil, fmt.Errorf("failed to fetch from IDX: %w", err)
-	}
-	defer resp.Body.Close()
-
-	logrus.Infof("IDX Response Status: %d", resp.StatusCode)
-
-	bodyBytes, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return nil, fmt.Errorf("failed to read response body: %w", err)
-	}
-	logrus.Debugf("IDX Response received, length: %d bytes", len(bodyBytes))
-
-	if resp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("IDX API returned status: %d", resp.StatusCode)
-	}
-
-	var idxResp models.IdxDelistingResponse
-	if err := json.Unmarshal(bodyBytes, &idxResp); err != nil {
-		logrus.Errorf("Failed to decode IDX response: %v", err)
-		return nil, fmt.Errorf("failed to decode IDX response: %w", err)
-	}
-
-	return idxResp.Data, nil
 }
 
 func (s *idxService) FetchStockSummary(ctx context.Context, year, month, day int, cookie string) ([]models.IdxSummaryData, error) {

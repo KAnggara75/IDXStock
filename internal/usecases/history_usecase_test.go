@@ -143,14 +143,6 @@ type mockIdxService struct {
 	mock.Mock
 }
 
-func (m *mockIdxService) FetchDelistedStocks(ctx context.Context, year, month int, cookie string) ([]models.IdxDelistedStock, error) {
-	args := m.Called(ctx, year, month, cookie)
-	if args.Get(0) == nil {
-		return nil, args.Error(1)
-	}
-	return args.Get(0).([]models.IdxDelistedStock), args.Error(1)
-}
-
 func (m *mockIdxService) FetchStockSummary(ctx context.Context, year, month, day int, cookie string) ([]models.IdxSummaryData, error) {
 	args := m.Called(ctx, year, month, day, cookie)
 	if args.Get(0) == nil {

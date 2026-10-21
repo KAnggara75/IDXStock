@@ -70,43 +70,6 @@ func (h *StockHandler) SyncStockSectorAndIndustryHandler(c fiber.Ctx) error {
 	})
 }
 
-// SyncDelistingStocksHandler godoc
-// @Summary      Sync delisted stocks
-// @Description  Fetches delisted stocks for specific year/month from IDX and updates the database
-// @Tags         stocks
-// @Accept       json
-// @Produce      json
-// @Param        request  body      models.SyncDelistingRequest  true  "Delisting sync request"
-// @Param        Cookie   header    string                       false "IDX Session Cookie"
-// @Success      200      {array}   models.IdxDelistedStock
-// @Failure      400      {object}  models.ErrorResponse
-// @Failure      500      {object}  models.ErrorResponse
-// @Router       /stocks/delisting/sync [put]
-func (h *StockHandler) SyncDelistingStocksHandler(c fiber.Ctx) error {
-	var req models.SyncDelistingRequest
-	if err := c.Bind().JSON(&req); err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"error": "Invalid request body",
-		})
-	}
-
-	if req.Year == 0 || req.Month == 0 {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"error": "Year and month are required",
-		})
-	}
-
-	stocks, err := h.usecase.SyncDelistingStocks(c.Context(), req.Year, req.Month, c.Get("Cookie"))
-	if err != nil {
-		logrus.Errorf("Failed to sync delisting stocks: %v", err)
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"error": err.Error(),
-		})
-	}
-
-	return c.JSON(stocks)
-}
-
 // GetAllStocksHandler godoc
 // @Summary      Get all stocks / emiten
 // @Description  Retrieves list of all stocks/emiten with optional filter by board and search query

@@ -26,7 +26,7 @@
 ## `internal/handlers`
 - **Responsibility**: HTTP transport layer, request validation, query param binding, JSON response formatting, and OpenAPI Swagger documentation annotations.
 - **Entry / Key Files**:
-  - `internal/handlers/stock_handler.go` — Get all stocks (`/api/v1/stocks`), get stock by ticker code (`/api/v1/stocks/:code`), get distinct trading boards (`/api/v1/stocks/boards`), get master listing boards (`/api/v1/stocks/listing-boards`), get stocks filtered by board (`/api/v1/stocks/boards/:board`), sync company details (`/api/v1/stocks/sync`), sync stock sectors and industries (`/api/v1/stocks/sectors-industries/sync`), and fetch delisted stocks (`/api/v1/stocks/delisting/sync`).
+  - `internal/handlers/stock_handler.go` — Get all stocks (`/api/v1/stocks`), get stock by ticker code (`/api/v1/stocks/:code`), get distinct trading boards (`/api/v1/stocks/boards`), get master listing boards (`/api/v1/stocks/listing-boards`), get stocks filtered by board (`/api/v1/stocks/boards/:board`), sync company details (`/api/v1/stocks/sync`), and sync stock sectors and industries (`/api/v1/stocks/sectors-industries/sync`).
   - `internal/handlers/history_handler.go` — Query stock historical prices (`/api/v1/stocks/:code/history`), sync daily EOD history (`/api/v1/stocks/history/sync`), and execute stock split adjustments (`/api/v1/stocks/split`).
   - `internal/handlers/asset_handler.go` — Proxy company logos from external sources with HTTP stream piping and client caching.
 - **Dependencies**: `github.com/gofiber/fiber/v3`, `internal/usecases`, `internal/models`.

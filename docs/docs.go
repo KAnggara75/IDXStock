@@ -184,61 +184,6 @@ const docTemplate = `{
                 }
             }
         },
-        "/stocks/delisting/sync": {
-            "put": {
-                "description": "Fetches delisted stocks for specific year/month from IDX and updates the database",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "stocks"
-                ],
-                "summary": "Sync delisted stocks",
-                "parameters": [
-                    {
-                        "description": "Delisting sync request",
-                        "name": "request",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/models.SyncDelistingRequest"
-                        }
-                    },
-                    {
-                        "type": "string",
-                        "description": "IDX Session Cookie",
-                        "name": "Cookie",
-                        "in": "header"
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/models.IdxDelistedStock"
-                            }
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/models.ErrorResponse"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/models.ErrorResponse"
-                        }
-                    }
-                }
-            }
-        },
         "/stocks/history/sync": {
             "put": {
                 "description": "Syncs daily stock history from either IDX or Pasardana. For Pasardana, sync runs asynchronously.",
@@ -555,17 +500,6 @@ const docTemplate = `{
                 }
             }
         },
-        "models.IdxDelistedStock": {
-            "type": "object",
-            "properties": {
-                "DeListingDate": {
-                    "type": "string"
-                },
-                "code": {
-                    "type": "string"
-                }
-            }
-        },
         "models.ListingBoard": {
             "type": "object",
             "properties": {
@@ -640,17 +574,6 @@ const docTemplate = `{
                 },
                 "status": {
                     "type": "string"
-                }
-            }
-        },
-        "models.SyncDelistingRequest": {
-            "type": "object",
-            "properties": {
-                "month": {
-                    "type": "integer"
-                },
-                "year": {
-                    "type": "integer"
                 }
             }
         },

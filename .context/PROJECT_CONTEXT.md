@@ -26,7 +26,7 @@ IDXStock is a specialized Golang backend microservice engineered to ingest, norm
 ---
 
 ## 3. Main Actors & Consumers
-- **Automated Schedulers / Cron Jobs**: Invoke periodic synchronization endpoints (`/api/v1/stocks/history/sync`, `/api/v1/stocks/sync`, `/api/v1/stocks/sectors-industries/sync`, `/api/v1/stocks/delisting/sync`).
+- **Automated Schedulers / Cron Jobs**: Invoke periodic synchronization endpoints (`/api/v1/stocks/history/sync`, `/api/v1/stocks/sync`, `/api/v1/stocks/sectors-industries/sync`).
 - **Internal Analysts / Developers**: Query master stocks (`/api/v1/stocks`), upload listing spreadsheets (`/api/v1/stocks/upload`), trigger corporate stock splits, and explore API documentation via Swagger UI (`/swagger/*`).
 - **Client Applications / Dashboard Services**: Query historical prices (`/api/v1/stocks/:code/history`) and company logos.
 
