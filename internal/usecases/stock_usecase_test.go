@@ -220,39 +220,6 @@ func TestStockUsecase_GetDistinctBoards(t *testing.T) {
 	})
 }
 
-func TestStockUsecase_GetStocksByBoard(t *testing.T) {
-	ctx := context.Background()
-
-	t.Run("success", func(t *testing.T) {
-		repo := new(mockStockRepo)
-		pSvc := new(mockPasardanaService)
-		u := NewStockUsecase(repo, pSvc)
-
-		expected := []models.StockDetailResponse{
-			{Code: "BBCA", Name: "Bank Central Asia Tbk", Board: "Main"},
-		}
-		repo.On("GetAllStocks", ctx, models.GetAllStocksFilter{Board: "Main"}).Return(expected, nil).Once()
-
-		result, err := u.GetStocksByBoard(ctx, "Main")
-		assert.NoError(t, err)
-		assert.Equal(t, expected, result)
-		repo.AssertExpectations(t)
-	})
-
-	t.Run("error", func(t *testing.T) {
-		repo := new(mockStockRepo)
-		pSvc := new(mockPasardanaService)
-		u := NewStockUsecase(repo, pSvc)
-
-		repo.On("GetAllStocks", ctx, models.GetAllStocksFilter{Board: "Main"}).Return(nil, assert.AnError).Once()
-
-		result, err := u.GetStocksByBoard(ctx, "Main")
-		assert.Error(t, err)
-		assert.Nil(t, result)
-		repo.AssertExpectations(t)
-	})
-}
-
 func TestStockUsecase_GetListingBoards(t *testing.T) {
 	ctx := context.Background()
 

@@ -176,32 +176,3 @@ func (h *StockHandler) GetListingBoardsHandler(c fiber.Ctx) error {
 
 	return c.JSON(boards)
 }
-
-// GetStocksByBoardHandler godoc
-// @Summary      Get stocks / emiten by board
-// @Description  Retrieves list of stocks/emiten filtered by specific trading board
-// @Tags         stocks
-// @Produce      json
-// @Param        board   path      string  true  "Trading Board (e.g. Main, Development, Acceleration, Watchlist, Ekonomi Baru, or Indonesian name UTAMA, PENGEMBANGAN, etc.)"
-// @Success      200     {array}   models.StockDetailResponse
-// @Failure      400     {object}  models.ErrorResponse
-// @Failure      500     {object}  models.ErrorResponse
-// @Router       /stocks/boards/{board} [get]
-func (h *StockHandler) GetStocksByBoardHandler(c fiber.Ctx) error {
-	board := strings.TrimSpace(c.Params("board"))
-	if board == "" {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"error": "Board is required",
-		})
-	}
-
-	stocks, err := h.usecase.GetStocksByBoard(c.Context(), board)
-	if err != nil {
-		logrus.Errorf("Failed to retrieve stocks for board %s: %v", board, err)
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"error": err.Error(),
-		})
-	}
-
-	return c.JSON(stocks)
-}
