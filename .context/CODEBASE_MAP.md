@@ -3,12 +3,12 @@
 ## `cmd/api`
 - **Responsibility**: Application entry point and runtime bootstrap.
 - **Entry / Key Files**:
-  - `cmd/api/main.go` — Service initialization, package `init()` lifecycle (logger initialization via `config.InitLogger()` and automated snapshot download via `ensureMasterDatabase()`), DB connection, broker seeding, Fiber HTTP web server startup, and Swagger annotation declarations (`//go:generate swag init ...`).
-  - `cmd/api/main_test.go` — Unit tests for port binding, Fiber app construction, seeder execution, runtime start, and `ensureMasterDatabase` snapshot retrieval.
-- **Dependencies**: `github.com/gofiber/fiber/v3`, `github.com/klauspost/compress/zstd`, `github.com/sirupsen/logrus`, `internal/config`, `internal/database`, `internal/repositories`, `internal/routes`, `internal/services`.
+  - `cmd/api/main.go` — Slim entry point: calls `config.InitLogger()`, `database.EnsureMasterDatabase()`, opens DB connection, mounts Fiber routes, and starts the HTTP server on `config.GetPort()`. Also declares Swagger `//go:generate` annotation.
+  - `cmd/api/main_test.go` — Unit tests for Fiber app construction and runtime start.
+- **Dependencies**: `github.com/gofiber/fiber/v3`, `github.com/sirupsen/logrus`, `internal/config`, `internal/database`, `internal/routes`.
 - **Consumers**: Executable container / process entry point.
 - **External Integrations**: GitHub Releases (via HTTP for initial `master_stocks.db.zst` snapshot retrieval), SQLite database (`database/master_stocks.db`).
-- **Key Notes**: In `init()`, verifies presence of local database at `DATABASE_URL` / `database/master_stocks.db`. If absent, automatically pulls `master_stocks.db.zst` from GitHub releases and decompresses it into place before Fiber boots.
+- **Key Notes**: Port resolution and snapshot bootstrapping are delegated to `internal/config` and `internal/database` respectively. No inline infrastructure logic remains in `main.go`.
 
 ---
 
@@ -94,14 +94,16 @@
 ---
 
 ## `internal/database` & `internal/config`
-- **Responsibility**: Database connection management and structured logging.
+- **Responsibility**: Database connection management, snapshot bootstrapping, structured logging, and server configuration.
 - **Entry / Key Files**:
   - `internal/database/database.go` — Connects to SQLite (`modernc.org/sqlite`) using DSN from `DATABASE_URL` (fallback `database/master_stocks.db`), defines `DBExecutor`, and manages the thread-safe connection pool.
+  - `internal/database/snapshot.go` — `EnsureMasterDatabase()`: checks local DB presence, downloads `master_stocks.db.zst` from GitHub Releases if absent, and decompresses with `zstd`.
   - `internal/config/logger.go` — Configures `logrus` JSON logging and log levels based on `LOG_LEVEL` environment variable.
-- **Dependencies**: `modernc.org/sqlite`, `github.com/sirupsen/logrus`.
+  - `internal/config/server.go` — `GetPort()`: resolves HTTP server port from `PORT` env var (default `8080`).
+- **Dependencies**: `modernc.org/sqlite`, `github.com/klauspost/compress/zstd`, `github.com/sirupsen/logrus`.
 - **Consumers**: `cmd/api/main.go`, `internal/routes/routes.go`.
-- **External Integrations**: SQLite.
-- **Key Notes**: Pure Go CGO-free database driver with connection pooling. Configuration is loaded directly via environment variables (`DATABASE_URL`, `LOG_LEVEL`).
+- **External Integrations**: SQLite, GitHub Releases (snapshot download).
+- **Key Notes**: Pure Go CGO-free database driver with connection pooling. All configuration is loaded directly via environment variables (`DATABASE_URL`, `PORT`, `LOG_LEVEL`, `MASTER_STOCKS_DOWNLOAD_URL`).
 
 ---
 
