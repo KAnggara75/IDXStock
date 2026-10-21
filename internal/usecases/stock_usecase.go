@@ -3,7 +3,6 @@ package usecases
 import (
 	"context"
 	"fmt"
-	"io"
 	"sync"
 
 	"github.com/sirupsen/logrus"
@@ -15,8 +14,6 @@ import (
 )
 
 type StockUsecase interface {
-	PreviewStocks(ctx context.Context, file io.Reader) ([]models.Stock, error)
-	UploadStocks(ctx context.Context, file io.Reader) ([]models.Stock, error)
 	SyncStockDetail(ctx context.Context) ([]models.StockResponse, error)
 	SyncStockSectorAndIndustry(ctx context.Context) (*models.SyncSectorIndustryResponse, error)
 	SyncDelistingStocks(ctx context.Context, year, month int, cookie string) ([]models.StockResponse, error)
@@ -29,43 +26,21 @@ type StockUsecase interface {
 
 type stockUsecase struct {
 	repo             repositories.StockRepository
-	service          services.StockService
 	pasardanaService services.PasardanaService
 	idxService       services.IdxService
 }
 
 func NewStockUsecase(
 	repo repositories.StockRepository,
-	service services.StockService,
 	pasardanaService services.PasardanaService,
 	idxService services.IdxService,
 ) StockUsecase {
 	return &stockUsecase{
 		repo:             repo,
-		service:          service,
 		pasardanaService: pasardanaService,
 		idxService:       idxService,
 	}
 }
-
-func (u *stockUsecase) PreviewStocks(ctx context.Context, file io.Reader) ([]models.Stock, error) {
-	return u.service.ParseExcel(file)
-}
-
-func (u *stockUsecase) UploadStocks(ctx context.Context, file io.Reader) ([]models.Stock, error) {
-	stocks, err := u.service.ParseExcel(file)
-	if err != nil {
-		return nil, err
-	}
-
-	err = u.repo.BatchInsertStocks(ctx, stocks)
-	if err != nil {
-		return nil, err
-	}
-
-	return stocks, nil
-}
-
 func (u *stockUsecase) SyncStockDetail(ctx context.Context) ([]models.StockResponse, error) {
 	// 1. Get List Stock
 	simpleStocks, err := u.pasardanaService.FetchStockIDs()

@@ -4,9 +4,6 @@ import (
 	"bytes"
 	"context"
 	"fmt"
-	"io"
-	"mime/multipart"
-	"net/http"
 	"net/http/httptest"
 	"testing"
 
@@ -19,22 +16,6 @@ import (
 
 type mockStockUsecase struct {
 	mock.Mock
-}
-
-func (m *mockStockUsecase) PreviewStocks(ctx context.Context, file io.Reader) ([]models.Stock, error) {
-	args := m.Called(ctx, file)
-	if args.Get(0) == nil {
-		return nil, args.Error(1)
-	}
-	return args.Get(0).([]models.Stock), args.Error(1)
-}
-
-func (m *mockStockUsecase) UploadStocks(ctx context.Context, file io.Reader) ([]models.Stock, error) {
-	args := m.Called(ctx, file)
-	if args.Get(0) == nil {
-		return nil, args.Error(1)
-	}
-	return args.Get(0).([]models.Stock), args.Error(1)
 }
 
 func (m *mockStockUsecase) SyncStockDetail(ctx context.Context) ([]models.StockResponse, error) {
@@ -99,101 +80,6 @@ func (m *mockStockUsecase) GetStocksByBoard(ctx context.Context, board string) (
 		return nil, args.Error(1)
 	}
 	return args.Get(0).([]models.StockDetailResponse), args.Error(1)
-}
-
-func createMultipartRequest(url, fieldName, fileName string, fileContent []byte) (*http.Request, error) {
-	body := &bytes.Buffer{}
-	writer := multipart.NewWriter(body)
-	if fileName != "" {
-		part, err := writer.CreateFormFile(fieldName, fileName)
-		if err != nil {
-			return nil, err
-		}
-		if _, err := part.Write(fileContent); err != nil {
-			return nil, err
-		}
-	}
-	if err := writer.Close(); err != nil {
-		return nil, err
-	}
-
-	req := httptest.NewRequest("POST", url, body)
-	req.Header.Set("Content-Type", writer.FormDataContentType())
-	return req, nil
-}
-
-func TestStockHandler_PreviewAndUpload(t *testing.T) {
-	app := fiber.New()
-	mockUsecase := new(mockStockUsecase)
-	handler := NewStockHandler(mockUsecase)
-
-	app.Post("/stocks/preview", handler.PreviewHandler)
-	app.Post("/stocks/upload", handler.UploadHandler)
-
-	t.Run("preview_no_file", func(t *testing.T) {
-		req, _ := createMultipartRequest("/stocks/preview", "wrong_field", "", nil)
-		resp, err := app.Test(req)
-		assert.NoError(t, err)
-		assert.Equal(t, fiber.StatusBadRequest, resp.StatusCode)
-	})
-
-	t.Run("preview_invalid_extension", func(t *testing.T) {
-		req, _ := createMultipartRequest("/stocks/preview", "file", "stocks.txt", []byte("hello"))
-		resp, err := app.Test(req)
-		assert.NoError(t, err)
-		assert.Equal(t, fiber.StatusBadRequest, resp.StatusCode)
-	})
-
-	t.Run("preview_success", func(t *testing.T) {
-		mockUsecase.On("PreviewStocks", mock.Anything, mock.Anything).
-			Return([]models.Stock{{Code: "BBCA"}}, nil).Once()
-
-		req, _ := createMultipartRequest("/stocks/preview", "file", "stocks.xlsx", []byte("dummy excel"))
-		resp, err := app.Test(req)
-		assert.NoError(t, err)
-		assert.Equal(t, fiber.StatusOK, resp.StatusCode)
-		mockUsecase.AssertExpectations(t)
-	})
-
-	t.Run("preview_usecase_error", func(t *testing.T) {
-		mockUsecase.On("PreviewStocks", mock.Anything, mock.Anything).
-			Return(nil, fmt.Errorf("parse error")).Once()
-
-		req, _ := createMultipartRequest("/stocks/preview", "file", "stocks.xls", []byte("dummy excel"))
-		resp, err := app.Test(req)
-		assert.NoError(t, err)
-		assert.Equal(t, fiber.StatusInternalServerError, resp.StatusCode)
-		mockUsecase.AssertExpectations(t)
-	})
-
-	t.Run("upload_no_file", func(t *testing.T) {
-		req, _ := createMultipartRequest("/stocks/upload", "wrong_field", "", nil)
-		resp, err := app.Test(req)
-		assert.NoError(t, err)
-		assert.Equal(t, fiber.StatusBadRequest, resp.StatusCode)
-	})
-
-	t.Run("upload_success", func(t *testing.T) {
-		mockUsecase.On("UploadStocks", mock.Anything, mock.Anything).
-			Return([]models.Stock{{Code: "BBCA"}}, nil).Once()
-
-		req, _ := createMultipartRequest("/stocks/upload", "file", "stocks.xlsx", []byte("dummy excel"))
-		resp, err := app.Test(req)
-		assert.NoError(t, err)
-		assert.Equal(t, fiber.StatusOK, resp.StatusCode)
-		mockUsecase.AssertExpectations(t)
-	})
-
-	t.Run("upload_usecase_error", func(t *testing.T) {
-		mockUsecase.On("UploadStocks", mock.Anything, mock.Anything).
-			Return(nil, fmt.Errorf("upload error")).Once()
-
-		req, _ := createMultipartRequest("/stocks/upload", "file", "stocks.xlsx", []byte("dummy excel"))
-		resp, err := app.Test(req)
-		assert.NoError(t, err)
-		assert.Equal(t, fiber.StatusInternalServerError, resp.StatusCode)
-		mockUsecase.AssertExpectations(t)
-	})
 }
 
 func TestStockHandler_SyncStockDetailHandler(t *testing.T) {

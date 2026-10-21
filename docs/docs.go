@@ -428,98 +428,6 @@ const docTemplate = `{
                 }
             }
         },
-        "/stocks/upload": {
-            "post": {
-                "description": "Parses uploaded stock Excel (.xlsx or .xls) file without persisting to database",
-                "consumes": [
-                    "multipart/form-data"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "stocks"
-                ],
-                "summary": "Preview stocks from Excel file",
-                "parameters": [
-                    {
-                        "type": "file",
-                        "description": "Excel file (.xlsx or .xls)",
-                        "name": "file",
-                        "in": "formData",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/models.Stock"
-                            }
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/models.ErrorResponse"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/models.ErrorResponse"
-                        }
-                    }
-                }
-            },
-            "patch": {
-                "description": "Parses and inserts uploaded stock Excel file into the database",
-                "consumes": [
-                    "multipart/form-data"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "stocks"
-                ],
-                "summary": "Upload stocks from Excel file",
-                "parameters": [
-                    {
-                        "type": "file",
-                        "description": "Excel file (.xlsx or .xls)",
-                        "name": "file",
-                        "in": "formData",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/models.StockResponse"
-                            }
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/models.ErrorResponse"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/models.ErrorResponse"
-                        }
-                    }
-                }
-            }
-        },
         "/stocks/{code}": {
             "get": {
                 "description": "Retrieves detailed information for a specific stock/emiten by ticker code",
@@ -672,44 +580,6 @@ const docTemplate = `{
                 }
             }
         },
-        "models.Stock": {
-            "type": "object",
-            "properties": {
-                "code": {
-                    "type": "string"
-                },
-                "company_name": {
-                    "type": "string"
-                },
-                "delisting_date": {
-                    "type": "string"
-                },
-                "id": {
-                    "type": "integer"
-                },
-                "industry_id": {
-                    "type": "integer"
-                },
-                "industry_sub_id": {
-                    "type": "integer"
-                },
-                "listing_board": {
-                    "type": "string"
-                },
-                "listing_date": {
-                    "type": "string"
-                },
-                "sector_id": {
-                    "type": "integer"
-                },
-                "sector_sub_id": {
-                    "type": "integer"
-                },
-                "shares": {
-                    "type": "integer"
-                }
-            }
-        },
         "models.StockDetailResponse": {
             "type": "object",
             "properties": {
@@ -741,20 +611,6 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "sub_sector": {
-                    "type": "string"
-                }
-            }
-        },
-        "models.StockResponse": {
-            "type": "object",
-            "properties": {
-                "code": {
-                    "type": "string"
-                },
-                "id": {
-                    "type": "integer"
-                },
-                "name": {
                     "type": "string"
                 }
             }

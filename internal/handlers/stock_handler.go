@@ -2,9 +2,6 @@ package handlers
 
 import (
 	"context"
-	"fmt"
-	"mime/multipart"
-	"path/filepath"
 	"strings"
 
 	"github.com/gofiber/fiber/v3"
@@ -22,89 +19,6 @@ func NewStockHandler(usecase usecases.StockUsecase) *StockHandler {
 	return &StockHandler{
 		usecase: usecase,
 	}
-}
-
-// PreviewHandler godoc
-// @Summary      Preview stocks from Excel file
-// @Description  Parses uploaded stock Excel (.xlsx or .xls) file without persisting to database
-// @Tags         stocks
-// @Accept       multipart/form-data
-// @Produce      json
-// @Param        file  formData  file  true  "Excel file (.xlsx or .xls)"
-// @Success      200   {array}   models.Stock
-// @Failure      400   {object}  models.ErrorResponse
-// @Failure      500   {object}  models.ErrorResponse
-// @Router       /stocks/upload [post]
-func (h *StockHandler) PreviewHandler(c fiber.Ctx) error {
-	f, err := h.getFileAndValidate(c)
-	if err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"error": err.Error(),
-		})
-	}
-	defer f.Close()
-
-	stocks, err := h.usecase.PreviewStocks(c.Context(), f)
-	if err != nil {
-		logrus.Errorf("Failed to preview stocks: %v", err)
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"error": err.Error(),
-		})
-	}
-
-	return c.JSON(stocks)
-}
-
-// UploadHandler godoc
-// @Summary      Upload stocks from Excel file
-// @Description  Parses and inserts uploaded stock Excel file into the database
-// @Tags         stocks
-// @Accept       multipart/form-data
-// @Produce      json
-// @Param        file  formData  file  true  "Excel file (.xlsx or .xls)"
-// @Success      200   {array}   models.StockResponse
-// @Failure      400   {object}  models.ErrorResponse
-// @Failure      500   {object}  models.ErrorResponse
-// @Router       /stocks/upload [patch]
-func (h *StockHandler) UploadHandler(c fiber.Ctx) error {
-	f, err := h.getFileAndValidate(c)
-	if err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"error": err.Error(),
-		})
-	}
-	defer f.Close()
-
-	stocks, err := h.usecase.UploadStocks(c.Context(), f)
-	if err != nil {
-		logrus.Errorf("Failed to upload stocks: %v", err)
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"error": err.Error(),
-		})
-	}
-
-	return c.JSON(stocks)
-}
-
-func (h *StockHandler) getFileAndValidate(c fiber.Ctx) (multipart.File, error) {
-	file, err := c.FormFile("file")
-	if err != nil {
-		logrus.Errorf("Failed to get file from form: %v", err)
-		return nil, fmt.Errorf("file is required")
-	}
-
-	// Validate extension
-	ext := strings.ToLower(filepath.Ext(file.Filename))
-	if ext != ".xlsx" && ext != ".xls" {
-		return nil, fmt.Errorf("only .xlsx and .xls files are allowed")
-	}
-
-	f, err := file.Open()
-	if err != nil {
-		return nil, fmt.Errorf("failed to open file: %w", err)
-	}
-
-	return f, nil
 }
 
 // SyncStockDetailHandler godoc
